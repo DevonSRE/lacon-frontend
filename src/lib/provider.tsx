@@ -35,7 +35,6 @@ function getQueryClient() {
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const queryClient = getQueryClient();
-
   return (
     <>
       <Provider store={store}>

@@ -1,11 +1,27 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies, headers } from 'next/headers'
 import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
-import { TSessionData, TFullUser } from '@/lib/types'
-import { ALGORITHM, SECRET_KEY } from '@/lib/constants'
+import { TFullUser } from '@/lib/types'
+import { ALGORITHM, SECRET } from '@/lib/constants'
 import { decodeToken } from '@/lib/utils'
+import { TSessionData } from '@/types/auth'
 
-const key = new TextEncoder().encode(SECRET_KEY)
+export type ErrorResponse = {
+  name: string;
+  response?: {
+    status: number;
+    data: {
+      message: string;
+      data?: { error?: string };
+      error: string;
+    };
+  };
+  request?: unknown;
+  message?: string;
+}
+
+
+const key = new TextEncoder().encode(SECRET)
 type TJwtPayload = TSessionData & {
   expires: number;
 };
@@ -33,8 +49,6 @@ const auth = {
   sessionCookie: null,
   cookieStore: await cookies(),
 
-
-
   encrypt: async (payload: TJwtPayload) => {
     return new SignJWT(payload)
       .setProtectedHeader({ alg: ALGORITHM })
@@ -53,14 +67,14 @@ const auth = {
   },
 
 
-verifySession: async () => {
-  const cookie = auth.cookieStore.get(cookieHelper.name)?.value;
+  verifySession: async () => {
+    const cookie = auth.cookieStore.get(cookieHelper.name)?.value;
 
-  if (!cookie) return null;
+    if (!cookie) return null;
 
-  const session = await auth.decrypt(cookie);
-  return session as TSessionData | null;
-},
+    const session = await auth.decrypt(cookie);
+    return session as TSessionData | null;
+  },
 
 
   createSession: async (userData: TSessionData) => {
@@ -81,7 +95,6 @@ verifySession: async () => {
 
   deleteSession: () => {
     auth.cookieStore.delete(cookieHelper.name)
-    // redirect('/login') // would prefer this but server action will return an error instead
   },
 
   getUser: async () => {
