@@ -28,8 +28,43 @@ export type TUser = Pick<
   "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image"
 >
 
-export type TSessionData = {
-  user?: TUser;
-  token: string;
-  expires?: number;
-}
+
+export type UserType =
+  | 'Civil Justice Department Head'
+  | 'Decongestion Unit Head'
+  | 'Prerogative Of Mercy Unit Head'
+  | 'OSCAR Unit Head'
+  | 'Pro bono Lawyer'
+  | 'Centre Coordinator'
+  | 'Director General'
+  | 'Criminal Justice Department Head'
+  | 'Paralegal'
+  | 'State Coordinator'
+  | 'Zonal Director'
+  | 'LacON Lawyer'
+  | 'Dio';
+
+
+export type Designation = 'Head Office' | 'State Office' | 'Zonal Office' | 'Centre lawyer' | 'State Lawyer' | 'Head Quarters';
+
+export type Zone = 'North West' | 'North East' | 'North Central' | 'South West' | 'South East' | 'South South';
+
+export const states = [
+  'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa',
+  'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo',
+  'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa', 'Kaduna',
+  'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
+  'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo',
+  'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
+];
+
+
+
+export type TCase = {
+  id: string;
+  status: string;
+  clientName: string;
+  caseType: string;
+  state: string;
+  filedBy: string;
+};

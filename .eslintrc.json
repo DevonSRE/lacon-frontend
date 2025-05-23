@@ -39,7 +39,8 @@
     ]
   },
   "rules": {
-    "@typescript-eslint/no-explicit-any": ["off"],
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
     "boundaries/no-unknown": ["error"],
     "boundaries/no-unknown-files": ["error"],
     "boundaries/element-types": [
