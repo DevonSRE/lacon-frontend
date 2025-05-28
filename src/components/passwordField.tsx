@@ -97,10 +97,7 @@ export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
     </div>
   );
 };
-/**
- * Simple password strength estimator.
- * Returns an object similar to zxcvbn's result.
- */
+
 function zxcvbn(password: string) {
   let score = 0;
   if (password.length >= 8) score++;

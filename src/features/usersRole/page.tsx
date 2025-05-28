@@ -97,7 +97,14 @@ export default function UserRoles() {
         <div className="text-lg font-semibold">Users</div>
         <AddUserSheet />
       </div>
-      <ReusableTabs tabs={tabs} onTabChange={handleTabChange} activeTab={activeTab} />
+      <div className="min-w-4xl max-w-full overflow-x-auto scrollbar-hide">
+        <ReusableTabs
+          tabs={tabs}
+          onTabChange={handleTabChange}
+          activeTab={activeTab}
+        />
+      </div>
+
       <CasesDataTableToolbar />
       <DataTable onRowClick={handleRowClick} columns={columns} loading={isLoading} data={[]} />
       {/* {data?.data?.data.length > 0 && (
