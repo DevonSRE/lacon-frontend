@@ -36,7 +36,7 @@ const navItems: NavItem[] = [
   {
     icon: <Icons.report />,
     name: "Reports",
-    path: "/report",
+    path: "/reports",
   },
 
   {
