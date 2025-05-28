@@ -77,7 +77,7 @@ export function DataTable<TData, TValue>({
       ) : (
         <Table className="space-y-2 mt-4">
           {/* Table Header */}
-          <TableHeader className="bg-zinc-50 h-12 text-sm" >
+          <TableHeader className="bg-zinc-200 h-12 text-sm" >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (

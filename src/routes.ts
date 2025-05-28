@@ -15,6 +15,7 @@ import { ROLES } from "./types/auth";
 export const authRoutes = [
   "/signin",
   "/invitation",
+  "/welcome",
 ];
 
 export const publicRoutes = ["/invitation"];

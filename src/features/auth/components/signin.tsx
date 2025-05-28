@@ -69,15 +69,13 @@ export default function SigninForm() {
           </p>
           {/* <form className="space-y-4"> */}
           <form action={dispatch} className="w-full space-y-6">
-            <div>
-              <Label className="">Email Address</Label>
-              <Input
-                type="email"
-                name='email'
-                className="w-full px-4 py-2"
-                placeholder="example@email.com"
-              />
-            </div>
+            <Input
+              type="email"
+              name='email'
+              label='Email Address'
+              className="w-full px-4 py-2"
+              placeholder="example@email.com"
+            />
             <div>
               <LoginPasswordField error={errors.password?.[0]} />
               <div className="text-right text-xs text-red-500 mt-1 cursor-pointer">

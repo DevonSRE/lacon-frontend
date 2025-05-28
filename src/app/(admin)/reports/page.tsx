@@ -1,9 +1,9 @@
 
-import UserRoles from "@/features/usersRole/page";
+import Report from "@/features/report/report";
 export default async function Page() {
 
   return (
-    <UserRoles />
+    <Report />
   );
 }
 
