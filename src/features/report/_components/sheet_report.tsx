@@ -2,7 +2,7 @@ import FilterBar from './filter_bar';
 import { useState } from 'react';
 import Overview from './overview';
 import CaseTypeReports from './case_type';
-import LawyersReport from './lawyers';
+import LawyersReport from '../../dashboard/Lawyer/_components/lawyersManagement';
 import UnitsReports from './units';
 import Demographics from './Demographics';
 

@@ -9,6 +9,8 @@ import { defaultLoginRedirect } from "@/routes";
 
 export async function SignInAction(_prevState: unknown, formData: FormData) {
   const data = Object.fromEntries(formData);
+  let  role = data?.role as ROLES;
+
   const result = LoginFormSchema.safeParse(data);
   if (!result.success) {
     return {
@@ -17,7 +19,7 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
       message: "Invalid Email Address",
     };
   }
-  let role: ROLES;
+  // let role: ROLES;
   try {
     const res = await AuthService.loginUser(result.data);
     const data = res.data as LoginResponseData; //Cast to the expected type
@@ -29,11 +31,12 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone_number: data.phone_number,
-        role: data.role as ROLES,
+        // role: data.role as ROLES,
+        role: role,
       },
       token: data.token,
     };
-    role = sessionData.user.role;
+    // role = sessionData.user.role;
     await createSession(sessionData);
   } catch (err: unknown) {
 

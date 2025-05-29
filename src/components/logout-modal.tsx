@@ -12,7 +12,7 @@ import {
 import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, LogOut, ArrowRight } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -37,13 +37,23 @@ export default function LogoutModal() {
     <Dialog>
       <DialogTrigger asChild>
         <Button
-          variant={"link"}
+          variant="outline"
           className={cn(
-            "rounded-md text-neutral-400 hover:bg-gray-100 block py-1 px-4 text-sm font-semibold transition-color"
+            "group flex items-center p-6 gap-2 rounded-md h-12 px-4 py-1 text-sm font-semibold transition-colors",
+            "text-red-400 hover:text-red-700 hover:bg-red-50"
           )}
         >
-
-          <p className="inline-block relative">Logout</p>
+          <span className="relative block text-xs">
+            <span className="gap-4 flex  group-hover:hidden items-center">
+              <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
+              Log out</span>
+            <span className="hidden items-center group-hover:block  flex-row">
+              <div className="flex gap-2 items-center">
+                Yes log me out
+                <ArrowRight className="w-4 h-4 transition-colors group-hover:text-red-700" />
+              </div>
+            </span>
+          </span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-[450px] p-6 space-y-3">
@@ -56,14 +66,13 @@ export default function LogoutModal() {
         <div className="flex justify-center">
           <Icons.exclamation />
         </div>
-        <DialogFooter className="flex md:justify-center gap-4 sm:gap-0">
+        <DialogFooter className="flex md:justify-center  gap-6 sm:gap-0">
           <Button
             variant="default"
             size={"lg"}
             disabled={loading}
-            className="flex-1 text-xs sm:flex-none"
-            onClick={handleLogout}
-          >
+            className="flex-1 text-xs sm:flex-none "
+            onClick={handleLogout}>
             {loading ? (
               <div className="flex items-center gap-2">
                 <LoaderCircle
@@ -79,12 +88,14 @@ export default function LogoutModal() {
           <DialogClose asChild>
             <Button
               type="button"
+              size={"lg"}
               variant="ghost"
-              className="flex-1 text-xs text-primary sm:flex-none"
+              className="flex-1  text-xs text-primary sm:flex-none"
             >
               CANCEL
             </Button>
           </DialogClose>
+
         </DialogFooter>
       </DialogContent>
     </Dialog>

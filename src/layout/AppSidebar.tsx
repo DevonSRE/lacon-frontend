@@ -7,12 +7,14 @@ import { useSidebar } from "../context/SidebarContext";
 import { Icons } from "@/icons/icons";
 import LogoutModal from "@/components/logout-modal";
 import { useAppSelector } from "@/hooks/redux";
+import { ROLES } from "@/types/auth";
 
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
+  roles?: string[]; // List of roles allowed
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
@@ -21,29 +23,37 @@ const navItems: NavItem[] = [
     icon: <Icons.home />,
     name: "Home",
     path: "/",
+    roles: ["ADMIN", "PLATFORM_ADMIN", "PRO_BONO_LAWYER", "LAWYER", "PARALEGAL"],
   },
   {
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
+    roles: ["ADMIN", "PLATFORM_ADMIN", "PRO_BONO_LAWYER", "PARALEGAL"],
   },
   {
     icon: <Icons.userRole />,
     name: "Users Role",
     path: "/users-role/all",
+    roles: ["ADMIN", "PLATFORM_ADMIN"],
   },
-
+  {
+    icon: <Icons.lawyerIcons />,
+    name: "Lawyers",
+    path: "/lawyers",
+    roles: ["ADMIN", "PLATFORM_ADMIN", "DIRECTOR_GENERAL"],
+  },
   {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",
+    roles: ["ADMIN", "PLATFORM_ADMIN", "DIRECTOR_GENERAL", "ZONAL_DIRECTOR"],
   },
-
   {
     name: "Settings",
     icon: <Icons.settings />,
     path: "/settings",
-
+    roles: ["ADMIN", "PLATFORM_ADMIN"],
   },
 
 ];
@@ -229,19 +239,15 @@ const AppSidebar: React.FC = () => {
   };
 
   return (
-    <aside
-      className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+    <aside className={`fixed mt-16 flex flex-col   lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${isExpanded || isMobileOpen
+        ? "w-[290px]"
+        : isHovered
           ? "w-[290px]"
-          : isHovered
-            ? "w-[290px]"
-            : "w-[90px]"
-        }
-        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:translate-x-0`}
-      onMouseEnter={() => !isExpanded && setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
+          : "w-[90px]"
+      }
+        ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`} onMouseEnter={() => !isExpanded && setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
+
       <div className="py-4 flex justify-center">
         <Link href="/">
           {isExpanded || isHovered || isMobileOpen ? (
@@ -268,10 +274,9 @@ const AppSidebar: React.FC = () => {
         <p className="text-center text-red-500 font-semibold text-lg">{user?.role}</p>
         <p className="text-center  text-gray-500 text-lg">#{user?.id.substring(0, 7)}</p>
       </div>
-
       <hr />
 
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
+      <div className="flex flex-col flex-grow overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">
             <div>
@@ -281,13 +286,20 @@ const AppSidebar: React.FC = () => {
                 }`}>
                 {isExpanded || isHovered || isMobileOpen ? ("") : (<Icons.HorizontaLDots />)}
               </h2>
-              {renderMenuItems(navItems, "main")}
+              {/* {renderMenuItems(navItems, "main")} */}
+              {renderMenuItems(
+                navItems.filter((item) =>
+                  !item.roles || (user?.role && item.roles.includes(user.role as ROLES))
+                ), "main"
+              )}
+
             </div>
           </div>
         </nav>
       </div>
-
-      <LogoutModal />
+      <div className="p-4 border-t mb-20 border-gray-200 dark:border-gray-800">
+        <LogoutModal />
+      </div>
     </aside>
   );
 };
