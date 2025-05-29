@@ -32,7 +32,6 @@ export const lawyerColumns: ColumnDef<LawyerData>[] = [
     { accessorKey: "roles", header: "Roles" },
 ];
 
-
 export const CorrectionalCenterVisit: ColumnDef<StateData>[] = [
     { accessorKey: "Center", ...centerCell("Center") },
     { accessorKey: "Visits", ...centerCell("Visits") },
