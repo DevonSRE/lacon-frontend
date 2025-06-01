@@ -10,9 +10,12 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Icons } from "@/icons/icons";
+import { useAction } from "@/context/ActionContext";
+import { AddUserSheet } from "@/features/component/AddUserSheet";
 
 const CreateUserRole = () => {
     const [open, setOpen] = useState(false);
+    const { setIsOpen } = useAction();
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -40,7 +43,7 @@ const CreateUserRole = () => {
                         <div className="justify-center text-center">
                             Do <span className="text-red-600">@e</span> want to create a User Account Right Now, You can As well perform this Action at a later Time.
                         </div>
-                        <Button className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
+                        <Button onClick={() => setIsOpen(open)} className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
                             <span className="transition-opacity duration-300 group-hover:opacity-0">
                                 Yes, Create Now
                             </span>
@@ -63,6 +66,7 @@ const CreateUserRole = () => {
 
                     </div>
                 </div>
+                <AddUserSheet />
             </DialogContent>
         </Dialog>
     );

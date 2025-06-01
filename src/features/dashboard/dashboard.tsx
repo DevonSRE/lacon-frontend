@@ -1,5 +1,5 @@
 'use client';
-import React from "react";
+import React, { useState } from "react";
 import AdminDashboardSkeleton from "@/components/skeleton/dashboard";
 import { Plus } from "lucide-react";
 import DashboardStats from "./components/DashboardStats";
@@ -11,16 +11,15 @@ import LawyerDashboard from "./Lawyer/LaywerDashboard";
 import Intro from "@/components/Intro";
 import { ROLES } from "@/types/auth"; // assuming this enum is available
 import { useAppSelector } from "@/hooks/redux";
+import { Button } from "@/components/ui/button";
+import { AddUserSheet } from "../component/AddUserSheet";
+import { useAction } from "@/context/ActionContext";
 
 
 
 export default function Dashboard() {
-    const today = new Date().toLocaleDateString("en-GB", {
-        weekday: "long",
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-    });
+    const { setIsOpen } = useAction();
+
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
@@ -48,16 +47,18 @@ export default function Dashboard() {
                     {/* Header */}
                     <div className="flex justify-between items-center mb-8">
                         <Intro user="Admin" />
-                        <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                        <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
                             <Plus size={20} />
                             New
-                        </button>
+                        </Button>
                     </div>
                     <DashboardStats />
                     <CaseAssignmentPage />
                     <CaseDistributionChart />
                 </div>
                 <CreateUserRole />
+                <AddUserSheet />
+
             </div>
         );
     }

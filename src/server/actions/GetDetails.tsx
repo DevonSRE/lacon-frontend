@@ -1,0 +1,30 @@
+'use server'
+import { ErrorResponse } from "@/lib/auth";
+import { Ipage } from "@/lib/constants";
+import { handleApiError } from "@/lib/utils";
+import detailsServices from "../getDetails";
+
+export async function GetStates(params: Ipage) {
+    try {
+        const response = await detailsServices.getState(params);
+        console.log("response state  =>" + JSON.stringify(response.data.data));
+        return { data: response.data?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+
+export async function GetZones(params: Ipage) {
+    try {
+        const response = await detailsServices.getZone(params);
+        console.log("response inveontory  =>" + JSON.stringify(response.data?.data));
+        return { data: response.data?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+

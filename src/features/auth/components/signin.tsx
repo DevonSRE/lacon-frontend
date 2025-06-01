@@ -16,13 +16,7 @@ import { toast } from "sonner";
 import { isFieldErrorObject, ROLES } from '@/types/auth';
 import { LoginPasswordField } from '@/components/passwordField';
 import { SubmitButton } from '@/components/submit-button';
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+
 
 export default function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -30,7 +24,6 @@ export default function SigninForm() {
   const [formDisabled, setFormDisabled] = useState(false);
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const [role, setRole] = useState<ROLES | "">("");
 
   const errors = isFieldErrorObject(state?.errors)
     ? state.errors
@@ -78,7 +71,6 @@ export default function SigninForm() {
           </p>
           {/* <form className="space-y-4"> */}
           <form action={dispatch} className="w-full space-y-6">
-            <input type="hidden" name="role" value={role} />
             <Input
               type="email"
               name='email'
@@ -93,19 +85,7 @@ export default function SigninForm() {
               </div>
             </div>
 
-            <Select value={role} onValueChange={(value) => setRole(value as ROLES)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.values(ROLES).map((roleLabel) => (
-                  <SelectItem key={roleLabel} value={roleLabel}>
-                    {roleLabel}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
+         
             <SubmitButton
               value="LOG IN"
               pendingValue="Processing..."

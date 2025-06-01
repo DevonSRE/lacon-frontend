@@ -1,12 +1,31 @@
+'use client'
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import Input from '@/components/form/input/InputField';
+import { useFormState } from 'react-dom';
+import { submitProBonoForm } from '@/features/probunoLawyers/server/action';
+import useEffectAfterMount from '@/hooks/use-effect-after-mount';
+import { CLIENT_ERROR_STATUS } from '@/lib/constants';
+import { toast } from "sonner";
 
 export default function ProBonoForm() {
   const [form, setForm] = useState({ agree: false });
+
+  const [state, formAction] = useFormState(submitProBonoForm, undefined);
+  // Handle errors
+  useEffectAfterMount(() => {
+    if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+      toast.error(state?.message, {
+        description: typeof state?.errors === "string"
+          ? state.errors
+          : state?.errors
+            ? Object.values(state.errors).flat().join(", ")
+            : undefined,
+      });
+    }
+  }, [state]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -20,19 +39,18 @@ export default function ProBonoForm() {
   };
 
   return (
-    <ScrollArea className="h-screen">
-      <div className="max-w-3xl mx-auto p-10 space-y-8">
-        <div className="flex justify-center">
-          <h1 className="text-2xl  font-bold text-center max-w-sm">Online Pro Bono Lawyer Registration Form</h1>
-        </div>
-        <hr />
+    <div className='pb-32 space-y-10'>
+      <div className="flex justify-center">
+        <h1 className="text-2xl  font-bold text-center ">Online Pro Bono Lawyer Registration Form</h1>
+      </div>
+      <hr />
 
+      <form action={formAction} className='pb-32 space-y-10'>
         {/* SECTION 1 */}
         <section className="space-y-4">
           <h2 className="font-semibold text-lg">SECTION 1: Personal Details and Office Info</h2>
           {['Lawyer’s Name', 'State of Practice', 'Email Address', 'Mobile Phone Number', 'Alternate Number', 'State Bar Membership'].map(label => (
             <div key={label}>
-
               <Input label={label} name={label.toLowerCase().replace(/ /g, '_')} onChange={handleChange} required />
             </div>
           ))}
@@ -92,9 +110,23 @@ export default function ProBonoForm() {
           </label>
         </section>
 
-        <Button variant="default" disabled={!form.agree} className='w-full h-11 bg-[#EB4335]'>Submit Form</Button>
-      </div>
-    </ScrollArea>
+        {/* {state?.errors && (
+          <div className="text-red-500">
+            <ul>
+              {Object.entries(state.errors).map(([key, val]) =>
+                Array.isArray(val)
+                  ? val.map((msg, idx) => (
+                      <li key={`${key}-${idx}`}>{key}: {msg}</li>
+                    ))
+                  : <li key={key}>{key}: {String(val)}</li>
+              )}
+            </ul>
+          </div>
+        )} */}
+
+        <Button type="submit" variant="default" disabled={!form.agree} className='w-full h-11 bg-[#EB4335]'>Submit Form</Button>
+      </form>
+    </div>
 
   );
 }

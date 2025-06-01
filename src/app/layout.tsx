@@ -8,6 +8,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Suspense } from "react";
 import NextTopLoader from "nextjs-toploader";
 import { SidebarProvider } from '@/context/SidebarContext';
+import { ActionProvider } from '@/context/ActionContext';
 import { ThemeProvider } from '@/context/ThemeContext';
 
 // Configure Space Grotesk font
@@ -37,7 +38,11 @@ export default function RootLayout({
             <Toaster richColors expand={true} position="top-center" />
             <TooltipProvider>
               <ThemeProvider>
-                <SidebarProvider>{children}</SidebarProvider>
+                <SidebarProvider>
+                  <ActionProvider>
+                    {children}
+                  </ActionProvider>
+                </SidebarProvider>
               </ThemeProvider>
               <NextTopLoader showSpinner={false} color="#6F4E37" />
             </TooltipProvider>

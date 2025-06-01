@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/icons/icons";
 import { Plus } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
+import { useAction } from "@/context/ActionContext";
 
 export type TusersRoles =
   "all" |
@@ -90,12 +91,17 @@ export default function UserRoles() {
   const handleRowClick = (row: any) => {
     redirect(`/user-profile/${encodeURIComponent(row.id)}`);
   };
+  const { setIsOpen } = useAction();
 
   return (
     <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
       <div className="row flex justify-between">
         <div className="text-lg font-semibold">Users</div>
-        <AddUserSheet />
+        <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white rounded-sm">
+          <Plus size={20} className="mr-2" />
+          New User
+        </Button>
+        {/* <AddUserSheet /> */}
       </div>
       <div className="min-w-4xl max-w-full overflow-x-auto scrollbar-hide">
         <ReusableTabs
@@ -117,6 +123,8 @@ export default function UserRoles() {
           />
         </div>
       )} */}
+
+      <AddUserSheet />
     </div>
   )
 }

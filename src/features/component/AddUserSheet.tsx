@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/sheet"
 import { Plus } from "lucide-react"
 import { states, UserType, Zone } from "@/lib/types"
+import { useAction } from "@/context/ActionContext"
 
 export const userTypeOptions: UserType[] = [
     'Director General',
@@ -40,6 +41,8 @@ export const zones: Zone[] = [
     'South West', 'South East', 'South South'
 ];
 export function AddUserSheet() {
+    const { isOpen, setIsOpen } = useAction();
+
     const [formData, setFormData] = useState({
         userType: "",
         designation: "",
@@ -55,13 +58,7 @@ export function AddUserSheet() {
     }
 
     return (
-        <Sheet>
-            <SheetTrigger asChild>
-                <Button className="bg-red-600 hover:bg-red-700 text-white rounded-sm">
-                    <Plus size={20} className="mr-2" />
-                    New User
-                </Button>
-            </SheetTrigger>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent>
                 <form className="space-y-6 p-6 mt-10">
                     <h2 className="text-xl font-semibold">Add New User</h2>
@@ -116,7 +113,7 @@ export function AddUserSheet() {
                                 </div>
                             )}
 
-                            {(formData.userType === "State Coordinator" || formData.userType === "Centre Coordinator" || formData.designation === "State Lawyer"  || formData.designation === "State Office" ) && (
+                            {(formData.userType === "State Coordinator" || formData.userType === "Centre Coordinator" || formData.designation === "State Lawyer" || formData.designation === "State Office") && (
                                 <div className="space-y-1">
                                     <Label>Select State</Label>
                                     <Select onValueChange={(val) => handleChange("state", val)}>
@@ -134,7 +131,7 @@ export function AddUserSheet() {
                                 </div>
                             )}
 
-                            {(formData.userType === "Centre Coordinator" || formData.userType === "Centre Coordinator"  ) && (
+                            {(formData.userType === "Centre Coordinator" || formData.userType === "Centre Coordinator") && (
                                 <div className="space-y-1">
                                     <Label>Select Centre</Label>
                                     <Select onValueChange={(val) => handleChange("state", val)}>

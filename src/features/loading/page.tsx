@@ -11,7 +11,7 @@ export default function LoadingPage() {
 
   useEffect(() => {
     const timeout = setTimeout(() => {
-      router.push("/");
+      router.push("/dashboard");
     }, 3000);
     return () => clearTimeout(timeout);
   }, [router]);

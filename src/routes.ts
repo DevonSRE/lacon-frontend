@@ -15,10 +15,13 @@ import { ROLES } from "./types/auth";
 export const authRoutes = [
   "/signin",
   "/invitation",
-  "/welcome",
 ];
 
-export const publicRoutes = ["/invitation"];
+export const publicRoutes = [
+  "/welcome",
+  "/",
+  "probuno"
+];
 
 /**
  * The prefix for API authentication routes
