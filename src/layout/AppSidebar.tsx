@@ -22,38 +22,38 @@ const navItems: NavItem[] = [
   {
     icon: <Icons.home />,
     name: "Home",
-    path: "/",
-    roles: ["ADMIN", "PLATFORM_ADMIN", "PRO_BONO_LAWYER", "LAWYER", "PARALEGAL"],
+    path: "/dashboard",
+    roles: ["ADMIN", "PLATFORM ADMIN", "PRO_BONO_LAWYER", "LAWYER", "PARALEGAL"],
   },
   {
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ["ADMIN", "PLATFORM_ADMIN", "PRO_BONO_LAWYER", "PARALEGAL"],
+    roles: ["ADMIN", "PLATFORM ADMIN", "PRO_BONO_LAWYER", "PARALEGAL"],
   },
   {
     icon: <Icons.userRole />,
     name: "Users Role",
     path: "/users-role/all",
-    roles: ["ADMIN", "PLATFORM_ADMIN"],
+    roles: ["ADMIN", "PLATFORM ADMIN"],
   },
   {
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ADMIN", "PLATFORM_ADMIN", "DIRECTOR_GENERAL"],
+    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR_GENERAL"],
   },
   {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",
-    roles: ["ADMIN", "PLATFORM_ADMIN", "DIRECTOR_GENERAL", "ZONAL_DIRECTOR"],
+    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR_GENERAL", "ZONAL_DIRECTOR"],
   },
   {
     name: "Settings",
     icon: <Icons.settings />,
     path: "/settings",
-    roles: ["ADMIN", "PLATFORM_ADMIN"],
+    roles: ["ADMIN", "PLATFORM ADMIN"],
   },
 
 ];
@@ -64,6 +64,7 @@ const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const { data: user } = useAppSelector((state) => state.profile);
+  console.log(user);
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -272,7 +273,7 @@ const AppSidebar: React.FC = () => {
       </div>
       <div className=" justify-center pb-2.5">
         <p className="text-center text-red-500 font-semibold text-lg">{user?.role}</p>
-        <p className="text-center  text-gray-500 text-lg">#{user?.id.substring(0, 7)}</p>
+        {/* <p className="text-center  text-gray-500 text-lg">#{user?.id.substring(0, 7)}</p> */}
       </div>
       <hr />
 

@@ -1,25 +1,7 @@
 'use client'
 import React, { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import SearchFilterSection from './_components/SearchFilterSection';
 import CaseDetailsSheet from './_components/CaseDetailsSheet';
 import { TCase } from '@/lib/types';

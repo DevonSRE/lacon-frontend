@@ -10,6 +10,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import Input from "@/components/form/input/InputField";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import SelectField from '@/components/SelectField';
+import TextAreaField from '@/components/TextAreaField';
 
 
 interface FormData {
@@ -203,57 +205,6 @@ const SheetDemo: React.FC = () => {
         alert('PDSS Case filed successfully!');
     };
 
-
-    const SelectField: React.FC<SelectFieldProps> = ({
-        name,
-        label,
-        placeholder,
-        options,
-        required = false,
-        formData,
-        handleSelectChange,
-        errors,
-    }) => (
-        <div className="space-y-1">
-            <Label>
-                {label} {required && <span className="text-red-500 text-xs">*</span>}
-            </Label>
-            <Select
-                value={typeof formData[name] === "string" ? formData[name] : ""}
-                onValueChange={(value) => handleSelectChange(name, value)}
-            >
-                <SelectTrigger className={`w-full h-11 ${errors[name] ? 'border-red-500' : ''}`}>
-                    <SelectValue placeholder={placeholder} />
-                </SelectTrigger>
-                <SelectContent>
-                    {options.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {errors[name] && <p className="text-red-500 text-xs">{errors[name]}</p>}
-        </div>
-    );
-    const TextAreaField: React.FC<TextAreaFieldProps> = ({ name, label, placeholder, required = false }) => (
-        <div className="space-y-1">
-            <Label className="">
-                {label} {required && <span className="text-red-500 text-xs">*</span>}
-            </Label>
-            <textarea
-                name={name}
-                placeholder={placeholder}
-                value={formData[name] as string || ''}
-                onChange={handleChange}
-                rows={4}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${errors[name] ? 'border-red-500' : 'border-gray-300'
-                    }`}
-            />
-            {errors[name] && <p className="text-red-500 text-xs">{errors[name]}</p>}
-        </div>
-    );
-
     return (
         <Sheet>
             <SheetTrigger asChild>
@@ -433,6 +384,9 @@ const SheetDemo: React.FC = () => {
                                     label="Offence"
                                     placeholder="Type the Offence Here"
                                     required
+                                    value={formData.offence}
+                                    onChange={handleChange}
+                                    error={errors.offence}
                                 />
 
                                 <InputField
@@ -590,8 +544,8 @@ export default SheetDemo;
 //                         <div className="">
 //                             <Label>Gender <span className="text-red-500 text-xs">*</span></Label>
 //                             <div className="relative">
-//                                 <Select onValueChange={(value) => handleSelectChange('gender', value)}>
-//                                     <SelectTrigger className="w-full">
+//                                <Select onValueChange={(value) => handleSelectChange('gender', value)}>
+//                                     <SelectTrigger electTrigger className="w-full">
 //                                         <SelectValue placeholder="Select Gender" />
 //                                     </SelectTrigger>
 //                                     <SelectContent>
