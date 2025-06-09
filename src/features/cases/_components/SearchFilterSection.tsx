@@ -59,7 +59,7 @@ const SearchFilterSection: React.FC<Props> = ({
                 )}
                 {(role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL) && (
                     <>
-                        <div className="relative">
+                        {/* <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                             <Input
                                 placeholder="Search by Case ID"
@@ -67,7 +67,7 @@ const SearchFilterSection: React.FC<Props> = ({
                                 value={caseIdSearch}
                                 onChange={(e) => setCaseIdSearch(e.target.value)}
                             />
-                        </div>
+                        </div> */}
 
                         <Select value={stateFilter} onValueChange={setStateFilter}>
                             <SelectTrigger className="w-full h-11">

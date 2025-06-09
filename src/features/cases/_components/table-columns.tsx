@@ -26,7 +26,10 @@ import { Badge } from "@/components/ui/badge";
 export interface ICase {
   id: string;
   clientName: string;
-  caseType: string;
+  first_name: string;
+  last_name: string;
+  case_type: string;
+  state_of_origin: string;
   status: string;
   filedBy: string;
   state: string;
@@ -76,7 +79,7 @@ const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
 };
 
 // Column Generator
-export const createUserColumns = (
+export const createCaseColumns = (
   userRole: ROLES,
   type?: "pending" | "all"
 ): ColumnDef<ICase>[] => {
@@ -100,20 +103,20 @@ export const createUserColumns = (
       ),
     },
     {
-      accessorKey: "clientName",
+      accessorKey: "first_name",
       header: "Client Name",
       cell: ({ row }) => (
         <span className="text-sm text-gray-900">
-          {row.original.clientName}
+          {row.original.first_name} {row.original.last_name}
         </span>
       ),
     },
     {
-      accessorKey: "caseType",
+      accessorKey: "case_type",
       header: "Case Type",
       cell: ({ row }) => (
-        <Badge className={getCaseTypeBadgeColor(row.original.caseType)}>
-          {row.original.caseType}
+        <Badge className={getCaseTypeBadgeColor(row.original.case_type)}>
+          {row.original.case_type}
         </Badge>
       ),
     },
@@ -136,38 +139,22 @@ export const createUserColumns = (
   ];
 
   if (userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) {
-    columns.push(
-      {
-        accessorKey: "filedBy",
-        header: "Filed By",
-        cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.filedBy}</span>
-        ),
-      },
-      {
-        accessorKey: "state",
-        header: "State",
-        cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.state}</span>
-        ),
-      }
-    );
-  }
+    // columns.push(
+    //   {
+    //     accessorKey: "filedBy",
+    //     header: "Filed By",
+    //     cell: ({ row }) => (
+    //       <span className="text-sm text-gray-900">{row.original.filedBy}</span>
+    //     ),
+    //   },
+    // );
 
-  if (userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) {
     columns.push(
       {
-        accessorKey: "filedBy",
-        header: "Filed By",
-        cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.filedBy}</span>
-        ),
-      },
-      {
-        accessorKey: "state",
+        accessorKey: "state_of_origin",
         header: "State",
         cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.state}</span>
+          <span className="text-sm text-gray-900">{row.original.state_of_origin}</span>
         ),
       }
     );
@@ -215,7 +202,7 @@ const CaseTable: React.FC<{ data: ICase[]; userRole: ROLES }> = ({
   data,
   userRole,
 }) => {
-  const columns = createUserColumns(userRole);
+  const columns = createCaseColumns(userRole);
 
   const table = useReactTable({
     data,

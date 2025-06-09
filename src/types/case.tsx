@@ -20,3 +20,39 @@ export interface IUser {
   role: string;
   status: string;
 }
+export interface ILawyerRequest {
+  id: string;
+  LawyerName: string;
+  Reason: string;
+  Action : string;
+  first_name: string;
+  Status: string;
+  LawyerEmail: string;
+  RequestedByID: string;
+  RequestedName: string;
+  status: string;
+  CreatedAt: string;
+}
+export interface ILawyerManagement {
+  id: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  name?: string;
+  email: string;
+  phone_number: string;
+  gender?: string;
+  date_of_birth?: string;
+  user_type: string;
+  status: string;
+  state: string;
+  state_id: string;
+  zone_id: string;
+  zone_name: string;
+  center_name?: string | null;
+  profile_image?: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: string;
+  updated_by?: string;
+}

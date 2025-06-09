@@ -6,7 +6,7 @@ import SearchFilterSection from './_components/SearchFilterSection';
 import CaseDetailsSheet from './_components/CaseDetailsSheet';
 import { TCase } from '@/lib/types';
 import { AssignmentSheet } from './_components/AssignmentSheet';
-import { createUserColumns, getCaseTypeBadgeColor, getStatusBadgeVariant } from './_components/table-columns';
+import { createCaseColumns, getCaseTypeBadgeColor, getStatusBadgeVariant } from './_components/table-columns';
 import { DataTable } from '@/components/data-table';
 import TablePagination from '@/components/TablePagination';
 import { useQuery } from '@tanstack/react-query';
@@ -52,9 +52,9 @@ export default function CasesPage() {
         },
         staleTime: 100000,
     });
-
+    console.log(user?.role);
     const columns = useMemo(
-        () => createUserColumns(user?.role!, "all"),
+        () => createCaseColumns(user?.role!, "all"),
         [user?.role]
     );
 

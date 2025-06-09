@@ -10,6 +10,6 @@ export default async function PASSWORDOTP() {
     redirect("/password/forgot");
   }
 
-  return <PASSWORDOTPCOMPONENT email={emailCookie?.value} />;
+  return <PASSWORDOTPCOMPONENT email={emailCookie?.value ?? ""} />;
 
 }

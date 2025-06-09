@@ -1,162 +1,223 @@
-import { IUser } from "@/types/case";
+import { ILawyerRequest, IUser } from "@/types/case";
 import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Ban, Trash2 } from "lucide-react";
+import { ROLES } from "@/types/auth";
 
 
-const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
-  const router = useRouter();
 
-  return (
-    <tr
-      className="cursor-pointer hover:bg-gray-100"
-      onClick={() => router.push(`/cases/view/${encodeURIComponent(row.original.caseId)}`)}
-      style={{ cursor: "pointer" }} // Ensure pointer applies
-    >
-      {row.getVisibleCells().map((cell: any) => (
-        <td key={cell.id} className="px-4 py-2 border">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
-    </tr>
-  );
-};
+export const createUserColumns = (
+  userRole: ROLES,
+  onSuspend: (user: IUser) => void,
+  onDelete: (user: IUser) => void
+): ColumnDef<IUser>[] => {
+  return [
+    {
+      accessorKey: "name", // used for column header
+      header: "Name",
 
-export const mainColumns: ColumnDef<IUser>[] = [
-  {
-    accessorKey: "name", // Not splitting first/last name anymore
-    header: "Name",
-    cell: ({ row }) => {
-      const { first_name, last_name, email, avatar } = row.original;
-      const fullName = `${first_name} ${last_name}`;
-      const initials = `${first_name?.[0] ?? ""}${last_name?.[0] ?? ""}`;
+      cell: ({ row }) => {
+        const { first_name, last_name, email, avatar } = row.original;
+        const fullName = `${first_name} ${last_name}`;
+        const initials = `${first_name?.[0] ?? ""}${last_name?.[0] ?? ""}`;
 
-      return (
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            {avatar ? (
-              <AvatarImage src={avatar} alt={fullName} />
-            ) : (
-              <AvatarFallback>{initials}</AvatarFallback>
-            )}
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="font-medium text-sm">{fullName}</span>
-            <span className="text-xs text-muted-foreground">{email}</span>
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              {avatar ? (
+                <AvatarImage src={avatar} alt={fullName} />
+              ) : (
+                <AvatarFallback>{initials}</AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">{fullName}</span>
+              <span className="text-xs text-muted-foreground">{email}</span>
+            </div>
           </div>
-        </div>
-      );
+        );
+      },
     },
-  },
-  {
-    accessorKey: "user_id",
-    header: "User ID",
-    cell: ({ row }) => (
-      <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded-md">
-        #{row.original.id}
-      </span>
-    ),
-  },
-  {
-    accessorKey: "user_type",
-    header: "Role",
-  },
-  {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => {
-      const status = row.original.status.toUpperCase();
-      const statusMap: Record<string, { label: string; color: string }> = {
-        ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
-        PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-        INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
-      };
-
-      const current = statusMap[status] || {
-        label: status,
-        color: "bg-gray-100 text-gray-800",
-      };
-
-      return (
-        <span
-          className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}
-        >
-          <span className="h-2 w-2 rounded-full bg-current" />
-          {current.label}
+    {
+      accessorKey: "id", // previously was "user_id" but you’re rendering row.original.id
+      header: "User ID",
+      cell: ({ row }) => (
+        <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded-md">
+          #{row.original.id}
         </span>
-      );
+      ),
     },
-  },
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => {
-      const user = row.original;
-
-      return (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="p-1 space-y-4">
-            <DropdownMenuItem onClick={() => handleSuspendUser(user)}>
-              Suspend Account
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleDeleteUser(user)}className="text-red-600" >
-              Delete Account
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      );
+    {
+      accessorKey: "user_type",
+      header: "Role",
+      cell: ({ row }) => {
+        const type = row.original.user_type;
+        const typeMap: Record<string, string> = {
+          ADMIN_LAWYER: "Admin Lawyer",
+          LAWYER: "Lawyer",
+          // Add more if needed
+        };
+        return <span>{typeMap[type] ?? type}</span>;
+      },
     },
-  },
-];
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status.toUpperCase();
+        const statusMap: Record<string, { label: string; color: string }> = {
+          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
+          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
+          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
+        };
 
-const handleSuspendUser = (user: IUser) => {
-  // Call API or update state
-  console.log("Suspending", user);
+        const current = statusMap[status] || {
+          label: status,
+          color: "bg-gray-100 text-gray-800",
+        };
+
+        return (
+          <span
+            className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}
+          >
+            <span className="h-2 w-2 rounded-full bg-current" />
+            {current.label}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const user = row.original;
+
+        // Optional: restrict actions based on role
+        if (userRole !== "ADMIN") return null;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="p-1 space-y-4">
+              <DropdownMenuItem onClick={() => onSuspend(user)}>
+                <Ban className="h-4 w-4 mr-2" />
+                Suspend Account
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${user.first_name}?`)) {
+                    onDelete(user);
+                  }
+                }}
+                className="text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 };
 
-const handleDeleteUser = (user: IUser) => {
-  // Confirm and delete logic
-  console.log("Deleting", user);
+export const createLawyerRequestColumns = (
+  userRole: ROLES,
+  onSuspend: (user: ILawyerRequest) => void,
+  onDelete: (user: ILawyerRequest) => void
+): ColumnDef<ILawyerRequest>[] => {
+  return [
+    {
+      accessorKey: "Action",
+      header: "Request Type",
+      cell: ({ row }) => {
+        const action = row.original.Action;
+        const actionMap: Record<string, { label: string; color: string }> = {
+          Creation: { label: "Creation", color: "bg-teal-100 text-teal-700" },
+          Suspension: { label: "Suspension", color: "bg-yellow-100 text-yellow-700" },
+          "Delete Request": { label: "Delete Request", color: "bg-red-100 text-red-600" },
+        };
+
+        const current = actionMap[action] ?? {
+          label: action,
+          color: "bg-gray-100 text-gray-800",
+        };
+
+        return (
+          <div className={`inline-flex  items-center px-10 gap-2   py-2 text-sm font-medium rounded-xs ${current.color}`}>
+            <input type="checkbox" className="mr-2" />
+            {current.label}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "LawyerName",
+      header: "Lawyer Name",
+      cell: ({ row }) => <span>{row.original.LawyerName}</span>,
+    },
+    {
+      accessorKey: "RequestedName",
+      header: "Requested By",
+      cell: ({ row }) => <span>{row.original.RequestedName}</span>,
+    },
+    {
+      accessorKey: "Date",
+      header: "Date",
+      cell: ({ row }) => {
+        const date = new Date(row.original.CreatedAt);
+        return <span>{date.toISOString().split("T")[0]}</span>;
+      },
+    },
+    {
+      accessorKey: "Reason",
+      header: "Reason",
+      cell: ({ row }) => <span>{row.original.Reason}</span>,
+    },
+    {
+      id: "actions",
+      header: "Action",
+      cell: ({ row }) => {
+        const user = row.original;
+
+        // if (userRole !== "ADMIN") return null;
+
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="p-1 space-y-4">
+              <DropdownMenuItem onClick={() => onSuspend(user)}>
+                <Ban className="h-4 w-4 mr-2" />
+                Suspend Account
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => {
+                  if (confirm(`Are you sure you want to delete ${user.first_name}?`)) {
+                    onDelete(user);
+                  }
+                }}
+                className="text-red-600"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 };
-
-const CaseTable: React.FC<{ data: IUser[] }> = ({ data }) => {
-  const table = useReactTable({
-    data,
-    columns: mainColumns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-gray-100">
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id} className="px-4 py-2 border">
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody className="block w-full">
-          {table.getRowModel().rows.map(row => (
-            <ClickableRow key={row.id} row={row} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-export default CaseTable;

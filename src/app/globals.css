@@ -24,7 +24,9 @@ body {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-
+button{
+  cursor: pointer;
+}
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

@@ -2,7 +2,7 @@ import { axiosInstance } from "@/lib/_api/axios-config";
 
 const casesServices = {
     async getCases(param: any) {
-        return await axiosInstance.get("/cases", {
+        return await axiosInstance.get("/casefile", {
             params: param,
         });
     },

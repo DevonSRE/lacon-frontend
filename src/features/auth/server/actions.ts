@@ -33,8 +33,8 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone_number: data.phone_number,
-        // role: data.role as ROLES,
-        role: "DIRECTOR GENERAL" as ROLES,
+        role: data.role as ROLES,
+        // role: "DIRECTOR GENERAL" as ROLES,
       },
       token: data.token,
     };
@@ -96,28 +96,42 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
   let role = (await cookies()).get("TempRole")?.value as ROLES;
 
   if (!token || !id || !role) {
-    const response = await AuthService.acceptInvite({
-      otp: data.otp as string,
-      email: data.email as string,
-    });
-    const responseData = response.data as { token: string; id: string; role: ROLES };
-    (await cookies()).set("TempToken", responseData.token);
-    (await cookies()).set("TempID", responseData.id);
-    (await cookies()).set("TempRole", responseData.role);
-    token = responseData.token;
-    id = responseData.id;
-    role = responseData.role;
+    try {
+      const response = await AuthService.acceptInvite({
+        otp: data.otp as string,
+        email: data.email as string,
+      });
+      console.log(response);
+
+      const responseData = response.data as { token: string; id: string; role: ROLES };
+      console.log(responseData.token);
+      console.log(responseData.id);
+      console.log(responseData.role);
+      (await cookies()).set("TempToken", responseData.token);
+      (await cookies()).set("TempID", responseData.id);
+      (await cookies()).set("TempRole", responseData.role);
+      token = responseData.token;
+      id = responseData.id;
+      role = responseData.role;
+    } catch (err) {
+      console.error("Error updating user:", err);
+      return handleApiError(err);
+    }
   }
 
   try {
     const url = `${NEXT_BASE_URL}/users/${id}`;
-    // Send formData directly
-    console.log(formData);
+    console.log("Updating user with ID:", url);
+    const datax = {
+      password: data.password as string,
+      confirm_password: data.confirm_password as string,
+    };
     const signupResponse = await fetch(url, {
       method: "PATCH",
-      body: formData,
+      body: JSON.stringify(datax),
       headers: {
         "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
       },
     });
 
@@ -146,6 +160,7 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
       };
       console.log(sessionData);
       await createSession(sessionData);
+      (await cookies()).delete("TempToken");
     }
   } catch (err) {
     console.error("Error updating user:", err);
