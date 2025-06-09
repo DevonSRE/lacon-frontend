@@ -6,23 +6,21 @@ export type ProbunoInventoryFormData = {
     law_firm_address: string;
     email: string;
     phone_number: string;
+    state_id: string;
     alternate_number: string;
     year_of_call: string;
     nba_branch: string;
     experience_in_criminal_law: string;
     pro_bono_capacity: string;
-    criminal_courts_preference: string[];
     areas_covered: string;
-    client_base: string;
-    source_of_clients: string;
-    preferredCourts: string[];
-    clientTypes: string[];
-    referralSources: string[];
+    preferred_courts: string[];
+    client_types: string[];
+    referral_sources: string[];
     agree: boolean;
 };
 
 
-export const checkboxFields = ['preferredCourts', 'clientTypes', 'referralSources'] as const;
+export const checkboxFields = ['preferred_courts', 'client_types', 'referral_sources'] as const;
 
 export type CheckboxField = typeof checkboxFields[number];
 
