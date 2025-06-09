@@ -7,15 +7,15 @@ import { Button } from "@/components/ui/button";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft, ChevronRight, Filter, ListFilter, Search } from "lucide-react";
-import { GetUserAction } from "@/features/usersRole/userRoleAction";
-import { createUserColumns } from "./table-columns";
+import { GetLawyersManagementAction, } from "@/features/usersRole/userRoleAction";
+import { createLawyersColumns, createLawyersManagementColumns } from "./table-columns";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu"
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { useAction } from "@/context/ActionContext";
 import { AddLawyerSheet } from "./addLawyer";
 import { Icons } from "@/icons/icons";
 import { useAppSelector } from "@/hooks/redux";
-import { IUser } from "@/types/case";
+import { ILawyerManagement } from "@/types/case";
 import { ROLES } from "@/types/auth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 type Checked = DropdownMenuCheckboxItemProps["checked"]
@@ -29,19 +29,21 @@ export default function Lawyers() {
     const { data: user } = useAppSelector((state) => state.profile);
 
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [sheetType, setSheetType] = useState<"view" | "edit" | null>(null);
-    const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
+    const [sheetType, setSheetType] = useState<"view" | "edit" | "suspend" | "delete" | null>(null);
+    const [selectedUser, setSelectedUser] = useState<ILawyerManagement | null>(null);
 
-    const handleOpenSheet = (user: IUser, type: "view" | "edit") => {
+    const handleOpenSheet = (user: ILawyerManagement, type: "view" | "edit" | "suspend" | "delete") => {
         setSelectedUser(user);
         setSheetType(type);
         setSheetOpen(true);
     };
     const columns = useMemo(
         () =>
-            createUserColumns(user?.role as ROLES,
+            createLawyersManagementColumns(user?.role as ROLES,
                 (user) => handleOpenSheet(user, "view"),
                 (user) => handleOpenSheet(user, "edit"),
+                (user) => handleOpenSheet(user, "suspend"),
+                (user) => handleOpenSheet(user, "delete"),
                 // createUserColumns(user?.role!, "all"),
             ),
         [user?.role]
@@ -49,14 +51,14 @@ export default function Lawyers() {
 
 
     const { data, isLoading } = useQuery({
-        queryKey: ["getUsers", currentPage, searchTerm],
+        queryKey: ["getLaweyersManagement", currentPage, searchTerm],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 query: searchTerm,
             };
-            return await GetUserAction(filters);
+            return await GetLawyersManagementAction(filters);
         },
         staleTime: 100000,
     });
@@ -113,29 +115,6 @@ export default function Lawyers() {
                         </section>
                     </div>
                     <DataTable columns={columns} loading={isLoading} data={data?.data?.data} />
-                    {/* <LawyersTable loading={isLoading} data={data?.data?.data} userRole={user?.role ?? ROLES.USER} /> */}
-                    {/* {data?.data?.data.length > 0 && (
-                        <div className="flex justify-end pt-4">
-                            <TablePagination
-                                currentPage={currentPage}
-                                totalCount={data?.data?.total_rows ?? 0}
-                                pageSize={DEFAULT_PAGE_SIZE}
-                                onPageChange={(page) => setCurrentPage(page)}
-                            />
-                        </div>
-                    )} */}
-
-                    {/* <div className="flex justify-between items-center mt-4">
-                        <Button variant="outline" className="flex items-center gap-2">
-                            <ChevronLeft className="h-4 w-4" /> Previous
-                        </Button>
-                        <span className="text-sm">1</span>
-                        <Button variant="outline" className="flex items-center gap-2">
-                            Next <ChevronRight className="h-4 w-4" />
-                        </Button>
-                    </div> */}
-
-
 
                     <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
                         <SheetContent side="right" className="w-[400px] sm:w-[540px]">

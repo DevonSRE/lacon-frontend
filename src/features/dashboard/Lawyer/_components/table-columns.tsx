@@ -7,7 +7,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 
-import { IUser } from "@/types/case";
+import { ILawyerManagement, IUser } from "@/types/case";
 import { ROLES } from "@/types/auth";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -59,7 +59,7 @@ const handleDeleteUser = (user: IUser) => {
 
 
 
-export const createUserColumns = (
+export const createLawyersColumns = (
   userRole: ROLES,
   onView: (user: IUser) => void,
   onEdit: (user: IUser) => void
@@ -185,132 +185,118 @@ export const createUserColumns = (
   return columns;
 };
 
-// // Column Generator
-// export const createUserColumns = (
-//   userRole: ROLES,
-//   type?: "pending" | "all"
-// ): ColumnDef<IUser>[] => {
-//   const columns: ColumnDef<IUser>[] = [
-//     {
-//       accessorKey: "name",
-//       header: "Name",
-//       cell: ({ row }) => {
-//         const { first_name, last_name, email, profile_image: avatar } = row.original;
-//         const fullName = `${first_name} ${last_name}`;
-//         const initials = `${first_name?.[0] ?? ""}${last_name?.[0] ?? ""}`;
+export const createLawyersManagementColumns = (
+  userRole: ROLES,
+  onView: (user: ILawyerManagement) => void,
+  onEdit: (user: ILawyerManagement) => void,
+  onSuspend: (user: ILawyerManagement) => void,
+  onDelete: (user: ILawyerManagement) => void
+): ColumnDef<ILawyerManagement>[] => {
+  const columns: ColumnDef<ILawyerManagement>[] = [
+    {
+      accessorKey: "name",
+      header: "Name",
+      cell: ({ row }) => {
+        const { first_name, last_name, email, profile_image: avatar } = row.original;
+        const fullName = `${first_name} ${last_name}`;
+        const initials = `${first_name?.[0] ?? ""}${last_name?.[0] ?? ""}`;
 
-//         return (
-//           <div className="flex items-center gap-3">
-//             <Avatar className="h-8 w-8">
-//               {avatar ? (
-//                 <AvatarImage src={avatar} alt={fullName} />
-//               ) : (
-//                 <AvatarFallback>{initials}</AvatarFallback>
-//               )}
-//             </Avatar>
-//             <div className="flex flex-col">
-//               <span className="font-medium text-sm">{fullName}</span>
-//               <span className="text-xs text-muted-foreground">{email}</span>
-//             </div>
-//           </div>
-//         );
-//       },
-//     },
-//     {
-//       accessorKey: "user_id",
-//       header: "User ID",
-//       cell: ({ row }) => (
-//         <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded-md">
-//           {/* #{row.original.user_id} */}
-//           #{row.original.id}
-//         </span>
-//       ),
-//     },
-//     {
-//       accessorKey: "user_type",
-//       header: "Role",
-//     },
-//   ];
+        return (
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              {avatar ? (
+                <AvatarImage src={avatar} alt={fullName} />
+              ) : (
+                <AvatarFallback>{initials}</AvatarFallback>
+              )}
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="font-medium text-sm">{fullName}</span>
+              <span className="text-xs text-muted-foreground">{email}</span>
+            </div>
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "phone_number",
+      header: "Phone",
+    },
+    {
+      accessorKey: "user_type",
+      header: "Role",
+    },
+    {
+      accessorKey: "zone_name",
+      header: "Zone",
+    },
+    {
+      accessorKey: "state",
+      header: "State",
+    },
+    {
+      accessorKey: "created_at",
+      header: "Created At",
+      cell: ({ row }) => new Date(row.original.created_at).toLocaleDateString(),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.status.toUpperCase();
+        const statusMap: Record<string, { label: string; color: string }> = {
+          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
+          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
+          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
+        };
 
-//   if (userRole === ROLES.CIVIL_JUSTICE_DEPT) {
-//     columns.push(
-//       {
-//         accessorKey: "state",
-//         header: "State",
-//       },
-//       {
-//         accessorKey: "case_assignment",
-//         header: "Case Assignment",
-//       }
-//     );
-//   }
+        const current = statusMap[status] || {
+          label: status,
+          color: "bg-gray-100 text-gray-800",
+        };
 
-//   columns.push(
-//     {
-//       accessorKey: "status",
-//       header: "Status",
-//       cell: ({ row }) => {
-//         const status = row.original.status.toUpperCase();
-//         const statusMap: Record<string, { label: string; color: string }> = {
-//           ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
-//           PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-//           INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
-//         };
+        return (
+          <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
+            <span className="h-2 w-2 rounded-full bg-current" />
+            {current.label}
+          </span>
+        );
+      },
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => {
+        const user = row.original;
 
-//         const current = statusMap[status] || {
-//           label: status,
-//           color: "bg-gray-100 text-gray-800",
-//         };
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="p-1 space-y-2">
+              {(userRole !== ROLES.PLATFORM_ADMIN && userRole !== ROLES.DIRECTOR_GENERAL) && (
+                <>
+                  <DropdownMenuItem onClick={() => onView(user)}>View</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(user)}>Edit</DropdownMenuItem>
+                </>
+              )}
+              <DropdownMenuItem onClick={() => onSuspend(user)}>Suspend Account</DropdownMenuItem>
+              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) && (
+                <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
+                  Delete Account
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
+    },
+  ];
 
-//         return (
-//           <span
-//             className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}
-//           >
-//             <span className="h-2 w-2 rounded-full bg-current" />
-//             {current.label}
-//           </span>
-//         );
-//       },
-//     },
-//     {
-//       id: "actions",
-//       header: "",
-//       cell: ({ row }) => {
-//         const user = row.original;
+  return columns;
+};
 
-//         return (
-//           <DropdownMenu>
-//             <DropdownMenuTrigger asChild>
-//               <Button variant="ghost" className="h-8 w-8 p-0">
-//                 <MoreHorizontal className="h-4 w-4" />
-//               </Button>
-//             </DropdownMenuTrigger>
-//             <DropdownMenuContent align="end" className="p-1 space-y-2">
-//               {(userRole !== ROLES.PLATFORM_ADMIN && userRole !== ROLES.DIRECTOR_GENERAL) && (
-//                 <>
-//                   <DropdownMenuItem onClick={() => handleSuspendUser(user)}>
-//                     View
-//                   </DropdownMenuItem>
-//                   <DropdownMenuItem onClick={() => handleSuspendUser(user)}>
-//                     Edit
-//                   </DropdownMenuItem>
-//                 </>
-//               )}
-//               <DropdownMenuItem onClick={() => handleSuspendUser(user)}>
-//                 Suspend Account
-//               </DropdownMenuItem>
-//               {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) && (
-//                 <DropdownMenuItem onClick={() => handleDeleteUser(user)} className="text-red-600">
-//                   Delete Account
-//                 </DropdownMenuItem>
-//               )}
-//             </DropdownMenuContent>
-//           </DropdownMenu >
-//         );
-//       },
-//     }
-//   );
-
-//   return columns;
-// };
 

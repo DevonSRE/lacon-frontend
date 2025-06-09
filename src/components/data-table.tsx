@@ -130,7 +130,7 @@ export function DataTable<TData, TValue>({
                 >
                   <div className="space-y-2 mt-20" >
 
-                    No Record Created Yet.
+                    No Record Yet.
                     <Icons.EmptyIcon className="mx-auto mt-2" />
                   </div>
                 </TableCell>

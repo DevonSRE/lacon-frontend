@@ -1,15 +1,17 @@
 "use client";
 import { SubmitButton } from "@/components/submit-button";
-import { useFormState } from "react-dom";
 import { toast } from "sonner"
 import InputField from "@/components/form/input/InputField";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { ForgotPasswordAction } from "./server/actions";
 import Image from 'next/image';
 import { useActionState } from "react";
+import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 
 const FORGOT = () => {
+    const router = useRouter();
     const [state, dispatch, isPending] = useActionState(ForgotPasswordAction, undefined);
     useEffectAfterMount(() => {
         if (state?.message && !state.success) {
@@ -23,10 +25,17 @@ const FORGOT = () => {
                 <Image src="/logo.png" alt="Logo" width={150} height={150} />
             </div>
             {/* Right side with form */}
-            <div className="flex items-center lg:w-1/2 w-full justify-center px-4">
+            <div className="flex flex-col items-center lg:w-1/2 w-full justify-center px-4">
+                <div className="flex justify-end w-full lg:w-1/2 lg:m-8  top-10">
+                    <button
+                        onClick={() => router.back()}
+                        className=" top-6 left-6 text-white  hover:text-black bg-red-100 p-4 rounded-full mb-4">
+                        <ArrowLeft size={28} className="text-red-500" />
+                    </button>
+                </div>
                 <div className="flex flex-col w-full lg:w-1/2 lg:m-8 justify-center gap-8">
                     <div className="heading">
-                        <p className="font-bold text-3xl text-app-primary text-center">
+                        <p className="font-bold text-2xl text-app-primary text-center">
                             FORGOT PASSWORD
                         </p>
                         <p className="text-center text-xs space-x-2 mt-3">
