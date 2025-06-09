@@ -173,69 +173,74 @@ async function handleFormSubmission(
     }
 }
 
-export async function submitProBonoCaseForm(_prevState: unknown, formData: FormData) {
-    return handleFormSubmission(formData, probunoInventoryCaseformSchema, ProbunoService.cases);
-}
 
 export async function submitProBonoCaseUpdateForm(_prevState: unknown, formData: FormData) {
     return handleFormSubmission(formData, caseUpdateSchema, ProbunoService.casesUpdate);
 }
 
 
-export async function submitProBonoForm(_prevState: unknown, formData: FormData) {
-    const data: Record<string, any> = {};
-
-    // Fields that can have multiple values (like checkboxes)
-    const multiValueFields = ['criminal_courts_preference'];
-
-    for (const [key, value] of formData.entries()) {
-        if (multiValueFields.includes(key)) {
-            if (!data[key]) {
-                data[key] = [];
-            }
-            data[key].push(value);
-        } else if (!data.hasOwnProperty(key)) {
-            data[key] = value;
+function ensureArray(value: unknown): string[] {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value);
+        } catch {
+            console.warn('Failed to parse array string:', value);
+            return [];
         }
     }
+    return [];
+}
 
-    const result = proBonoSchema.safeParse(data);
+export async function submitProBonoCaseForm(_prevState: unknown, formData: FormData) {
+    // Safely extract raw data from form
+    const rawData = Object.fromEntries(formData.entries());
+
+    // Use getAll for multi-select fields (always returns an array)
+    const parsedData = {
+        ...rawData,
+        lawyers_count_in_firm: Number(rawData.lawyers_count_in_firm),
+        preferred_courts: formData.getAll('preferred_courts'),
+        client_types: formData.getAll('client_types'),
+        referral_sources: formData.getAll('referral_sources'),
+    };
+
+    const result = probunoInventoryCaseformSchema.safeParse(parsedData);
 
     if (!result.success) {
+        const safeErrors = JSON.parse(JSON.stringify(result.error.flatten().fieldErrors));
+        console.log(safeErrors);
         return {
             status: 400,
-            errors: result.error.flatten().fieldErrors,
-            message: "An Error Occurred",
+            errors: safeErrors,
+            message: "Validation Failed",
             success: false,
-            formData: { ...data }
         };
     }
-
+    console.log("result.data" + JSON.stringify(result.data));
     try {
-        const response = await ProbunoService.registration(result.data);
+        const response = await ProbunoService.cases(result.data);
+        // console.log(JSON.stringify(response));
         return {
             status: 200,
             message: "Success",
             success: true,
-            data: response,
         };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
-        console.log("Error response:", error);
-
+        // Safely handle known and unknown server errors
         if (error?.response) {
             return {
                 status: error.response.status,
-                message: error.response.data.message,
-                errors: error.response.data.data,
+                message: error.response.data?.message || "Request failed.",
+                errors: error.response.data?.data || null,
                 success: false,
-                formData: { ...data }
             };
         } else if (error?.request) {
             return {
                 status: 504,
-                message: "Something went wrong. Please try again.",
-                errors: "Unable to process request.",
+                message: "No response received. Please try again.",
+                errors: "Network error.",
                 success: false,
             };
         } else if (error?.message) {
@@ -245,18 +250,106 @@ export async function submitProBonoForm(_prevState: unknown, formData: FormData)
                 errors: error.message,
                 success: false,
             };
-        } else {
-            return {
-                status: 500,
-                message: "An unexpected error occurred.",
-                errors: "Unknown error.",
-                success: false,
-            };
         }
+        return {
+            status: 500,
+            message: "Unexpected server error.",
+            errors: "Unknown failure.",
+            success: false,
+        };
     }
 }
 
-// 
+
+export async function submitProBonoForm(_prevState: unknown, formData: FormData) {
+    const data: Record<string, any> = {};
+
+    // Fields that can have multiple values (like checkboxes)
+    const multiValueFields = ['criminal_courts_preference'];
+
+    // Process form data more safely
+    try {
+        for (const [key, value] of formData.entries()) {
+            if (multiValueFields.includes(key)) {
+                if (!data[key]) {
+                    data[key] = [];
+                }
+                data[key].push(value);
+            } else if (!Object.prototype.hasOwnProperty.call(data, key)) {
+                data[key] = value;
+            }
+        }
+
+        console.log('Form data:', JSON.stringify(data, null, 2));
+
+        const result = proBonoSchema.safeParse(data);
+
+        if (!result.success) {
+            // Create a clean error object to prevent circular references
+            const fieldErrors = result.error.flatten().fieldErrors;
+            const safeErrors: Record<string, string[]> = {};
+
+            for (const [key, messages] of Object.entries(fieldErrors)) {
+                safeErrors[key] = Array.isArray(messages) ? messages : [String(messages)];
+            }
+
+            return {
+                status: 400,
+                errors: safeErrors,
+                message: "Validation failed",
+                success: false,
+            };
+        }
+
+        await ProbunoService.registration(result.data);
+
+        return {
+            status: 200,
+            message: "Registration successful",
+            success: true,
+        };
+
+    } catch (err: unknown) {
+        console.error('Server action error:', err);
+
+        const error = err as ErrorResponse;
+
+        if (error?.response) {
+            return {
+                status: error.response.status || 500,
+                message: error.response.data?.message || "Server error occurred",
+                errors: error.response.data?.data || "Unknown server error",
+                success: false,
+            };
+        }
+
+        if (error?.request) {
+            return {
+                status: 504,
+                message: "Network error. Please try again.",
+                errors: "Unable to connect to server",
+                success: false,
+            };
+        }
+
+        if (error?.message) {
+            return {
+                status: 500,
+                message: "An error occurred",
+                errors: error.message,
+                success: false,
+            };
+        }
+
+        return {
+            status: 500,
+            message: "An unexpected error occurred",
+            errors: "Unknown error occurred",
+            success: false,
+        };
+    }
+}
+
 
 export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData);
@@ -278,7 +371,7 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
                 message: "Invalid field found",
             };
         }
-
+        console.log(result.data);
         const response = await ProbunoService.casesPublicCase(result.data);
         console.log(JSON.stringify(response.data));
 

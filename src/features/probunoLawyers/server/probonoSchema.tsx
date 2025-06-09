@@ -43,27 +43,21 @@ export type TProbunoFormPayload = z.infer<typeof proBonoSchema>;
 
 
 export const probunoInventoryCaseformSchema = z.object({
-  first_name: z.string().min(1, 'First name is required'),
-  last_name: z.string().min(1, 'Last name is required'),
-  principal_name: z.string().optional(),
-  state_id: z.string().optional(),
-  // lawyers_count_in_firm: z.number().min(1, 'Must have at least 1 lawyer'),
-  lawyers_count_in_firm: z.coerce.number().min(1, 'Must have at least 1 lawyer'),
-  law_firm_address: z.string().min(1, 'Address is required'),
-  email: z.string().email('Invalid email'),
-  phone_number: z.string().min(10, 'Enter a valid phone number'),
+  first_name: z.string().min(1),
+  last_name: z.string().min(1),
+  lawyers_count_in_firm: z.coerce.number(),
+  law_firm_address: z.string().min(1),
+  email: z.string().email(),
+  phone_number: z.string(),
   alternate_number: z.string().optional(),
-  year_of_call: z.string().min(4, 'Enter a valid year'),
-  // nba_branch: z.string().min(1, 'NBA Branch is required'),
-  experience_in_criminal_law: z.string().min(1, 'Select an experience level'),
-  pro_bono_capacity: z.string().min(1, 'Select your capacity'),
-  // criminal_courts_preference: z.array(z.string()),
-  // areas_covered: z.string().min(1, 'Enter coverage areas'),
-  // client_base: z.string().optional(),
-  // source_of_clients: z.string().optional(),
-  // preferredCourts: z.array(z.string()),
-  // clientTypes: z.array(z.string()),
-  // referralSources: z.array(z.string()),
+  state_id: z.string(),
+  year_of_call: z.string().min(4).max(4),
+  experience_in_criminal_law: z.string().min(1),
+  pro_bono_capacity: z.string().min(1),
+  areas_covered: z.string().min(1),
+  preferred_courts: z.array(z.string()),
+  client_types: z.array(z.string()),
+  referral_sources: z.array(z.string()),
 });
 
 export type TProbunoInventoryCaseform = z.infer<typeof probunoInventoryCaseformSchema>;
@@ -188,7 +182,7 @@ export const legalAidFormSchema = z.object({
 export const pdssCaseSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
   client_location: z.string().min(1, { message: "Client location is required" }),
-  
+
   days_in_detention: z.coerce.number({ invalid_type_error: "Days in detention must be a number" }).nonnegative({ message: "Days in detention cannot be negative" }),
 
   counsel_paralegal: z.string().min(1, { message: "Counsel/Paralegal is required" }),

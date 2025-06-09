@@ -6,8 +6,8 @@ interface TextAreaFieldProps {
   label: string;
   placeholder?: string;
   required?: boolean;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   error?: string;
 }
 

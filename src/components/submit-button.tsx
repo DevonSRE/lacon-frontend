@@ -35,7 +35,7 @@ const SubmitButton = forwardRef<SubmitButtonType, TProps>((props, ref) => {
       form={props.submitform}
       type="submit"
       className={cn(
-        "flex items-center bg-red-600 hover:bg-red-700/90 h-11 justify-center gap-2",
+        "flex items-center bg-red-600 hover:bg-red-700/90  cursor-pointer h-11 justify-center gap-2",
         (isPending || disabled) && "opacity-50 cursor-not-allowed",
         props.className
       )}

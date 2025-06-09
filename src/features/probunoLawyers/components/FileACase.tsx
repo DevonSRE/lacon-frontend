@@ -47,6 +47,7 @@ export default function FileACase() {
         }
         setTimeout(() => {
             setLoading(false);
+            setStep(1);
             const slug = caseType.trim().toLowerCase().replace(/\s+/g, "-");
             router.push(`/probuno/cases/${slug}`);
         }, 100);
