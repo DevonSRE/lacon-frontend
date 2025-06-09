@@ -18,6 +18,7 @@ interface InputProps {
   hint?: string;
   label?: string;
   required?: boolean;
+  readOnly?: boolean;
 }
 
 const Input: FC<InputProps> = ({
@@ -35,6 +36,7 @@ const Input: FC<InputProps> = ({
   success = false,
   error = false,
   required = false,
+  readOnly = false,
   hint,
   label = "",
 }) => {
@@ -67,6 +69,7 @@ const Input: FC<InputProps> = ({
           disabled={disabled}
           className={inputClasses}
           required
+          readOnly={readOnly}
         />
 
         {hint && (

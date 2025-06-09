@@ -23,7 +23,7 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
   return (
     <div className="space-y-1">
       <Label htmlFor={name}>
-        {label} {required && <span className="text-red-500 text-xs">*</span>}
+        {label} {required && <span className="text-red-400 text-xs">*</span>}
       </Label>
       <textarea
         id={name}
@@ -33,10 +33,10 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         onChange={onChange}
         rows={4}
         className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
-          error ? 'border-red-500' : 'border-gray-300'
+          error ? 'border-red-400' : 'border-gray-300'
         }`}
       />
-      {error && <p className="text-red-500 text-xs">{error}</p>}
+      {error && <p className="text-red-400 text-xs">{error}</p>}
     </div>
   );
 };

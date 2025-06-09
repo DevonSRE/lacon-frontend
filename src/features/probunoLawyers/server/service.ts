@@ -1,5 +1,5 @@
 import { TProbunoCaseUpdatePayload, TProbunoFormPayload } from "@/features/probunoLawyers/server/probonoSchema";
-import { axiosInstance } from "@/lib/_api/axios-config";
+import { axiosInstance, publicAxiosInstance } from "@/lib/_api/axios-config";
 
 const ProbunoService = {
     async registration(payload: TProbunoFormPayload) {
@@ -8,8 +8,11 @@ const ProbunoService = {
     async cases(payload: TProbunoFormPayload) {
         return await axiosInstance.post("/users/probono-lawyers-with-case", payload);
     },
-    async casesUpdate(payload: TProbunoCaseUpdatePayload) {
+    async casesUpdate(payload: any) {
         return await axiosInstance.post("/users/probono-lawyers-update-case", payload);
+    },
+    async casesPublicCase(payload: any) {
+        return await publicAxiosInstance.post("/casefile/create-public-case", payload);
     },
 }
 

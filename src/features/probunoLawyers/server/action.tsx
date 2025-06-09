@@ -2,9 +2,10 @@
 'use server';
 
 import { ErrorResponse } from '@/lib/auth';
-import { caseUpdateSchema, proBonoSchema } from '@/features/probunoLawyers/server/probonoSchema';
+import { caseUpdateSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
 import { z } from 'zod';
 import ProbunoService from './service';
+import { handleApiError } from '@/lib/utils';
 
 // Define the structure of the form data
 export type LawyersFormData = {
@@ -35,92 +36,79 @@ export interface FormDataProbunu {
     proBonoCases: ProBonoCase[];
 }
 
-export interface FormState {
-    success: boolean;
-    message: string;
-    errors?: Record<string, string>;
-}
 
-
-// Server Action (this would typically be in a separate server file)
-export async function submitLawyersForm(prevState: FormState, formData: FormData): Promise<FormState> {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+export async function submitLawyersForm(prevState: unknown, formData: FormData) {
+    console.log(formData);
 
     // Extract form data
-    const lawyerName = formData.get('lawyerName') as string || '';
-    const contactAddress = formData.get('contactAddress') as string || '';
-    const contactPhoneNumber = formData.get('contactPhoneNumber') as string || '';
-    const proBonoCasesJson = formData.get('proBonoCases') as string || '[]';
+    const data = Object.fromEntries(formData);
+    console.log("Raw form data:", data);
 
-    let proBonoCases: ProBonoCase[] = [];
     try {
-        proBonoCases = JSON.parse(proBonoCasesJson);
-    } catch (error) {
-        console.error('Error parsing pro bono cases:', error);
-    }
+        // Parse the cases data from JSON
+        const casesData = data.cases_data ? JSON.parse(data.cases_data as string) : [];
 
-    // Basic validation
-    const errors: Record<string, string> = {};
-
-    if (!lawyerName.trim()) {
-        errors.lawyerName = 'Lawyer name is required';
-    }
-
-    if (!contactAddress.trim()) {
-        errors.contactAddress = 'Contact address is required';
-    }
-
-    if (!contactPhoneNumber.trim()) {
-        errors.contactPhoneNumber = 'Contact phone number is required';
-    }
-
-    if (proBonoCases.length === 0) {
-        errors.proBonoCases = 'At least one pro bono case is required';
-    }
-
-    // Validate each pro bono case
-    proBonoCases.forEach((case_, index) => {
-        if (!case_.clientName.trim()) {
-            errors[`case_${index}_clientName`] = `Client name is required for case ${index + 1}`;
-        }
-        if (!case_.sex) {
-            errors[`case_${index}_sex`] = `Sex is required for case ${index + 1}`;
-        }
-        if (!case_.dateYearTookCase.trim()) {
-            errors[`case_${index}_dateYearTookCase`] = `Date/Year is required for case ${index + 1}`;
-        }
-        if (!case_.natureOfServices.trim()) {
-            errors[`case_${index}_natureOfServices`] = `Nature of services is required for case ${index + 1}`;
-        }
-    });
-
-    if (Object.keys(errors).length > 0) {
-        return {
-            success: false,
-            message: 'Please fix the validation errors',
-            errors
+        // Prepare data for validation
+        const validationData = {
+            first_name: data.first_name,
+            last_name: data.last_name,
+            contact_address: data.contact_address,
+            email: data.email,
+            phone_number: data.phone_number,
+            cases: casesData
         };
+
+        console.log("Structured data for validation:", validationData);
+
+        // Validate the structured data
+        const result = probunoUpdateForm.safeParse(validationData);
+        console.log("Validation result:", result);
+
+        if (!result.success) {
+            console.log("Validation errors:", result.error.flatten().fieldErrors);
+            return {
+                status: 400,
+                errors: result.error.flatten().fieldErrors,
+                message: "Please Fill all Forms",
+            };
+        }
+
+        const submissionData = {
+            first_name: result.data.first_name,
+            last_name: result.data.last_name,
+            // contact_address: result.data.contact_address,
+            email: result.data.email,
+            phone_number: result.data.phone_number,
+            cases: result.data.cases,
+        };
+        console.log(submissionData);
+
+        const response = await ProbunoService.casesUpdate(submissionData);
+        console.log(JSON.stringify(response.data));
+
+        return {
+            status: 200,
+            message: response.data.message,
+            success: true,
+            data: response.data?.data,
+        };
+
+    } catch (err) {
+        if (err instanceof SyntaxError) {
+            console.log("JSON Parse error:", err);
+            return {
+                status: 400,
+                errors: { cases: ["Invalid cases data format"] },
+                message: "Invalid form data",
+            };
+        } else {
+            const error = err as ErrorResponse;
+            console.log("Error response:", error);
+            return handleApiError(error);
+        }
     }
-
-    // Simulate successful submission
-    const submissionData = {
-        lawyerName,
-        contactAddress,
-        contactPhoneNumber,
-        proBonoCases
-    };
-
-    console.log('Form submitted successfully:', submissionData);
-
-    return {
-        success: true,
-        message: 'Form submitted successfully! Your annual cases review has been recorded.'
-    };
 }
-
-
-type SchemaType = typeof proBonoSchema | typeof caseUpdateSchema;
+type SchemaType = typeof proBonoSchema | typeof caseUpdateSchema | typeof probunoInventoryCaseformSchema;
 type ServiceMethod = (data: any) => Promise<any>;
 
 async function handleFormSubmission(
@@ -185,16 +173,134 @@ async function handleFormSubmission(
     }
 }
 
-
-
-export async function submitProBonoForm(_prevState: unknown, formData: FormData) {
-    return handleFormSubmission(formData, proBonoSchema, ProbunoService.registration);
-}
-
 export async function submitProBonoCaseForm(_prevState: unknown, formData: FormData) {
-    return handleFormSubmission(formData, proBonoSchema, ProbunoService.cases);
+    return handleFormSubmission(formData, probunoInventoryCaseformSchema, ProbunoService.cases);
 }
 
 export async function submitProBonoCaseUpdateForm(_prevState: unknown, formData: FormData) {
     return handleFormSubmission(formData, caseUpdateSchema, ProbunoService.casesUpdate);
+}
+
+
+export async function submitProBonoForm(_prevState: unknown, formData: FormData) {
+    const data: Record<string, any> = {};
+
+    // Fields that can have multiple values (like checkboxes)
+    const multiValueFields = ['criminal_courts_preference'];
+
+    for (const [key, value] of formData.entries()) {
+        if (multiValueFields.includes(key)) {
+            if (!data[key]) {
+                data[key] = [];
+            }
+            data[key].push(value);
+        } else if (!data.hasOwnProperty(key)) {
+            data[key] = value;
+        }
+    }
+
+    const result = proBonoSchema.safeParse(data);
+
+    if (!result.success) {
+        return {
+            status: 400,
+            errors: result.error.flatten().fieldErrors,
+            message: "An Error Occurred",
+            success: false,
+            formData: { ...data }
+        };
+    }
+
+    try {
+        const response = await ProbunoService.registration(result.data);
+        return {
+            status: 200,
+            message: "Success",
+            success: true,
+            data: response,
+        };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        console.log("Error response:", error);
+
+        if (error?.response) {
+            return {
+                status: error.response.status,
+                message: error.response.data.message,
+                errors: error.response.data.data,
+                success: false,
+                formData: { ...data }
+            };
+        } else if (error?.request) {
+            return {
+                status: 504,
+                message: "Something went wrong. Please try again.",
+                errors: "Unable to process request.",
+                success: false,
+            };
+        } else if (error?.message) {
+            return {
+                status: 500,
+                message: error.message,
+                errors: error.message,
+                success: false,
+            };
+        } else {
+            return {
+                status: 500,
+                message: "An unexpected error occurred.",
+                errors: "Unknown error.",
+                success: false,
+            };
+        }
+    }
+}
+
+// 
+
+export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
+    const data = Object.fromEntries(formData);
+    console.log("Raw form data:", data);
+
+    try {
+        let result;
+        if (data.case_type === "Civil Case") {
+            result = PublicCivilCaseSchema.safeParse(data);
+        } else if (data.case_type === "Criminal Case") {
+            result = PublicCriminalCaseSchema.safeParse(data);
+        } else {
+            result = PDSSCaseFullSchema.safeParse(data);
+        }
+        if (!result.success) {
+            return {
+                status: 400,
+                errors: result.error.flatten().fieldErrors,
+                message: "Invalid field found",
+            };
+        }
+
+        const response = await ProbunoService.casesPublicCase(result.data);
+        console.log(JSON.stringify(response.data));
+
+        return {
+            status: 200,
+            message: response.data.message,
+            success: true,
+            data: response.data?.data,
+        };
+
+    } catch (err) {
+        if (err instanceof SyntaxError) {
+            console.log("JSON Parse error:", err);
+            return {
+                status: 400,
+                errors: { cases: ["Invalid cases data format"] },
+                message: "Invalid form data",
+            };
+        } else {
+            const error = err as ErrorResponse;
+            console.log("Error response:", error);
+            return handleApiError(error);
+        }
+    }
 }

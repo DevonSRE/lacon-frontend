@@ -10,7 +10,7 @@ import {
 import { Label } from "@/components/ui/label";
 
 interface SelectOption {
-  value: string;
+  value: string | boolean;
   label: string;
 }
 
@@ -20,9 +20,10 @@ interface SelectFieldProps {
   placeholder: string;
   options: SelectOption[];
   required?: boolean;
-  formData: { [key: string]: any };
-  handleSelectChange: any;
-  errors: { [key: string]: string };
+  value?: string | boolean;
+  onValueChange: (value: string) => void;
+  error?: boolean;
+  errorMessage?: string;
 }
 
 const SelectField: React.FC<SelectFieldProps> = ({
@@ -31,9 +32,10 @@ const SelectField: React.FC<SelectFieldProps> = ({
   placeholder,
   options,
   required = false,
-  formData,
-  handleSelectChange,
-  errors,
+  value = "",
+  onValueChange,
+  error = false,
+  errorMessage,
 }) => {
   return (
     <div className="space-y-1">
@@ -41,25 +43,25 @@ const SelectField: React.FC<SelectFieldProps> = ({
         {label} {required && <span className="text-red-500 text-xs">*</span>}
       </Label>
       <Select
-        value={typeof formData[name] === "string" ? formData[name] : ""}
-        onValueChange={(value) => handleSelectChange(name, value)}
+        value={value === undefined ? undefined : String(value)}
+        onValueChange={onValueChange}
       >
         <SelectTrigger
           id={name}
-          className={`w-full h-11 ${errors[name] ? "border-red-500" : ""}`}
+          className={`w-full h-11 ${error ? "border-red-500" : ""}`}
         >
-          <SelectValue placeholder={placeholder} />
+          <SelectValue className="text-gray-400"  placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem key={String(option.value)} value={String(option.value)}>
               {option.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-      {errors[name] && (
-        <p className="text-red-500 text-xs">{errors[name]}</p>
+      {error && errorMessage && (
+        <p className="text-red-500 text-xs">{errorMessage}</p>
       )}
     </div>
   );

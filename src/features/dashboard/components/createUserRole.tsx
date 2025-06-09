@@ -24,6 +24,11 @@ const CreateUserRole = () => {
         return () => clearTimeout(timer);
     }, []);
 
+    const handleClick = (): void => {
+        setIsOpen(open);
+        setOpen(false);
+    }
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className="sm:max-w-[425px] min-w-lg p-4 hideClose" >
@@ -31,7 +36,7 @@ const CreateUserRole = () => {
                     <div className="flex justify-between bg-[#BD2B12] text-white rounded-xl text-center mb-10 shadow ">
                         <Icons.smallLeftFlowwer />
                         <div className="justify-center items-center text-center flex flex-col space-y-2">
-                            <Button className="bg-white rounded-full "
+                            <Button className="bg-white rounded-full"
                                 onClick={() => setOpen(false)}>
                                 <ArrowLeft className="h-5 text-red-500 w-5" />
                             </Button>
@@ -43,7 +48,7 @@ const CreateUserRole = () => {
                         <div className="justify-center text-center">
                             Do <span className="text-red-600">@e</span> want to create a User Account Right Now, You can As well perform this Action at a later Time.
                         </div>
-                        <Button onClick={() => setIsOpen(open)} className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
+                        <Button onClick={() => handleClick()} className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
                             <span className="transition-opacity duration-300 group-hover:opacity-0">
                                 Yes, Create Now
                             </span>

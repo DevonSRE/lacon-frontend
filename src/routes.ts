@@ -20,7 +20,8 @@ export const authRoutes = [
 export const publicRoutes = [
   "/welcome",
   "/",
-  "probuno"
+  "probuno",
+  "/password",
 ];
 
 /**

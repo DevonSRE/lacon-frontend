@@ -20,7 +20,7 @@ const data = {
 const OffenceCasesChart = () => {
     return (
         <div className="mt-6">
-            <h1 className="text-left font-semibold text-xl text-black">Cases by Type of Offence/Complaint</h1>
+            <h1 className="text-left font-semibold text-xl text-black">Case Across Departments</h1>
             <Chart categories={data.categories} series={data.series} colors={["#6D7E9C", "#1D2B39"]} />
         </div>
     );

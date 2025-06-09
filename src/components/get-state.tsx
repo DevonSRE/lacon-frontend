@@ -1,6 +1,6 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
@@ -14,6 +14,7 @@ export const GetState = ({
     error,
     className,
     onValueChange, // 🔥 added
+    onLoadingChange
 }: {
     value: string;
     placeholder: string;
@@ -21,6 +22,7 @@ export const GetState = ({
     error?: string;
     className?: string;
     onValueChange?: (value: string) => void; // 🔥 added
+    onLoadingChange?: (loading: boolean) => void;
 }) => {
     const { data, isLoading: loading } = useQuery({
         queryKey: ["states"],
@@ -34,6 +36,15 @@ export const GetState = ({
         placeholderData: keepPreviousData,
         staleTime: 50000,
     });
+    // ✅ Only call onLoadingChange when loading value changes
+    const prevLoadingRef = useRef<boolean | null>(null);
+    useEffect(() => {
+        if (prevLoadingRef.current !== loading) {
+            prevLoadingRef.current = loading;
+            onLoadingChange?.(loading);
+        }
+    }, [loading, onLoadingChange]);
+
 
     const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
     const handleDivisionChange = (newValue: string) => {

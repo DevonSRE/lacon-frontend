@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import SelectField from '@/components/SelectField';
 import TextAreaField from '@/components/TextAreaField';
+import { stateOptions } from '@/lib/types';
 
 
 interface FormData {
@@ -240,9 +241,9 @@ const SheetDemo: React.FC = () => {
                                     label="Case Type"
                                     placeholder="PDSS"
                                     options={[{ value: 'PDSS', label: 'PDSS' }]}
-                                    formData={formData}
-                                    handleSelectChange={handleSelectChange}
-                                    errors={errors}
+                                    onValueChange={(value: string) => handleSelectChange("caseType", value)}
+                                    error={!!errors.caseType}
+                                    errorMessage={errors.caseType}
                                 />
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <InputField name="firstName" label="First Name" placeholder="First Name" value={formData.firstName || ""}
@@ -271,9 +272,7 @@ const SheetDemo: React.FC = () => {
                                         { value: 'Female', label: 'Female' }
                                     ]}
                                     required
-                                    formData={formData}
-                                    handleSelectChange={handleSelectChange}
-                                    errors={errors}
+                                    onValueChange={(value: string) => handleSelectChange("gender", value)}
                                 />
 
                                 <InputField name="permanentAddress" label="Permanent Address" placeholder="Permanent Address"
@@ -304,9 +303,9 @@ const SheetDemo: React.FC = () => {
                                         { value: 'Married', label: 'Married' }
                                     ]}
                                     required
-                                    formData={formData}
-                                    handleSelectChange={handleSelectChange}
-                                    errors={errors}
+                                    onValueChange={(value: string) => handleSelectChange("maritalStatus", value)}
+                                    error={!!errors.maritalStatus}
+                                    errorMessage={errors.maritalStatus}
                                 />
 
                                 <InputField name="email" label="Email Address (optional)" placeholder="Email Address (Optional)" type="email"
@@ -319,16 +318,12 @@ const SheetDemo: React.FC = () => {
                                     name="stateOfOrigin"
                                     label="State Of Origin"
                                     placeholder="State of Origin"
-                                    options={[
-                                        { value: 'Lagos', label: 'Lagos' },
-                                        { value: 'Abuja', label: 'Abuja' },
-                                        { value: 'Kaduna', label: 'Kaduna' }
-                                    ]}
+                                    options={stateOptions}
                                     required
-                                    formData={formData}
-                                    handleSelectChange={handleSelectChange}
-                                    errors={errors}
-
+                                    value={formData.stateOfOrigin}
+                                    onValueChange={(value: string) => handleSelectChange("stateOfOrigin", value)}
+                                    error={!!errors.stateOfOrigin}
+                                    errorMessage={errors.stateOfOrigin}
                                 />
 
                                 <InputField name="occupation" label="Occupation" placeholder="Occupation (e.g., Trader/Chef/Driver)"
@@ -346,9 +341,8 @@ const SheetDemo: React.FC = () => {
                                         { value: 'No', label: 'No' }
                                     ]}
                                     required
-                                    formData={formData}
-                                    handleSelectChange={handleSelectChange}
-                                    errors={errors}
+                                    // formData={formData}
+                                    onValueChange={(value: string) => handleSelectChange("disability", value)}
                                 />
 
                                 {formData.disability === 'Yes' && (

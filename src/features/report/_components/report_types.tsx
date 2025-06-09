@@ -1,5 +1,7 @@
 export type StateData = {
     state: string;
+    first_name: string;
+    last_name: string;
     received: number;
     accepted: number;
     completed: number;
@@ -13,6 +15,10 @@ export type LawyerData = {
     roles: string;
 };
 
+export type LaconLawyer = {
+    stateData: StateData[];
+    lawyersData: LawyerData[];
+};
 export type VisualReportProps = {
     stateData: StateData[];
     lawyersData: LawyerData[];

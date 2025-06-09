@@ -23,37 +23,53 @@ const navItems: NavItem[] = [
     icon: <Icons.home />,
     name: "Home",
     path: "/dashboard",
-    roles: ["ADMIN", "PLATFORM ADMIN", "PRO_BONO_LAWYER", "LAWYER", "PARALEGAL"],
+    roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "DECONGESTION UNIT HEAD", "PDSS", "PRO_BONO_LAWYER", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PARALEGAL"],
   },
   {
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ["ADMIN", "PLATFORM ADMIN", "PRO_BONO_LAWYER", "PARALEGAL"],
+    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PARALEGAL"],
   },
   {
     icon: <Icons.userRole />,
     name: "Users Role",
     path: "/users-role/all",
-    roles: ["ADMIN", "PLATFORM ADMIN"],
+    roles: ["PLATFORM ADMIN",],
+  },
+  {
+    icon: <Icons.userRole />,
+    name: "Users Role",
+    // path: "/users-role/all",
+    roles: ["ADMIN", "DIRECTOR GENERAL"],
+    subItems: [
+      {
+        name: "All Users",
+        path: "/users-role/all",
+      },
+      {
+        name: "Request",
+        path: "/users-role/request",
+      },
+    ]
   },
   {
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR_GENERAL"],
+    roles: ["ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
   },
   {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",
-    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR_GENERAL", "ZONAL_DIRECTOR"],
+    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR GENERAL", "DIRECTOR GENERAL"],
   },
   {
     name: "Settings",
     icon: <Icons.settings />,
     path: "/settings",
-    roles: ["ADMIN", "PLATFORM ADMIN"],
+    roles: ["ADMIN"],
   },
 
 ];
@@ -74,17 +90,13 @@ const AppSidebar: React.FC = () => {
       {navItems.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
-            <button onClick={() => handleSubmenuToggle(index, menuType)} className={`menu-item group  ${openSubmenu?.type === menuType && openSubmenu?.index === index
-              ? "menu-item-active"
-              : "menu-item-inactive"
+            <button onClick={() => handleSubmenuToggle(index, menuType)} className={`menu-item p-2 justify-between group  ${openSubmenu?.type === menuType && openSubmenu?.index === index
+              ? "menu-item-active p-2"
+              : "menu-item-inactive p-2"
               } cursor-pointer ${!isExpanded && !isHovered
-                ? "lg:justify-center"
-                : "lg:justify-start"
-              }`}>
-              <span className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index
-                ? "menu-item-icon-active"
-                : "menu-item-icon-inactive"
-                }`}>
+                ? "lg:justify-center p-2"
+                : "lg:justify-start p-2"}`}>
+              <span className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index ? "menu-item-icon-active" : "menu-item-icon-inactive"}`}>
                 {nav.icon}
               </span>
               {(isExpanded || isHovered || isMobileOpen) && (
@@ -102,7 +114,7 @@ const AppSidebar: React.FC = () => {
             </button>
           ) : (
             nav.path && (
-              <Link href={nav.path} className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"}`}>
+              <Link href={nav.path} className={`menu-item group p-2 ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"}`}>
                 <span
                   className={`${isActive(nav.path)
                     ? "menu-item-icon-active"
@@ -119,11 +131,10 @@ const AppSidebar: React.FC = () => {
             )
           )}
           {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
-            <div
-              ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
-              }}
-              className="overflow-hidden transition-all duration-300"
+            <div ref={(el) => {
+              subMenuRefs.current[`${menuType}-${index}`] = el;
+            }}
+              className="overflow-hidden p-2 transition-all duration-300"
               style={{
                 height:
                   openSubmenu?.type === menuType && openSubmenu?.index === index
@@ -131,7 +142,7 @@ const AppSidebar: React.FC = () => {
                     : "0px",
               }}
             >
-              <ul className="mt-2 space-y-1 ml-9">
+              <ul className="mt-2 space-y-1 text-sm ">
                 {nav.subItems.map((subItem) => (
                   <li key={subItem.name}>
                     <Link

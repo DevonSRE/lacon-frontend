@@ -7,7 +7,6 @@ import PDSSCaseForm from "./components/PSDDCaseForm";
 export default function ProbonoCaseTypePage() {
     const params = useParams();
     const tab = params.types;
-    console.log(tab);
     const renderTabContent = () => {
         switch (tab) {
             case 'civil':
@@ -24,8 +23,8 @@ export default function ProbonoCaseTypePage() {
     };
 
     return (
-        <>
+        <div className="max-w-6xl  mx-auto p-10 space-y-8 mb-20 pb-10 ">
             {renderTabContent()}
-        </>
+        </div>
     );
 }

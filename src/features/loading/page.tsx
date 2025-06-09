@@ -53,9 +53,8 @@ export default function LoadingPage() {
 
         {/* Spinner & Text */}
         <div className="flex flex-col items-center">
-          {/* <div className="animate-spin rounded-full border-4 border-t-4 border-gray-300 border-t-[#000] h-12 w-12 mb-4"></div> */}
-          <Image src="/loading.gif" alt={""} width={200} height={50} />
-          <p className="text-gray-600 text-sm font-medium flex flex-wrap gap-1">
+          <Image src="/loading.gif" alt={""} width={150} height={40} />
+          <p className="text-gray-600 text-md font-medium flex flex-wrap  mt-4 gap-1">
             {words.map((word, index) => (
               <span
                 key={index}
