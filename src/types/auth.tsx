@@ -1,35 +1,36 @@
 export enum ROLES {
-    DIRECTOR_GENERAL = "DIRECTOR GENERAL",
-    CIVIL_JUSTICE_DEPT = "CIVIL JUSTICE DEPT. HEAD",
-    CRIMINAL_JUSTICE_DEPT = "CRIMINAL JUSTICE DEPT. HEAD",
-    PARALEGAL = "PARALEGAL",
-    PRO_BONO_LAWYER = "PRO BONO LAWYER",
-    LAWYER = "LAWYER",
-    CENTRE_COORDINATOR = "CENTRE COORDINATOR",
-    ZONAL_DIRECTOR = "ZONAL DIRECTOR",
-    STATE_COORDINATOR = "STATE COORDINATOR",
-    DECONGESTION_UNIT_HEAD = "DECONGESTION UNIT HEAD",
-    PREROGATIVE_OF_MERCY_UNIT_HEAD = "PREROGATIVE OF MERCY UNIT HEAD",
-    OSCAR_UNIT_HEAD = "OSCAR UNIT HEAD",
-    ADMIN = "ADMIN",
-    PLATFORM_ADMIN = "PLATFORM ADMIN"
+  DIRECTOR_GENERAL = "DIRECTOR GENERAL",
+  CIVIL_JUSTICE_DEPT = "CIVIL JUSTICE DEPT. HEAD",
+  CRIMINAL_JUSTICE_DEPT = "CRIMINAL JUSTICE DEPT. HEAD",
+  PARALEGAL = "PARALEGAL",
+  PRO_BONO_LAWYER = "PRO BONO LAWYER",
+  CENTRE_COORDINATOR = "CENTRE COORDINATOR",
+  ZONAL_DIRECTOR = "ZONAL DIRECTOR",
+  STATE_COORDINATOR = "STATE COORDINATOR",
+  DECONGESTION_UNIT_HEAD = "DECONGESTION UNIT HEAD",
+  PREROGATIVE_OF_MERCY_UNIT_HEAD = "PREROGATIVE OF MERCY UNIT HEAD",
+  OSCAR_UNIT_HEAD = "OSCAR UNIT HEAD",
+  ADMIN = "ADMIN",
+  PLATFORM_ADMIN = "PLATFORM ADMIN",
+  DIO = "DIO",
+  LACON_LAWYER = "LACON LAWYER",
+  USER = "USER"
 }
 
-
 export type TSessionData = {
-    user?: TUser;
-    token: string;
-    expires?: number;
+  user?: TUser;
+  token: string;
+  expires?: number;
 };
 
 
 export type TUser = {
-    id: string;
-    first_name: string;
-    last_name: string;
-    phone_number: string;
-    email: string;
-    role: ROLES;
+  id: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string;
+  email: string;
+  role: ROLES;
 };
 
 export function isFieldErrorObject(

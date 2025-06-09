@@ -1,87 +1,88 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { useFormState } from 'react-dom';
 import { submitLawyersForm } from '../server/action';
-
-// Types
-interface ProBonoCase {
-    id: string;
-    clientName: string;
-    sex: string;
-    dateYearTookCase: string;
-    natureOfServices: string;
-    theOfferingCharge: string;
-    suitNumber: string;
-    statusOfCase: string;
-    lastDateOfAppearance: string;
-    isClientInCustody: string;
-}
-
-interface FormData {
-    lawyerName: string;
-    contactAddress: string;
-    contactPhoneNumber: string;
-    proBonoCases: ProBonoCase[];
-}
-
-interface FormState {
-    success: boolean;
-    message: string;
-    errors?: Record<string, string>;
-}
+import { SubmitButton } from '@/components/submit-button';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { isFieldErrorObject } from '@/types/auth';
+import useEffectAfterMount from '@/hooks/use-effect-after-mount';
+import { CLIENT_ERROR_STATUS } from '@/lib/constants';
+import InputField from '@/components/form/input/InputField';
+import SelectField from '@/components/SelectField';
+import { FormDataProbunoUpdate, FormErrors, ProBonoCase } from '../server/probunoTypes';
+import CaseIntakeDialog from './CaseIntakeDialog';
 
 export default function LawyersAnnualCasesReviewForm() {
-    const [formState, formAction] = useFormState(submitLawyersForm, {
-        success: false,
-        message: ''
-    });
+    const [state, formAction, isPending] = useActionState(submitLawyersForm, undefined);
+    const [errors, setErrors] = useState<FormErrors>({})
+    const [open, setOpen] = useState(false)
 
-    const [formData, setFormData] = useState<FormData>({
-        lawyerName: '',
-        contactAddress: '',
-        contactPhoneNumber: '',
-        proBonoCases: [{
+    useEffectAfterMount(() => {
+        if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+            toast.error(state?.message, {
+                description: typeof state?.errors === "string"
+                    ? state.errors
+                    : state?.errors
+                        ? Object.values(state.errors).flat().join(", ")
+                        : undefined,
+            });
+        } else if (state && state.status === 200) {
+            toast.success("Case Intake  Submitted successful");
+            setOpen(true)
+        }
+    }, [state]);
+
+    const [formData, setFormData] = useState<FormDataProbunoUpdate>({
+        first_name: '',
+        last_name: '',
+        contact_address: '',
+        email: '',
+        phone_number: '',
+        cases: [{
             id: '1',
-            clientName: '',
+            client_name: '',
             sex: '',
-            dateYearTookCase: '',
-            natureOfServices: '',
-            theOfferingCharge: '',
-            suitNumber: '',
-            statusOfCase: '',
-            lastDateOfAppearance: '',
-            isClientInCustody: ''
+            date_case_taken: '',
+            nature_of_service: '',
+            offering_charge: '',
+            suit_number: '',
+            status_of_case: '',
+            last_date_of_appearance: '',
+            is_client_in_custody: false
         }]
     });
 
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const handleCaseSelectChange = (caseId: string, field: keyof ProBonoCase, value: string) => {
+        updateProBonoCase(caseId, field, value);
+    };
 
     const addProBonoCase = () => {
         const newCase: ProBonoCase = {
             id: Date.now().toString(),
-            clientName: '',
+            client_name: '',
             sex: '',
-            dateYearTookCase: '',
-            natureOfServices: '',
-            theOfferingCharge: '',
-            suitNumber: '',
-            statusOfCase: '',
-            lastDateOfAppearance: '',
-            isClientInCustody: ''
+            date_case_taken: '',
+            nature_of_service: '',
+            offering_charge: '',
+            suit_number: '',
+            status_of_case: '',
+            last_date_of_appearance: '',
+            is_client_in_custody: false
         };
 
         setFormData(prev => ({
             ...prev,
-            proBonoCases: [...prev.proBonoCases, newCase]
+            cases: [...prev.cases, newCase]
         }));
     };
 
     const removeProBonoCase = (id: string) => {
-        if (formData.proBonoCases.length > 1) {
+        if (formData.cases.length > 1) {
             setFormData(prev => ({
                 ...prev,
-                proBonoCases: prev.proBonoCases.filter(case_ => case_.id !== id)
+                cases: prev.cases.filter(case_ => case_.id !== id)
             }));
         }
     };
@@ -89,308 +90,269 @@ export default function LawyersAnnualCasesReviewForm() {
     const updateProBonoCase = (id: string, field: keyof ProBonoCase, value: string) => {
         setFormData(prev => ({
             ...prev,
-            proBonoCases: prev.proBonoCases.map(case_ =>
+            cases: prev.cases.map(case_ =>
                 case_.id === id ? { ...case_, [field]: value } : case_
             )
         }));
     };
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        event.preventDefault();
-        setIsSubmitting(true);
-
-        try {
-            // Create FormData object for the server action
-            const formDataToSubmit = new FormData();
-
-            // Add basic form fields
-            formDataToSubmit.append('lawyerName', formData.lawyerName);
-            formDataToSubmit.append('contactAddress', formData.contactAddress);
-            formDataToSubmit.append('contactPhoneNumber', formData.contactPhoneNumber);
-
-            // Add pro bono cases as JSON string
-            formDataToSubmit.append('proBonoCases', JSON.stringify(formData.proBonoCases));
-
-            // await formAction(formDataToSubmit);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const getFieldError = (fieldName: string) => {
-        return formState.errors?.[fieldName];
+    // Custom form submission handler
+    const handleSubmit = (formData: FormData) => {
+        // Add cases data to FormData
+        formData.set('cases', JSON.stringify(formData));
+        console.log(formData);
+        // Call the original form action
+        formAction(formData);
     };
 
     return (
-        <div className="mx-auto p-6 pb-20 bg-white">
-            <div className="mb-6">
-                <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-                    Lawyers Annual Cases Review Form List Of Cases
-                </h1>
-                <p className="text-center text-sm text-gray-600">
-                    *This information would be treated as confidential in line with the SRA Guide/Rules
-                </p>
-            </div>
-
-            {formState.message && (
-                <div className={`mb-6 p-4 rounded-md ${formState.success
-                    ? 'bg-green-50 border border-green-200 text-green-800'
-                    : 'bg-red-50 border border-red-200 text-red-800'
-                    }`}>
-                    {formState.message}
+        <>
+            <CaseIntakeDialog
+                open={open}
+                onOpenChange={setOpen}
+                caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
+            />
+            <div className="mx-auto p-6 pb-20 bg-white">
+                <div className="mb-6">
+                    <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+                        Lawyers Annual Cases Review Form List Of Cases
+                    </h1>
+                    <p className="text-center text-sm text-gray-600">
+                        *This information would be treated as confidential in line with the SRA Guide/Rules
+                    </p>
                 </div>
-            )}
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-                {/* Section 1: Personal Details and Office Info */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                    <h2 className="text-lg font-semibold mb-6 text-gray-800">
-                        SECTION 1: Personal Details and Office Info
-                    </h2>
+                <form action={handleSubmit} className="space-y-8">
+                    {/* Hidden input to serialize cases data */}
+                    <input type="hidden" name="cases_data" value={JSON.stringify(formData.cases)} />
 
-                    <div className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Lawyer's Name *
-                            </label>
-                            <input
+                    {/* Section 1: Personal Details and Office Info */}
+                    <div className="p-6 rounded-lg">
+                        <h2 className="text-lg font-semibold mb-6 text-gray-800">
+                            SECTION 1: Personal Details and Office Info
+                        </h2>
+
+                        <div className="space-y-6">
+                            <InputField
+                                label="First Name"
+                                required
                                 type="text"
-                                value={formData.lawyerName}
-                                onChange={(e) => setFormData(prev => ({ ...prev, lawyerName: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError('lawyerName') ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                placeholder="Enter Email Address"
+                                name="first_name"
+                                value={formData.first_name}
+                                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                                placeholder="First Name"
+                                error={!!errors.first_name}
                             />
-                            {getFieldError('lawyerName') && (
-                                <p className="mt-1 text-sm text-red-600">{getFieldError('lawyerName')}</p>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Contact Address *
-                            </label>
-                            <input
+                            <InputField
+                                label="Last Name"
+                                required
+                                name='last_name'
                                 type="text"
-                                value={formData.contactAddress}
-                                onChange={(e) => setFormData(prev => ({ ...prev, contactAddress: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError('contactAddress') ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                placeholder="Enter Address"
+                                value={formData.last_name}
+                                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                                placeholder="Last Name"
+                                error={!!errors.last_name}
                             />
-                            {getFieldError('contactAddress') && (
-                                <p className="mt-1 text-sm text-red-600">{getFieldError('contactAddress')}</p>
-                            )}
-                        </div>
 
-                        <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                Contact Phone Number *
-                            </label>
-                            <input
+                            <InputField
+                                label="Contact Address"
+                                required
+                                name='contact_address'
+                                type="text"
+                                value={formData.contact_address}
+                                onChange={(e) => setFormData(prev => ({ ...prev, contact_address: e.target.value }))}
+                                placeholder="Contact Address"
+                                error={!!errors.contact_address}
+                            />
+
+                            <InputField
+                                label="Email"
+                                required
+                                name='email'
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                placeholder="Email Address"
+                                error={!!errors.email}
+                            />
+
+                            <InputField
+                                label="Contact Phone Number"
+                                name='phone_number'
+                                required
                                 type="tel"
-                                value={formData.contactPhoneNumber}
-                                onChange={(e) => setFormData(prev => ({ ...prev, contactPhoneNumber: e.target.value }))}
-                                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError('contactPhoneNumber') ? 'border-red-500' : 'border-gray-300'
-                                    }`}
-                                placeholder="Enter Email Address"
+                                value={formData.phone_number}
+                                onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                                placeholder="Enter Phone Number"
+                                error={!!errors.phone_number}
                             />
-                            {getFieldError('contactPhoneNumber') && (
-                                <p className="mt-1 text-sm text-red-600">{getFieldError('contactPhoneNumber')}</p>
-                            )}
                         </div>
                     </div>
-                </div>
 
-                {/* Section 2: Pro Bono Cases */}
-                <div className="bg-gray-50 p-6 rounded-lg">
-                    <h2 className="text-lg font-semibold mb-6 text-gray-800">
-                        SECTION 2: List of all ProBono Cases You are Currently handling
-                    </h2>
+                    {/* Section 2: Pro Bono Cases */}
+                    <div className="bg-gray-50 p-6 rounded-lg">
+                        <h2 className="text-lg font-semibold mb-6 text-gray-800">
+                            SECTION 2: List of all ProBono Cases You are Currently handling
+                        </h2>
 
-                    {getFieldError('proBonoCases') && (
-                        <p className="mb-4 text-sm text-red-600">{getFieldError('proBonoCases')}</p>
-                    )}
+                        {formData.cases.map((case_, index) => (
+                            <div key={case_.id} className="mb-8 p-4 bg-white rounded-lg border border-gray-200">
+                                <div className="flex justify-between items-center mb-4">
+                                    <h3 className="text-md font-medium text-gray-700">Case {index + 1}</h3>
+                                    {(formData.cases.length > 1 && (index + 1) > 1) && (
+                                        <button
+                                            type="button"
+                                            onClick={() => removeProBonoCase(case_.id)}
+                                            className="text-red-600 hover:text-red-800 text-sm"
+                                        >
+                                            Remove Case
+                                        </button>
+                                    )}
+                                </div>
 
-                    {formData.proBonoCases.map((case_, index) => (
-                        <div key={case_.id} className="mb-8 p-4 bg-white rounded-lg border border-gray-200">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-md font-medium text-gray-700">Case {index + 1}</h3>
-                                {formData.proBonoCases.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => removeProBonoCase(case_.id)}
-                                        className="text-red-600 hover:text-red-800 text-sm"
-                                    >
-                                        Remove Case
-                                    </button>
-                                )}
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Client Name *
-                                    </label>
-                                    <input
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <InputField
                                         type="text"
-                                        value={case_.clientName}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'clientName', e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError(`case_${index}_clientName`) ? 'border-red-500' : 'border-gray-300'
-                                            }`}
+                                        label="Client Name"
+                                        name={`cases[${index}].client_name`}
+                                        value={case_.client_name}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'client_name', e.target.value)}
                                         placeholder="Enter here"
+                                        required
                                     />
-                                    {getFieldError(`case_${index}_clientName`) && (
-                                        <p className="mt-1 text-xs text-red-600">{getFieldError(`case_${index}_clientName`)}</p>
-                                    )}
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Sex *
-                                    </label>
-                                    <select
+                                    <SelectField
+                                        name={`cases[${index}].sex`}
+                                        label="Sex"
+                                        placeholder="Select Gender"
+                                        options={[
+                                            { value: 'male', label: 'Male' },
+                                            { value: 'female', label: 'Female' },
+                                        ]}
+                                        required
                                         value={case_.sex}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'sex', e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError(`case_${index}_sex`) ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                    >
-                                        <option value="">male or female</option>
-                                        <option value="male">Male</option>
-                                        <option value="female">Female</option>
-                                    </select>
-                                    {getFieldError(`case_${index}_sex`) && (
-                                        <p className="mt-1 text-xs text-red-600">{getFieldError(`case_${index}_sex`)}</p>
-                                    )}
-                                </div>
+                                        onValueChange={(value) => handleCaseSelectChange(case_.id, 'sex', value)}
+                                    />
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Date/Year you took the case *
-                                    </label>
-                                    <input
+                                    <InputField
+                                        label="Date/Year you took the case"
+                                        required
+                                        name={`cases[${index}].date_case_taken`}
                                         type="date"
-                                        value={case_.dateYearTookCase}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'dateYearTookCase', e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError(`case_${index}_dateYearTookCase`) ? 'border-red-500' : 'border-gray-300'
-                                            }`}
+                                        value={case_.date_case_taken}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'date_case_taken', e.target.value)}
                                         placeholder="MM/DD/YYYY"
                                     />
-                                    {getFieldError(`case_${index}_dateYearTookCase`) && (
-                                        <p className="mt-1 text-xs text-red-600">{getFieldError(`case_${index}_dateYearTookCase`)}</p>
-                                    )}
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nature of Services being provided *
-                                    </label>
-                                    <input
+                                    <InputField
+                                        label="Nature of Services being provided"
+                                        required
+                                        name={`cases[${index}].nature_of_service`}
                                         type="text"
-                                        value={case_.natureOfServices}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'natureOfServices', e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${getFieldError(`case_${index}_natureOfServices`) ? 'border-red-500' : 'border-gray-300'
-                                            }`}
+                                        value={case_.nature_of_service}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'nature_of_service', e.target.value)}
                                         placeholder="Enter here"
                                     />
-                                    {getFieldError(`case_${index}_natureOfServices`) && (
-                                        <p className="mt-1 text-xs text-red-600">{getFieldError(`case_${index}_natureOfServices`)}</p>
-                                    )}
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        The Offering/Charge *
-                                    </label>
-                                    <input
+                                    <InputField
+                                        label="The Offering/Charge"
+                                        required
+                                        name={`cases[${index}].offering_charge`}
                                         type="text"
-                                        value={case_.theOfferingCharge}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'theOfferingCharge', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        value={case_.offering_charge}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'offering_charge', e.target.value)}
                                         placeholder="Enter here"
                                     />
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Suit Number *
-                                    </label>
-                                    <input
+                                    <InputField
+                                        label="Suit Number"
                                         type="text"
-                                        value={case_.suitNumber}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'suitNumber', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                        name={`cases[${index}].suit_number`}
+                                        value={case_.suit_number}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'suit_number', e.target.value)}
                                         placeholder="XX/XXXX/XX"
                                     />
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Status of the case *
-                                    </label>
-                                    <input
+                                    <InputField
                                         type="text"
-                                        value={case_.statusOfCase}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'statusOfCase', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        label="Status of the case"
+                                        required
+                                        name={`cases[${index}].status_of_case`}
+                                        value={case_.status_of_case}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'status_of_case', e.target.value)}
                                         placeholder="Enter here"
                                     />
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Last Date of Appearance *
-                                    </label>
-                                    <input
+                                    <InputField
+                                        label="Last Date of Appearance"
                                         type="date"
-                                        value={case_.lastDateOfAppearance}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'lastDateOfAppearance', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        required
+                                        name={`cases[${index}].last_date_of_appearance`}
+                                        value={case_.last_date_of_appearance}
+                                        onChange={(e) => updateProBonoCase(case_.id, 'last_date_of_appearance', e.target.value)}
                                         placeholder="Enter here"
                                     />
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Is Client in Custody or not *
-                                    </label>
-                                    <select
-                                        value={case_.isClientInCustody}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'isClientInCustody', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    >
-                                        <option value="">Yes or No</option>
-                                        <option value="yes">Yes</option>
-                                        <option value="no">No</option>
-                                    </select>
+                                    <SelectField
+                                        name={`cases[${index}].is_client_in_custody`}
+                                        label="Is Client in Custody or not"
+                                        placeholder="Select Option"
+                                        options={[
+                                            { value: 'true', label: 'Yes' },
+                                            { value: 'false', label: 'No' },
+                                        ]}
+                                        required
+                                        value={case_.is_client_in_custody ? 'true' : 'false'}
+                                        onValueChange={(value) =>
+                                            handleCaseSelectChange(
+                                                case_.id,
+                                                'is_client_in_custody',
+                                                value
+                                            )
+                                        }
+                                    />
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
 
-                    <button
+
+                    </div>
+                    <Button
                         type="button"
                         onClick={addProBonoCase}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-800 transition-colors"
+                        className="flex w-full items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-xs hover:bg-gray-800 transition-colors text-left"
                     >
-                        <span>+</span>
-                        Add Another Section
-                    </button>
-                </div>
+                        <span className="text-xl">+</span>
+                        <span className="flex-1 text-left">Add Another Section</span>
+                    </Button>
 
-                {/* Submit Button */}
-                <div className="flex justify-center">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className={`px-8 py-3 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                    >
-                        {isSubmitting ? 'Submitting...' : 'Submit and Wait for Approval'}
-                        <span>→</span>
-                    </button>
-                </div>
-            </form>
-        </div>
+
+                    {state?.errors && (
+                        <div className="text-red-500 bg-red-50 p-4 rounded">
+                            <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
+                            <ul className="list-disc list-inside space-y-1">
+                                {Object.entries(state.errors).map(([key, val]) =>
+                                    Array.isArray(val)
+                                        ? val.map((msg, idx) => (
+                                            <li key={`${key}-${idx}`}>{key.replace(/_/g, ' ')}: {msg}</li>
+                                        ))
+                                        : <li key={key}>{key.replace(/_/g, ' ')}: {String(val)}</li>
+                                )}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Submit Button */}
+                    <SubmitButton
+                        value="Submit and Wait for Approval"
+                        loading={isPending}
+                        pendingValue="Processing..."
+                        className="w-2/3 h-12 bg-red-500 hover:bg-red-600 text-white font-xs py-3 rounded-none transition-colors duration-200 flex items-center justify-center"
+                    />
+                </form>
+            </div>
+        </>
+
     );
 }

@@ -13,7 +13,7 @@ const ReactApexChart = dynamic(() => import("react-apexcharts"), {
 
 export default function CaseDistributionChart() {
   const options: ApexOptions = {
-    colors: ["#465fff"],
+    colors: ["#BD2B12"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
@@ -25,7 +25,7 @@ export default function CaseDistributionChart() {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "39%",
+        columnWidth: "60%",
         borderRadius: 5,
         borderRadiusApplication: "end",
       },
@@ -94,7 +94,7 @@ export default function CaseDistributionChart() {
   const series = [
     {
       name: "Sales",
-      data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+      data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     },
   ];
   const [isOpen, setIsOpen] = useState(false);

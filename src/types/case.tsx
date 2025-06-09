@@ -9,8 +9,14 @@ export interface ICaseAssignment {
 }
 export interface IUser {
   id: string;
-  name: string;
+  user_id: string;
+  user_type: string;
+  avatar : string;
+  first_name: string;
+  profile_image: string;
+  last_name: string;
   email: string;
+  phone_number: string;
   role: string;
   status: string;
 }

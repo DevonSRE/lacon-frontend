@@ -1,129 +1,154 @@
 'use client'
 
-import React, { useState } from 'react'
-import { ChevronLeft } from 'lucide-react'
+import React, { useActionState, useEffect, useState } from 'react'
+import { ChevronLeft, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
 import TextAreaField from '@/components/TextAreaField'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { stateOptions } from '@/lib/types'
+import useEffectAfterMount from '@/hooks/use-effect-after-mount'
+import { caseDetailsSchema, FormDataCivilCase, legalAidFormSchema, personalInfoSchema } from '../server/probonoSchema'
+import { CLIENT_ERROR_STATUS } from '@/lib/constants'
+import { toast } from 'sonner'
+import { submitPublicCaseForm } from '../server/action'
+import CaseIntakeDialog from './CaseIntakeDialog'
+import { useAction } from '@/context/ActionContext'
+import { Label } from '@/components/ui/label'
 
-
-interface FormData {
-  // Page 1 fields
-  caseType: string
-  firstName: string
-  middleName: string
-  lastName: string
-  gender: string
-  permanentAddress: string
-  age: string
-  phoneNumber: string
-  maritalStatus: string
-  emailAddress: string
-  stateOfOrigin: string
-  occupation: string
-  disability: string
-
-  // Page 2 fields
-  offence: string
-  clientLocation: string
-  dateOfAdmission: string
-  averageIncomePerMonth: string
-  reasonForLegalAid: string
-  caseStatus: string
-  courtLocation: string
-  bailStatus: string
-  courtOfTrial: string
-  prosecutingAgency: string
-}
-
-interface FormErrors {
-  [key: string]: string
-}
 
 export default function CriminalCaseForm() {
   const router = useRouter();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [open, setOpen] = useState(false);
+  const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
+  const { selectedStateId, setIsOpen } = useAction();
+  useEffect(() => {
+    console.log("selectedStateId => " +selectedStateId);
+    if (selectedStateId === "") {
+      setIsOpen(true);
+    }
+  }, [selectedStateId]);
 
-  const [currentStep, setCurrentStep] = useState(1)
-  const [formData, setFormData] = useState<FormData>({
-    caseType: '',
-    firstName: '',
-    middleName: '',
-    lastName: '',
+
+  useEffectAfterMount(() => {
+    if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+      toast.error(
+        typeof state?.message === "string" ? state.message : "Something went wrong",
+        {
+          description: typeof state?.errors === "string"
+            ? state.errors
+            : state?.errors
+              ? Object.values(state.errors).flat().join(", ")
+              : undefined,
+        }
+      );
+
+    } else if (state && state.status === 200) {
+      toast.success("Case Intake  Submitted successful");
+      setOpen(true);
+    }
+  }, [state]);
+
+
+  const [formData, setFormData] = useState<FormDataCivilCase>({
+    first_name: '',
+    middle_name: '',
+    last_name: '',
     gender: '',
-    permanentAddress: '',
-    age: '',
-    phoneNumber: '',
-    maritalStatus: '',
-    emailAddress: '',
-    stateOfOrigin: '',
+    permanent_address: '',
+    age: 0,
+    phone_number: '',
+    marital_status: '',
+    email: '',
+    state_of_origin: '',
     occupation: '',
-    disability: '',
+    disability_proof: null,
+    disability_status: '',
+    complaint: '',
+    average_income: '',
     offence: '',
-    clientLocation: '',
-    dateOfAdmission: '',
-    averageIncomePerMonth: '',
-    reasonForLegalAid: '',
-    caseStatus: '',
-    courtLocation: '',
-    bailStatus: '',
-    courtOfTrial: '',
-    prosecutingAgency: ''
+    legal_aid_reason: '',
+    number_of_dependants: '',
+    client_location: '',
+    registration_number: '',
+    case_number: '',
+    court_of_hearing: '',
+    case_status: '',
+    defendant_name: '',
+    defendant_address: '',
+    defendant_phone_number: '',
+    court_location: '',
+    date_of_admission: '',
+    bail_status: '',
+    court_of_trial: '',
+    prosecuting_agency: ''
   })
 
-  const [errors, setErrors] = useState<FormErrors>({})
+  const handleSelectChange = (value: string, name: keyof FormDataCivilCase) => {
+    console.log('Select changed:', name, value); // Debug log
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
 
-  const updateField = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+    // Clear error when user selects
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
     }
-  }
+  };
 
-  const handleSelectChange = (name: string, value: string) => {
-    updateField(name as keyof FormData, value)
-  }
 
-  const validateStep1 = () => {
-    const newErrors: FormErrors = {}
+  const updateField = (field: keyof FormDataCivilCase, value: string | File | null) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      // toast.error(errors[field]);
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
 
-    if (!formData.caseType) newErrors.caseType = 'Case type is required'
-    if (!formData.firstName) newErrors.firstName = 'First name is required'
-    if (!formData.lastName) newErrors.lastName = 'Last name is required'
-    if (!formData.gender) newErrors.gender = 'Gender is required'
-    if (!formData.permanentAddress) newErrors.permanentAddress = 'Permanent address is required'
-    if (!formData.age) newErrors.age = 'Age is required'
-    if (!formData.phoneNumber) newErrors.phoneNumber = 'Phone number is required'
-    if (!formData.maritalStatus) newErrors.maritalStatus = 'Marital status is required'
-    if (!formData.stateOfOrigin) newErrors.stateOfOrigin = 'State of origin is required'
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
-
-  const validateStep2 = () => {
-    const newErrors: FormErrors = {}
-
-    if (!formData.offence) newErrors.offence = 'Offence description is required'
-    if (!formData.clientLocation) newErrors.clientLocation = 'Client location is required'
-    if (!formData.reasonForLegalAid) newErrors.reasonForLegalAid = 'Reason for legal aid is required'
-    if (!formData.prosecutingAgency) newErrors.prosecutingAgency = 'Prosecuting agency is required'
-
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+  const validateStep = (step: number) => {
+    try {
+      if (step === 1) {
+        personalInfoSchema.parse(formData);
+      } else if (step === 2) {
+        legalAidFormSchema.parse(formData);
+      }
+      setErrors({});
+      return true;
+    } catch (error: any) {
+      console.log('Validation error:', error); // Dsle.log(error);
+      setErrors(error.errors || {});
+      return false;
+    }
+  };
 
   const handleNext = () => {
-    if (currentStep === 1 && validateStep1()) {
-      setCurrentStep(2)
-    } else if (currentStep === 2 && validateStep2()) {
-      // Handle form submission
-      console.log('Form submitted:', formData)
-      alert('Form submitted successfully!')
+    if (validateStep(currentStep)) {
+      if (currentStep < 2) {
+        setCurrentStep(currentStep + 1);
+      } else {
+        // Submit form
+        console.log('Form submitted:', formData);
+        const fd = new FormData();
+        fd.append("case_type", "Criminal Case");
+        fd.append("state_id", selectedStateId);
+        Object.entries(formData).forEach(([key, value]) => {
+          if (value !== null && value !== undefined) {
+            fd.append(key, value instanceof File ? value : String(value));
+          }
+        });
+        formAction(fd);
+      }
     }
-  }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    updateField('disability_proof', file);
+  };
 
   const handleBack = () => {
     if (currentStep > 1) {
@@ -134,352 +159,371 @@ export default function CriminalCaseForm() {
   }
 
 
-
   return (
-    <div className="max-w-2xl mx-auto bg-white">
-      {/* Header */}
-      <div className="flex items-center justify-between p-4">
-        <div className="flex items-center space-x-4">
-          <button onClick={handleBack} className="p-1">
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <h1 className="text-lg font-semibold">Filing A Criminal Case</h1>
-        </div>
-        <div className="ml-auto flex items-center space-x-2">
-          <div className="w-8 h-8 bg-black text-white rounded flex items-center justify-center text-sm font-medium">
-            {currentStep}
+    <>
+      <CaseIntakeDialog
+        open={open}
+        onOpenChange={setOpen}
+        caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
+      />
+      <div className="mx-auto bg-white">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-4">
+            <button onClick={handleBack} className="p-1">
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h1 className="text-lg font-semibold">Filing A Criminal Case</h1>
           </div>
-          <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded flex items-center justify-center text-sm">
-            2
+          <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
+            <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
+              1
+            </div>
+            <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+              2
+            </div>
           </div>
         </div>
-      </div>
+        <form action={handleNext}>
+          <input type="hidden" name="case_type" value="Criminal Case" />
+          {/* Form Content */}
+          <div className="mb-10">
+            <div className="space-y-6">
+              {currentStep === 1 && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div>
+                      <InputField
+                        label="First Name"
+                        required
+                        name='first_name'
+                        type="text"
+                        placeholder="Enter First Name"
+                        value={formData.first_name}
+                        onChange={(e) => updateField('first_name', e.target.value)}
+                        className={` ${errors.first_name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>}
+                    </div>
 
-      {/* Form Content */}
-      <div className="mb-10">
-        <div className="p-6 space-y-6">
-          {currentStep === 1 && (
-            <>
-              <SelectField
-                name="caseType"
-                label="Case Type"
-                placeholder="Select Case Type"
-                options={[
-                  { value: 'Criminal Case', label: 'Criminal Case' },
-                  // { value: 'Civil Case', label: 'Civil Case' },
-                  // { value: 'Family Case', label: 'Family Case' }
-                ]}
-                required
-                formData={formData}
-                handleSelectChange={handleSelectChange}
-                errors={errors}
-              />
+                    <div>
+                      <InputField
+                        label="Middle Name"
+                        name="middle_name"
+                        type="text"
+                        placeholder="Enter Middle Name"
+                        value={formData.middle_name}
+                        onChange={(e) => updateField('middle_name', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      />
+                    </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <InputField
-                  label="Name of client"
-                  required
-                  type="text"
-                  placeholder="Enter Email Address"
-                  value={formData.firstName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('firstName', e.target.value)}
-                  className={`${errors.firstName ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                />
-
-                <InputField
-                  label="Middle Name"
-                  type="text"
-                  placeholder="Enter Email Address"
-                  value={formData.middleName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('middleName', e.target.value)}
-                  className="border-gray-300"
-                />
-
-                <InputField
-                  label="Last Name"
-                  required
-                  type="text"
-                  placeholder="Enter Email Address"
-                  value={formData.lastName}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('lastName', e.target.value)}
-                  className={`${errors.lastName ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                />
-              </div>
-
-              <SelectField
-                name="gender"
-                label="Gender"
-                placeholder="Select Gender"
-                options={[
-                  { value: 'Male', label: 'Male' },
-                  { value: 'Female', label: 'Female' },
-                  { value: 'Other', label: 'Other' }
-                ]}
-                required
-                formData={formData}
-                handleSelectChange={handleSelectChange}
-                errors={errors}
-              />
-
-              <TextAreaField
-                name="permanentAddress"
-                label="Permanent Address"
-                required
-                placeholder="Input Current Address"
-                value={formData.permanentAddress}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('permanentAddress', e.target.value)}
-                error={errors.permanentAddress}
-              />
-
-              <InputField
-                label="Age"
-                required
-                type="number"
-                placeholder="Input Current Age"
-                value={formData.age}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('age', e.target.value)}
-                className={`${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-              />
-
-              <InputField
-                label="Phone Number"
-                required
-                type="tel"
-                placeholder="08XXXXXXXXX"
-                value={formData.phoneNumber}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('phoneNumber', e.target.value)}
-                className={`${errors.phoneNumber ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-              />
-
-              <SelectField
-                name="maritalStatus"
-                label="Marital Status"
-                placeholder="Input Status Here"
-                options={[
-                  { value: 'Single', label: 'Single' },
-                  { value: 'Married', label: 'Married' },
-                  { value: 'Divorced', label: 'Divorced' },
-                  { value: 'Widowed', label: 'Widowed' }
-                ]}
-                required
-                formData={formData}
-                handleSelectChange={handleSelectChange}
-                errors={errors}
-              />
-
-              <InputField
-                label="Email Address(Optional)"
-                type="email"
-                placeholder="Input Status Here"
-                value={formData.emailAddress}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('emailAddress', e.target.value)}
-                className="border-gray-300"
-              />
-
-              <SelectField
-                name="stateOfOrigin"
-                label="State of Origin"
-                placeholder="Input Status Here"
-                options={[
-                  { value: 'Abia', label: 'Abia' },
-                  { value: 'Adamawa', label: 'Adamawa' },
-                  { value: 'Akwa Ibom', label: 'Akwa Ibom' },
-                  { value: 'Anambra', label: 'Anambra' },
-                  { value: 'Bauchi', label: 'Bauchi' },
-                  { value: 'Bayelsa', label: 'Bayelsa' },
-                  { value: 'Benue', label: 'Benue' },
-                  { value: 'Borno', label: 'Borno' },
-                  { value: 'Cross River', label: 'Cross River' },
-                  { value: 'Delta', label: 'Delta' },
-                  { value: 'Ebonyi', label: 'Ebonyi' },
-                  { value: 'Edo', label: 'Edo' },
-                  { value: 'Ekiti', label: 'Ekiti' },
-                  { value: 'Enugu', label: 'Enugu' },
-                  { value: 'FCT', label: 'Federal Capital Territory' },
-                  { value: 'Gombe', label: 'Gombe' },
-                  { value: 'Imo', label: 'Imo' },
-                  { value: 'Jigawa', label: 'Jigawa' },
-                  { value: 'Kaduna', label: 'Kaduna' },
-                  { value: 'Kano', label: 'Kano' },
-                  { value: 'Katsina', label: 'Katsina' },
-                  { value: 'Kebbi', label: 'Kebbi' },
-                  { value: 'Kogi', label: 'Kogi' },
-                  { value: 'Kwara', label: 'Kwara' },
-                  { value: 'Lagos', label: 'Lagos' },
-                  { value: 'Nasarawa', label: 'Nasarawa' },
-                  { value: 'Niger', label: 'Niger' },
-                  { value: 'Ogun', label: 'Ogun' },
-                  { value: 'Ondo', label: 'Ondo' },
-                  { value: 'Osun', label: 'Osun' },
-                  { value: 'Oyo', label: 'Oyo' },
-                  { value: 'Plateau', label: 'Plateau' },
-                  { value: 'Rivers', label: 'Rivers' },
-                  { value: 'Sokoto', label: 'Sokoto' },
-                  { value: 'Taraba', label: 'Taraba' },
-                  { value: 'Yobe', label: 'Yobe' },
-                  { value: 'Zamfara', label: 'Zamfara' }
-                ]}
-                required
-                formData={formData}
-                handleSelectChange={handleSelectChange}
-                errors={errors}
-              />
-
-              <InputField
-                label="Occupation"
-                type="text"
-                placeholder="State Occupation"
-                value={formData.occupation}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('occupation', e.target.value)}
-                className="border-gray-300"
-              />
-
-              <SelectField
-                name="disability"
-                label="Disability (If any)"
-                placeholder="If yes, upload picture proof)"
-                options={[
-                  { value: 'None', label: 'None' },
-                  { value: 'Physical', label: 'Physical Disability' },
-                  { value: 'Visual', label: 'Visual Impairment' },
-                  { value: 'Hearing', label: 'Hearing Impairment' },
-                  { value: 'Intellectual', label: 'Intellectual Disability' },
-                  { value: 'Other', label: 'Other' }
-                ]}
-                formData={formData}
-                handleSelectChange={handleSelectChange}
-                errors={errors}
-              />
-
-              <div className="flex items-center justify-center py-8">
-                <div className="text-center">
-                  <div className="w-12 h-12 mx-auto mb-2 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center">
-                    <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                    </svg>
+                    <div>
+                      <InputField
+                        label="Last Name"
+                        required
+                        name="last_name"
+                        type="text"
+                        placeholder="Enter Last Name"
+                        value={formData.last_name}
+                        onChange={(e) => updateField('last_name', e.target.value)}
+                        className={` ${errors.last_name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>}
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500">(If yes, upload picture here)</p>
-                </div>
+
+
+                  <SelectField
+                    name="gender"
+                    label="Gender"
+                    placeholder="Select Gender"
+                    options={[
+                      { value: 'Male', label: 'Male' },
+                      { value: 'Female', label: 'Female' }
+                    ]}
+                    required
+                    value={formData.gender} // Add value prop
+                    onValueChange={(value) => handleSelectChange(value, 'gender')}
+                    error={!!errors.gender}
+                    errorMessage={errors.gender}
+                  />
+
+                  <div className="mb-6">
+                    <TextAreaField
+                      name="permanent_address" // Fixed: was "offence"
+                      label="Permanent Address"
+                      required
+                      placeholder="Enter your permanent address"
+                      value={formData.permanent_address}
+                      onChange={(e) => updateField('permanent_address', e.target.value)}
+                      error={errors.permanent_address} // Fixed: was errors.offence
+                    />
+                  </div>
+                  <div>
+                    <InputField
+                      type="number"
+                      label='Age'
+                      name='age'
+                      required
+                      placeholder="Enter Age"
+                      value={formData.age}
+                      onChange={(e) => updateField('age', e.target.value)}
+                      className={` ${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                    {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
+                  </div>
+
+                  <div>
+                    <InputField
+                      type="tel"
+                      label='Phone Number'
+                      name="phone_number"
+                      required
+                      placeholder="0800XXXXXXX"
+                      value={formData.phone_number}
+                      onChange={(e) => updateField('phone_number', e.target.value)}
+                      className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
+                  </div>
+
+                  <SelectField
+                    name="marital_status"
+                    label="Marital Status"
+                    placeholder="Marital Status"
+                    options={[
+                      { value: 'Single', label: 'Single' },
+                      { value: 'Married', label: 'Married' },
+                      { value: 'Divorced', label: 'Divorced' },
+                      { value: 'Widowed', label: 'Widowed' }
+                    ]}
+                    required
+                    value={formData.marital_status} // Add value prop
+                    onValueChange={(value) => handleSelectChange(value, 'marital_status')}
+                    error={!!errors.marital_status}
+                    errorMessage={errors.marital_status}
+                  />
+
+                  <InputField
+                    type="email"
+                    name="email"
+                    label=' Email Address (Optional)'
+                    placeholder="Enter Email Address"
+                    value={formData.email}
+                    onChange={(e) => updateField('email', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  />
+
+                  <SelectField
+                    name="state_of_origin"
+                    label="State Of Origin"
+                    placeholder="State of Origin"
+                    options={stateOptions}
+                    required
+                    value={formData.state_of_origin} // Add value prop
+                    onValueChange={(value: string) => handleSelectChange(value, 'state_of_origin')}
+                    error={!!errors.state_of_origin}
+                    errorMessage={errors.state_of_origin}
+                  />
+
+                  <div className="mb-6">
+                    <InputField
+                      type="text"
+                      name="occupation"
+                      label='Occupation'
+                      required
+                      placeholder="Trader/Chef/Driver"
+                      value={formData.occupation}
+                      onChange={(e) => updateField('occupation', e.target.value)}
+                      className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                    {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
+                  </div>
+
+                  <SelectField
+                    name="disability_status"
+                    label="Disability (If any)"
+                    placeholder="If yes, upload picture proof)"
+                    options={[
+                      { value: 'yes', label: 'Yes' },
+                      { value: 'no', label: 'No' },
+                    ]}
+                    value={formData.disability_status}
+                    onValueChange={(value) => handleSelectChange(value, 'disability_status')}
+                    error={!!errors.disability_status}
+                    errorMessage={errors.disability_status}
+                  />
+                  <div className="mb-6">
+                    <Label className="block  mb-2">
+                      Disability (if any)
+                    </Label>
+                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-gray-500  text-sm mb-2">(If yes, upload picture proof)</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileUpload}
+                        className="hidden"
+                        id="disability-upload"
+                      />
+                      <label
+                        htmlFor="disability-upload"
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                      >
+                        Choose File
+                      </label>
+                      {formData.disability_proof && (
+                        <p className="text-sm text-green-600 mt-2">{formData.disability_proof.name}</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+              {currentStep === 2 && (
+                <>
+                  <TextAreaField
+                    name="offence"
+                    label="Offence"
+                    required
+                    placeholder="Type the Offence Here"
+                    value={formData.offence}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('offence', e.target.value)}
+                    error={errors.offence}
+                  />
+
+                  <InputField
+                    label="Client Location"
+                    required
+                    type="text"
+                    placeholder="Type Location Here"
+                    value={formData.client_location}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('client_location', e.target.value)}
+                    className={`${errors.client_location ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InputField
+                      label="Date of Admission in custody"
+                      type="date"
+                      value={formData.date_of_admission}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_of_admission', e.target.value)}
+                      className="border-gray-300"
+                    />
+
+                    <InputField
+                      label="Average income per month"
+                      type="number"
+                      value={formData.average_income}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('average_income', e.target.value)}
+                      className="border-gray-300"
+                    />
+                  </div>
+
+                  <TextAreaField
+                    name="legal_aid_reason"
+                    label="Reasons for applying for legal aid"
+                    required
+                    placeholder="Type reason here"
+                    value={formData.legal_aid_reason}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('legal_aid_reason', e.target.value)}
+                    error={errors?.legal_aid_reason}
+                  />
+
+                  <InputField
+                    label="Case Status"
+                    type="text"
+                    value={formData.case_status}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
+                    className="border-gray-300"
+                  />
+
+                  <InputField
+                    label="Court and/Case No (If this exist, add it)"
+                    type="text"
+                    value={formData.court_location}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_location', e.target.value)}
+                    className="border-gray-300"
+                  />
+
+                  <InputField
+                    label="Bail status, (If this exist, add it)"
+                    type="text"
+                    value={formData.bail_status}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bail_status', e.target.value)}
+                    className="border-gray-300"
+                  />
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <InputField
+                      label="Court of Trial (If this exist, add it)"
+                      type="text"
+                      value={formData.court_of_trial}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_of_trial', e.target.value)}
+                      className="border-gray-300"
+                    />
+
+                    <InputField
+                      label="Prosecuting Agency"
+                      required
+                      type="text"
+                      value={formData.prosecuting_agency}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('prosecuting_agency', e.target.value)}
+                      className={`${errors.prosecuting_agency ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {state?.errors && typeof state.errors === 'object' && (
+              <div className="text-red-500 bg-red-50 p-4 rounded">
+                <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {Object.entries(state.errors).map(([key, val]) =>
+                    Array.isArray(val)
+                      ? val.map((msg, idx) => (
+                        <li key={`${key}-${idx}`}>{key.replace(/_/g, ' ')}: {msg}</li>
+                      ))
+                      : <li key={key}>{key.replace(/_/g, ' ')}: {String(val)}</li>
+                  )}
+                </ul>
               </div>
-            </>
-          )}
-
-          {currentStep === 2 && (
-            <>
-              <TextAreaField
-                name="offence"
-                label="Offence"
-                required
-                placeholder="Type the Offence Here"
-                value={formData.offence}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('offence', e.target.value)}
-                error={errors.offence}
-              />
-
-              <InputField
-                label="Client Location"
-                required
-                type="text"
-                placeholder="Type Location Here"
-                value={formData.clientLocation}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('clientLocation', e.target.value)}
-                className={`${errors.clientLocation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  label="Date of Admission in custody"
-                  type="date"
-                  value={formData.dateOfAdmission}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('dateOfAdmission', e.target.value)}
-                  className="border-gray-300"
-                />
-
-                <InputField
-                  label="Average income per month"
-                  type="number"
-                  value={formData.averageIncomePerMonth}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('averageIncomePerMonth', e.target.value)}
-                  className="border-gray-300"
-                />
-              </div>
-
-              <TextAreaField
-                name="reasonForLegalAid"
-                label="Reasons for applying for legal aid"
-                required
-                placeholder="Type reason here"
-                value={formData.reasonForLegalAid}
-                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('reasonForLegalAid', e.target.value)}
-                error={errors.reasonForLegalAid}
-              />
-
-              <InputField
-                label="Case Status"
-                type="text"
-                value={formData.caseStatus}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('caseStatus', e.target.value)}
-                className="border-gray-300"
-              />
-
-              <InputField
-                label="Court and/Case No (If this exist, add it)"
-                type="text"
-                value={formData.courtLocation}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('courtLocation', e.target.value)}
-                className="border-gray-300"
-              />
-
-              <InputField
-                label="Bail status, (If this exist, add it)"
-                type="text"
-                value={formData.bailStatus}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bailStatus', e.target.value)}
-                className="border-gray-300"
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputField
-                  label="Court of Trial (If this exist, add it)"
-                  type="text"
-                  value={formData.courtOfTrial}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('courtOfTrial', e.target.value)}
-                  className="border-gray-300"
-                />
-
-                <InputField
-                  label="Prosecuting Agency"
-                  required
-                  type="text"
-                  value={formData.prosecutingAgency}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('prosecutingAgency', e.target.value)}
-                  className={`${errors.prosecutingAgency ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                />
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Footer Buttons */}
-        <div className="p-6 border-t pb-24">
-          <div className="flex space-x-4">
-            {currentStep > 1 && (
-              <Button
-                onClick={handleBack}
-                className="flex-1 py-3 bg-black text-white  hover:bg-gray-800 transition-colors"
-              >
-                Back
-              </Button>
             )}
-            <Button
-              onClick={handleNext}
-              className="flex-1 py-3 bg-red-600 text-white  hover:bg-red-700 transition-colors"
-            >
-              {currentStep === 2 ? 'Submit' : 'Next'}
-            </Button>
+
+            {/* {errors && Object.keys(errors).length > 0 && (
+              <div className="text-red-500 bg-red-50 p-4 rounded">
+                <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  {Object.entries(errors).map(([key, val]) => (
+                    <li key={key}>
+                      {key.replace(/_/g, ' ')}: {val}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )} */}
+
+            {/* Navigation Buttons */}
+            {/* Navigation Buttons */}
+            <div className="grid grid-cols-2 mt-6 justify-end  gap-4 mb-6">
+              {currentStep > 1 && (
+                <Button onClick={handleBack} className="h-11  w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
+                  Back
+                </Button>
+              )}
+              <Button type="submit" disabled={isPending} className="h-11   w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
+                {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
+              </Button>
+            </div>
+
+
           </div>
-        </div>
+        </form>
+
       </div>
-    </div>
+    </>
+
   )
 }

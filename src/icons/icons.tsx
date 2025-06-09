@@ -9,10 +9,7 @@ export const Icons = {
     ),
 
     plusIcon: (props: IconProps) => (
-        <svg {...props} width="50" height="50" viewBox="0 0 4 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="2" y="2" width="50" height="50" rx="10" stroke="#D0D5DD" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="1 3" />
-            <path d="M12 7.33337V16.6667M7.33337 12H16.6667" stroke="#F5F6F7" stroke-width="1.33333" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-circle-plus-icon lucide-circle-plus"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>
     ),
     trendingIcon: (props: IconProps) => (
         <svg  {...props} width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -121,7 +118,7 @@ export const Icons = {
     ),
     GogleIcon: (props: IconProps) => (
         <svg {...props} width="20" height="20" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <g clip-path="url(#clip0_1123_3209)">
+            <g clipPath="url(#clip0_1123_3209)">
                 <path d="M22.2304 11.6459C22.2304 10.9136 22.171 10.1773 22.0443 9.45685H11.8827V13.6054H17.7018C17.4603 14.9434 16.6844 16.127 15.5483 16.8792V19.571H19.02C21.0587 17.6946 22.2304 14.9236 22.2304 11.6459Z" fill="#4285F4" />
                 <path d="M11.8827 22.1717C14.7883 22.1717 17.2387 21.2177 19.024 19.571L15.5523 16.8791C14.5864 17.5363 13.3395 17.9084 11.8867 17.9084C9.0761 17.9084 6.69304 16.0122 5.83799 13.4629H2.25549V16.2378C4.08435 19.8758 7.80936 22.1717 11.8827 22.1717V22.1717Z" fill="#34A853" />
                 <path d="M5.83404 13.4629C5.38277 12.1249 5.38277 10.6761 5.83404 9.33806V6.56311H2.2555C0.727496 9.60725 0.727496 13.1937 2.2555 16.2378L5.83404 13.4629V13.4629Z" fill="#FBBC04" />

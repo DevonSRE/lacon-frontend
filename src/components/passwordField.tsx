@@ -52,7 +52,7 @@ export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
       )}
 
       <div className="grid grid-cols-1 grid-rows-0 place-items-center relative">
-        <Input className={clsx(" w-full  px-4 py-2 border-2  h-11 pr-10 col-span-full text-2xl leading-relaxed font-sans  focus:ring-transparent focus-visible:ring-transparent peer   placeholder:text-gray-400 text-black  border-app-secondary row-span-full bg-transparent peer",
+        <Input className={clsx(" w-full  px-4 py-2 border-2  h-11 pr-10 col-span-full  leading-relaxed font-sans  focus:ring-transparent focus-visible:ring-transparent peer   placeholder:text-gray-400 text-black  border-app-secondary row-span-full bg-transparent peer",
             error ? "border-red-500 focus:border-red-500" : "")}
           name={name}
           type={showPassword ? "text" : "password"}

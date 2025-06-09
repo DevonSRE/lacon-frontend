@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react";
 import {
     Dialog,
     DialogClose,
@@ -23,41 +23,39 @@ import {
 import { Label } from "@/components/ui/label";
 import { GetState } from "@/components/get-state";
 import { useRouter } from "next/navigation";
+import { useAction } from "@/context/ActionContext";
+
 
 import { useRef } from "react";
+import { toast } from "sonner";
 export default function FileACase() {
     const router = useRouter();
     const dialogCloseRef = useRef<HTMLButtonElement>(null);
+    const { isOpen, setIsOpen, setSeletedStateId } = useAction();
 
     const [step, setStep] = useState<1 | 2>(1);
     const [selectedState, setSelectedState] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
     const [caseType, setCaseType] = useState<"Civil" | "Criminal" | "PDSS-InStation" | "PDSS-Organisation" | "">("");
 
     const handleProceed = () => {
+        if (!caseType) toast.error("Please select case type");
         if (!caseType) return;
-
-        // Close dialog first
+        setLoading(true);
         if (dialogCloseRef.current) {
             dialogCloseRef.current.click();
         }
-
-        // Delay navigation slightly to allow dialog to close
         setTimeout(() => {
+            setLoading(false);
             const slug = caseType.trim().toLowerCase().replace(/\s+/g, "-");
-            router.push(`probuno/cases/${slug}`);
-        }, 100); // Small delay (100ms)
+            router.push(`/probuno/cases/${slug}`);
+        }, 100);
     };
 
     return (
-        <Dialog>
-            <DialogTrigger asChild>
-                <Button variant="outline" size="lg" className="border-2">
-                    <PlusCircle className="w-4 h-4" />
-                    File a Case
-                </Button>
-            </DialogTrigger>
-
-            <DialogContent className="sm:max-w-xl">
+        // <Dialog >
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogContent className="sm:max-w-xl"  >
                 <DialogHeader className="space-y-4">
                     {step === 1 && <DialogTitle>Select Filing Location</DialogTitle>}
                     {step === 2 && <DialogTitle>Select Case Type</DialogTitle>}
@@ -71,6 +69,7 @@ export default function FileACase() {
                                 value={selectedState}
                                 onValueChange={(val: string) => setSelectedState(val)}
                                 placeholder="Select your state"
+                                onLoadingChange={(loading) => setLoading(loading)}
                             />
                         </div>
                     )}
@@ -78,7 +77,7 @@ export default function FileACase() {
                     {step === 2 && (
                         <div className="space-y-6 my-8">
                             <Label htmlFor="case-type-select">What type of case are you filing?</Label>
-                            <Select 
+                            <Select
                                 value={caseType}
                                 onValueChange={(val) => setCaseType(val as any)}
                             >
@@ -104,6 +103,8 @@ export default function FileACase() {
                         <Button
                             className="w-full h-11 bg-red-500"
                             onClick={() => {
+                                if (!selectedState) toast.error("Please select a state");
+                                setSeletedStateId(selectedState);
                                 if (selectedState) setStep(2);
                             }}
                         >
@@ -117,8 +118,8 @@ export default function FileACase() {
                                 <button ref={dialogCloseRef} className="hidden" />
                             </DialogClose>
 
-                            <Button className="w-full h-11 bg-red-500" onClick={handleProceed}>
-                                Proceed
+                            <Button disabled={loading} className="w-full h-11 bg-red-500" onClick={handleProceed}>
+                                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}  {loading ? "proceeding" : "Proceed"}
                             </Button>
                         </>
                     )}

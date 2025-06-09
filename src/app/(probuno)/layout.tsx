@@ -12,12 +12,17 @@ import {
   navigationMenuTriggerStyle,
 } from "@/components/ui/navigation-menu";
 import FileACase from "@/features/probunoLawyers/components/FileACase";
+import { useAction } from "@/context/ActionContext";
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 interface LayoutProps {
   children: ReactNode;
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const { isOpen, setIsOpen } = useAction();
+
   return (
     <div className="flex flex-1 max-w-screen">
       <div className="fixed max-w-screen inset-0 max-h-screen overflow-hidden bg-white">
@@ -87,14 +92,18 @@ export default function Layout({ children }: LayoutProps) {
             </NavigationMenu>
 
             <div className="flex gap-2 flex-shrink-0">
-             <FileACase />
+              <Button onClick={() => setIsOpen(true)} variant="outline" size="lg" className="border-2">
+                <PlusCircle className="w-4 h-4" />
+                File a Case
+              </Button>
+              <FileACase />
             </div>
 
           </div>
         </header>
 
         {/* Main Content Area */}
-        <main className="flex justify-center overflow-x-hidden overflow-y-auto w-full h-full">
+        <main className="overflow-x-hidden overflow-y-auto w-full h-full">
           {children}
         </main>
       </div>

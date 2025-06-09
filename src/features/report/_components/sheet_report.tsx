@@ -2,17 +2,18 @@ import FilterBar from './filter_bar';
 import { useState } from 'react';
 import Overview from './overview';
 import CaseTypeReports from './case_type';
-import LawyersReport from '../../dashboard/Lawyer/_components/lawyersManagement';
 import UnitsReports from './units';
 import Demographics from './Demographics';
+import LawyersReport from './LawyersReport';
 
-export default function SheetReport({ stateData, chartData }: { stateData: any[]; chartData: any[] }) {
+export default function SheetReport() {
     const [activeTab, setActiveTab] = useState('Overview');
+
 
     const renderTabContent = () => {
         switch (activeTab) {
             case 'Overview':
-                return <Overview stateData={stateData} chartData={chartData} />;
+                return <Overview />;
             case 'Case Types':
                 return <CaseTypeReports />;
             case 'Lawyers':

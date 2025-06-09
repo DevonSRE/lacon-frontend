@@ -7,7 +7,6 @@ import detailsServices from "../getDetails";
 export async function GetStates(params: Ipage) {
     try {
         const response = await detailsServices.getState(params);
-        console.log("response state  =>" + JSON.stringify(response.data.data));
         return { data: response.data?.data, success: true };
 
     } catch (err: unknown) {

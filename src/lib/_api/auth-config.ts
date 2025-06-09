@@ -12,25 +12,21 @@ export const authConfig = axios.create({
   },
 });
 
-export async function getAuthTemp() {
-  const cookieStore = cookies();
-  const token = (await cookieStore).get("TempToken")?.value;
 
-  // Optionally delete after use
-  (await cookieStore).delete("TempToken");
 
-  console.log("Temp token:", token);
+export const authTemp = axios.create({
+  baseURL: NEXT_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
+});
 
-  if (!token) {
-    return authConfig; // fallback to public config
+// Add interceptor
+authTemp.interceptors.request.use(async (config) => {
+  const token = (await cookies()).get("TempToken")?.value;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-
-  return axios.create({
-    baseURL: NEXT_BASE_URL,
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-}
+  return config;
+});

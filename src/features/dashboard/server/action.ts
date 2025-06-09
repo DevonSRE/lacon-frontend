@@ -1,1 +1,121 @@
-export async function GetUserData() { }
+'use server'
+import { ErrorResponse } from "@/lib/auth";
+import UserService from "./service";
+import { createLawyerSchema, createUserSchema } from "./type";
+
+
+export async function InviteUser(_prevState: unknown, formData: FormData) {
+    console.log(formData);
+    const data = Object.fromEntries(formData);
+    console.log(data);
+    const result = createUserSchema.safeParse(data);
+    console.log(result);
+    if (!result.success) {
+        return {
+            status: 400,
+            errors: result.error.flatten().fieldErrors,
+            message: "Invalid field found",
+        };
+    }
+    try {
+        const response = await UserService.inviteUser(result.data);
+        console.log(response.data);
+        return {
+            status: 200,
+            message: "Success",
+            success: true,
+            data: response.data,
+        };
+    } catch (err: unknown) {
+        // const error = err as ErrorResponse;
+        // console.log("Error response:", error);
+        // handleApiError(error);
+        const error = err as ErrorResponse;
+        console.log("Error response:", error);
+        if (error?.response) {
+            return {
+                status: error.response.status,
+                message: error.response.data.message,
+                errors: error.response.data.data,
+                success: false,
+            };
+        } else if (error?.request) {
+            return {
+                status: 504,
+                message: "Something went wrong. Please try again.",
+                errors: "Unable to process request.",
+                success: false,
+            };
+        } else if (error?.message) {
+            return {
+                status: 500,
+                message: error.message,
+                errors: error.message,
+                success: false,
+            };
+        } else {
+            return {
+                status: 500,
+                message: "An unexpected error occurred.",
+                errors: "Unknown error.",
+                success: false,
+            };
+        }
+    }
+
+}
+export async function InviteLawyer(_prevState: unknown, formData: FormData) {
+    const data = Object.fromEntries(formData);
+    const result = createLawyerSchema.safeParse(data);
+    if (!result.success) {
+        return {
+            status: 400,
+            errors: result.error.flatten().fieldErrors,
+            message: "Invalid field found",
+        };
+    }
+    console.log(result.data);
+    try {
+        const response = await UserService.inviteUser(result.data);
+        console.log(response.data);
+        return {
+            status: 200,
+            message: "Success",
+            success: true,
+            data: response.data,
+        };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        console.log("Error response:", error);
+        if (error?.response) {
+            return {
+                status: error.response.status,
+                message: error.response.data.message,
+                errors: error.response.data.data,
+                success: false,
+            };
+        } else if (error?.request) {
+            return {
+                status: 504,
+                message: "Something went wrong. Please try again.",
+                errors: "Unable to process request.",
+                success: false,
+            };
+        } else if (error?.message) {
+            return {
+                status: 500,
+                message: error.message,
+                errors: error.message,
+                success: false,
+            };
+        } else {
+            return {
+                status: 500,
+                message: "An unexpected error occurred.",
+                errors: "Unknown error.",
+                success: false,
+            };
+        }
+    }
+
+}
