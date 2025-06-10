@@ -175,8 +175,6 @@ export function AddLawyerSheet() {
                                 <p className="text-red-500 text-sm">{serverErrors.status[0]}</p>
                             )}
                         </div>
-
-
                         <div>
                             <InputField
                                 label="Max Case Load"

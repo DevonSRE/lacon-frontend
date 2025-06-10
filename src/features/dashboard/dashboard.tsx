@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
 import CivilCriminalDashboard from "./CivilCriminalDashboard";
-import { AddLawyerSheet } from "./Lawyer/_components/addLawyer";
-import CaseStatsSummaryChart from "./components/CaseStatsSummaryChart";
 
 
 
@@ -33,7 +31,7 @@ export default function Dashboard() {
     // Lawyers
     if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER) {
         return <>
-            <LawyerDashboard  user={user?.first_name ?? "LAWYER"} />
+            <LawyerDashboard user={user?.first_name ?? "LAWYER"} />
         </>
     }
 
@@ -61,34 +59,7 @@ export default function Dashboard() {
     }
 
     if (role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || role === ROLES.OSCAR_UNIT_HEAD) {
-        return (
-
-            <div className="grid grid-cols-12 gap-4 md:gap-6">
-                <div className="col-span-12 space-y-6">
-                    <div className="flex justify-between items-center mb-8">
-                        <Intro user={user?.first_name ?? "Admin"} />
-                        <div className="flex gap-4">
-                            {(role === ROLES.OSCAR_UNIT_HEAD) && (
-                                <Button onClick={() => setIsOpen(true)} className="bg-black hover:bg-gray-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
-                                    <CircleFadingArrowUp size={20} />
-                                    Bulk Uplaod
-                                </Button>
-                            )}
-                            <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
-                                <CirclePlus size={20} />
-                                Add New Lawyers
-                            </Button>
-                        </div>
-                    </div>
-                    <CivilCriminalDashboard />
-                </div>
-                <AddLawyerSheet />
-
-                {/* <CreateUserRole /> */}
-                {/* <AddUserSheet /> */}
-            </div>
-
-        );
+        return (<CivilCriminalDashboard />);
     }
 
     // Default fallback

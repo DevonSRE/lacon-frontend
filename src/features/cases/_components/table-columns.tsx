@@ -23,17 +23,39 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
 // Types
+
 export interface ICase {
   id: string;
-  clientName: string;
+  filed_date: string;
+  client_name: string;
   first_name: string;
   last_name: string;
-  case_type: string;
-  state_of_origin: string;
   status: string;
-  filedBy: string;
+  filed_by: string;
   state: string;
+  case_type: string;
+  location: string;
+  name: string;
+  sex: string;
+  age: number;
+  marital_status: string;
+  disability: string;
+  phone_number: string;
+  email: string;
+  occupation: string;
+  state_of_origin: string;
+  offenses: string;
+  date_case_opened: string;
+  client_location: string;
+  date_of_admission: string;
+  average_monthly_income: string;
+  reason_for_legal_aid: string;
+  legal_aid_application_status: string;
+  date_legal_aid_granted: string;
+  counsel_assigned: string;
+  counsel_designation: string;
 }
+
 
 // Badge Styling Helpers
 export const getStatusBadgeVariant = (status: string) =>
@@ -52,35 +74,10 @@ export const getCaseTypeBadgeColor = (caseType: string) => {
   }
 };
 
-// Assign Button Click Handler
-const handleAssignClick = (e: React.MouseEvent, caseItem: ICase) => {
-  e.stopPropagation();
-  // Add assign logic here
-};
 
-// Clickable Row Component
-const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
-  const router = useRouter();
-
-  return (
-    <tr
-      className="cursor-pointer hover:bg-gray-100"
-      onClick={() =>
-        router.push(`/cases/view/${encodeURIComponent(row.original.id)}`)
-      }
-    >
-      {row.getVisibleCells().map((cell: any) => (
-        <td key={cell.id} className="px-4 py-2 border">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
-    </tr>
-  );
-};
-
-// Column Generator
 export const createCaseColumns = (
   userRole: ROLES,
+  onAssign: (caseItem: ICase) => void,
   type?: "pending" | "all"
 ): ColumnDef<ICase>[] => {
   const columns: ColumnDef<ICase>[] = [
@@ -139,36 +136,21 @@ export const createCaseColumns = (
   ];
 
   if (userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) {
-    // columns.push(
-    //   {
-    //     accessorKey: "filedBy",
-    //     header: "Filed By",
-    //     cell: ({ row }) => (
-    //       <span className="text-sm text-gray-900">{row.original.filedBy}</span>
-    //     ),
-    //   },
-    // );
-
-    columns.push(
-      {
-        accessorKey: "state_of_origin",
-        header: "State",
-        cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.state_of_origin}</span>
-        ),
-      }
-    );
+    columns.push({
+      accessorKey: "state_of_origin",
+      header: "State",
+      cell: ({ row }) => (
+        <span className="text-sm text-gray-900">{row.original.state_of_origin}</span>
+      ),
+    });
   } else {
-    columns.push(
-      {
-        accessorKey: "assignedBy",
-        header: "Assigned By",
-        cell: ({ row }) => (
-          <span className="text-sm text-gray-900">{row.original.filedBy}</span>
-        ),
-      },
-
-    );
+    columns.push({
+      accessorKey: "assignedBy",
+      header: "Assigned By",
+      cell: ({ row }) => (
+        <span className="text-sm text-gray-900">{row.original.filed_by}</span>
+      ),
+    });
   }
 
   columns.push({
@@ -179,7 +161,10 @@ export const createCaseColumns = (
       const isAssigned = caseItem.status === "Assigned";
       return (
         <Button
-          onClick={(e) => handleAssignClick(e, caseItem)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAssign(caseItem);
+          }}
           variant={isAssigned ? "secondary" : "default"}
           size="sm"
           className={
@@ -196,45 +181,3 @@ export const createCaseColumns = (
 
   return columns;
 };
-
-// CaseTable Component
-const CaseTable: React.FC<{ data: ICase[]; userRole: ROLES }> = ({
-  data,
-  userRole,
-}) => {
-  const columns = createCaseColumns(userRole);
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-gray-100">
-          {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <th key={header.id} className="px-4 py-2 border">
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody>
-          {table.getRowModel().rows.map((row) => (
-            <ClickableRow key={row.id} row={row} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-export default CaseTable;

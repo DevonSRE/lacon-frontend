@@ -1,13 +1,13 @@
 import { UserType, Zone } from "@/lib/types";
 import { z } from "zod";
 
-
-
 export interface FormDataUser {
     user_type: string;
     designation: string;
-    state: string;
-    zone: string;
+    state_id: string;
+    zone_id: string;
+    center_id: string;
+    max_load: string;
     first_name: string;
     last_name: string;
     email: string;
@@ -28,7 +28,6 @@ export interface FormDataLawyer {
 }
 
 
-
 export const zones: Zone[] = [
     'North West', 'North East', 'North Central',
     'South West', 'South East', 'South South'
@@ -39,8 +38,9 @@ export const zones: Zone[] = [
 export const createUserSchema = z.object({
     user_type: z.string().min(1, "User type is required"),
     designation: z.string().optional(),
-    state: z.string().optional(),
-    zone: z.string().optional(),
+    state_id: z.string().optional(),
+    zone_id: z.string().optional(),
+    center_id: z.string().optional(),
     role: z.string().optional(),
     status: z.string().optional(),
     max_load: z.string().optional(),
@@ -62,7 +62,7 @@ export const createUserSchema = z.object({
         data.user_type === "Centre Coordinator" ||
         data.designation === "State Lawyer" ||
         data.designation === "State Office";
-    if (needsState && !data.state) {
+    if (needsState && !data.state_id) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "State selection is required",
@@ -74,7 +74,7 @@ export const createUserSchema = z.object({
     const needsZone = data.user_type === "Zonal Director" ||
         data.designation === "Centre Lawyer" ||
         data.designation === "Zonal Office";
-    if (needsZone && !data.zone) {
+    if (needsZone && !data.zone_id) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Zone selection is required",
@@ -85,9 +85,10 @@ export const createUserSchema = z.object({
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
 export const createLawyerSchema = z.object({
+    id: z.string().optional(),
     user_type: z.string().min(1, "User type is required"),
     status: z.string().optional(),
-    max_load: z.string({ invalid_type_error: 'Max Load must be a number' }),
+    max_load: z.coerce.number({ invalid_type_error: 'Max Load must be a number' }),
     first_name: z.string().min(1, "First name is required").max(50, "First name is too long"),
     last_name: z.string().min(1, "Last name is required").max(50, "Last name is too long"),
     email: z.string().min(1, "Email is required").email("Please enter a valid email address"),

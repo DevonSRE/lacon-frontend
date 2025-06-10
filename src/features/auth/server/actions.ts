@@ -33,8 +33,11 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone_number: data.phone_number,
+        state_id: data.state_id,
+        state_name: data.state_name,
+        zone_id: data.zone_id,
+        zone_name: data.zone_name,
         role: data.role as ROLES,
-        // role: "DIRECTOR GENERAL" as ROLES,
       },
       token: data.token,
     };
@@ -146,7 +149,6 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
       };
     } else {
       const data = await signupResponse.json();
-      console.log("JSON => " + data);
       const sessionData = {
         user: {
           id: data.data.id,
@@ -154,6 +156,10 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
           first_name: data.data.first_name,
           last_name: data.data.last_name,
           phone_number: data.data.phone_number,
+          state_id: data.state_id ?? "",
+          state_name: data.state_name ?? "",
+          zone_id: data.zone_id ?? "",
+          zone_name: data.zone_name ?? "",
           role: data.data.user_type as ROLES,
         },
         token: token,

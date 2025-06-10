@@ -6,6 +6,8 @@ import AssignedCases from "./_components/menu/AssignedCases";
 import UploadHistory from "./_components/menu/UploadHistory";
 import CaseIntake from "./_components/menu/CaseIntake";
 const LawyerDashboard = ({ user }: { user: string }) => {
+
+  
   const menu = ["Assigned Cases", "Case Intake", "Upload History"];
   const [menuTab, setMenuTab] = useState("Assigned Cases");
   return (

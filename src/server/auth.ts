@@ -21,6 +21,10 @@ export interface LoginResponseData {
   court_divison: string;
   role: ROLES;
   token: string;
+  state_id: string;
+  state_name: string;
+  zone_id: string;
+  zone_name: string;
 }
 
 

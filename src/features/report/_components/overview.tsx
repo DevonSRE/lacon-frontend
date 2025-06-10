@@ -15,6 +15,7 @@ import Chart from '../charts/Chart'
 import { GetReportOverView } from '../server/reportAction'
 import { useQuery } from '@tanstack/react-query'
 import { useAction } from '@/context/ActionContext'
+import ReportOverview from '@/components/skeleton/ReportOverview'
 
 // Type definitions for the API response
 interface CaseReport {
@@ -104,11 +105,7 @@ export default function Overview() {
 
     // Handle loading state
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg text-gray-600">Loading...</div>
-            </div>
-        );
+        return (<ReportOverview />);
     }
 
     // Handle error state

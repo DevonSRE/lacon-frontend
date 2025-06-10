@@ -7,7 +7,7 @@ export default async function PASSWORDOTP() {
   const cookieStore = cookies();
   const emailCookie = (await cookieStore).get("otpEmail");
   if (!emailCookie?.value) {
-    redirect("/password/forgot");
+    // redirect("/password/forgot");
   }
 
   return <PASSWORDOTPCOMPONENT email={emailCookie?.value ?? ""} />;

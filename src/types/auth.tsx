@@ -30,6 +30,10 @@ export type TUser = {
   last_name: string;
   phone_number: string;
   email: string;
+  state_id: string;
+  state_name: string;
+  zone_id: string;
+  zone_name: string;
   role: ROLES;
 };
 
