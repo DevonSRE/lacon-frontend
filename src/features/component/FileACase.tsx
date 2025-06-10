@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Input from "@/components/form/input/InputField";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import SelectField from '@/components/SelectField';
 import TextAreaField from '@/components/TextAreaField';

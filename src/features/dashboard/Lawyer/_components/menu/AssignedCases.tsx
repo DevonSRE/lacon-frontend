@@ -97,7 +97,7 @@ export default function AssignedCases() {
             </div>
 
             {view === "grid" ? (
-                <LawyersReportGrid caseData={caseData} />
+                <LawyersReportGrid caseData={caseData}  />
             ) : (
                 <LawyersReportTable tableData={tableData} />
             )}

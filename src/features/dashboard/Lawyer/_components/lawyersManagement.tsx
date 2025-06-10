@@ -18,25 +18,28 @@ import { useAppSelector } from "@/hooks/redux";
 import { ILawyerManagement } from "@/types/case";
 import { ROLES } from "@/types/auth";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-type Checked = DropdownMenuCheckboxItemProps["checked"]
+import { CustomeSheet } from "@/components/CustomSheet";
+import ViewEditLawyer from "./sheet/ViewEditLawyer";
+import { useDebounce } from 'use-debounce';
+
 
 export default function Lawyers() {
-
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [status, setStatus] = useState("");
     const { setIsOpen } = useAction();
-
     const { data: user } = useAppSelector((state) => state.profile);
-
     const [sheetOpen, setSheetOpen] = useState(false);
     const [sheetType, setSheetType] = useState<"view" | "edit" | "suspend" | "delete" | null>(null);
     const [selectedUser, setSelectedUser] = useState<ILawyerManagement | null>(null);
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
     const handleOpenSheet = (user: ILawyerManagement, type: "view" | "edit" | "suspend" | "delete") => {
         setSelectedUser(user);
         setSheetType(type);
         setSheetOpen(true);
     };
+
     const columns = useMemo(
         () =>
             createLawyersManagementColumns(user?.role as ROLES,
@@ -44,102 +47,91 @@ export default function Lawyers() {
                 (user) => handleOpenSheet(user, "edit"),
                 (user) => handleOpenSheet(user, "suspend"),
                 (user) => handleOpenSheet(user, "delete"),
-                // createUserColumns(user?.role!, "all"),
             ),
         [user?.role]
     );
 
 
     const { data, isLoading } = useQuery({
-        queryKey: ["getLaweyersManagement", currentPage, searchTerm],
+        queryKey: ["getLaweyersManagement", currentPage, debouncedSearchTerm, status],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
-                query: searchTerm,
+                keyword: debouncedSearchTerm,
+                status: status,
             };
             return await GetLawyersManagementAction(filters);
         },
         staleTime: 100000,
     });
 
-    if (!isLoading) {
-        const statusColors = {
-            Active: "bg-green-100 text-green-600",
-            Inactive: "bg-yellow-100 text-yellow-600",
-        };
+    const statusColors = {
+        Active: "bg-green-100 text-green-600",
+        Inactive: "bg-yellow-100 text-yellow-600",
+    };
 
-        // const handleRowClick = (row: any) => {
-        //     redirect(`/user-profile/${encodeURIComponent(row.id)}`);
-        // };
+    const handleRowClick = (row: any) => {
+        // redirect(`/user-profile/${encodeURIComponent(row.id)}`);
+    };
 
-        function setCurrentPage(page: number): void {
-            throw new Error("Function not implemented.");
-        }
-        return (
-            <>
-                <AddLawyerSheet />
-                <div className="p-6">
-                    <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-2xl font-semibold">Lawyer Management</h1>
-                        <Button onClick={() => setIsOpen(true)} className="bg-red-600 text-white h-11">
-                            <Icons.plusIcon />
-                            Add New Lawyer
-                        </Button>
-                    </div>
-                    <div className="flex items-center mt-6 gap-6 w-full justify-between">
-                        <div className="relative w-full">
-                            <Search className="absolute left-3 w-4 top-1/2 -translate-y-1/2  text-neutral" />
-                            <Input
-                                type="search"
-                                autoComplete="off"
-                                data-form-type="other"
-                                placeholder="Search User By Name"
-                                className="pl-9  h-11 w-full"
-                            />
-                        </div>
-
-                        <section className="flex gap-3">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="text-sm h-11 w-24">
-                                        <ListFilter size={20} className="mr-2" />
-                                        Filter
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
-                                    <DropdownMenuCheckboxItem>Active</DropdownMenuCheckboxItem>
-                                    <DropdownMenuCheckboxItem>Inactive (Suspended)</DropdownMenuCheckboxItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </section>
-                    </div>
-                    <DataTable columns={columns} loading={isLoading} data={data?.data?.data} />
-
-                    <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                        <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-                            <SheetHeader>
-                                <SheetTitle>
-                                    {sheetType === "view" ? "View User" : "Edit User"}
-                                </SheetTitle>
-                            </SheetHeader>
-                            {selectedUser && (
-                                <div className="mt-4 space-y-4">
-                                    <p><strong>Name:</strong> {selectedUser.first_name} {selectedUser.last_name}</p>
-                                    <p><strong>Email:</strong> {selectedUser.email}</p>
-                                    {sheetType === "edit" && (
-                                        <Button>Edit Form Here</Button>
-                                    )}
-                                </div>
-                            )}
-                        </SheetContent>
-                    </Sheet>
-
+    return (
+        <>
+            <AddLawyerSheet />
+            <div className="p-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h1 className="text-2xl font-semibold">Lawyer Management</h1>
+                    <Button onClick={() => setIsOpen(true)} className="bg-red-600 text-white h-11">
+                        <Icons.plusIcon />
+                        Add New Lawyer
+                    </Button>
                 </div>
-            </>
+                <div className="flex items-center mt-6 gap-6 w-full justify-between">
+                    <div className="relative w-full">
+                        <Search className="absolute left-3 w-4 top-1/2 -translate-y-1/2  text-neutral" />
+                        <Input
+                            type="search"
+                            autoComplete="off"
+                            data-form-type="other"
+                            placeholder="Search User By Name"
+                            className="pl-9  h-11 w-full"
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
 
-        );
-    }
+                    <section className="flex gap-3">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="text-sm h-11 w-24">
+                                    <ListFilter size={20} className="mr-2" />
+                                    Filter
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
+                                <DropdownMenuCheckboxItem
+                                    onClick={() => setStatus("active")}
+                                >
+                                    Active
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem
+                                    onClick={() => setStatus("inactive")}
+                                >
+                                    Inactive (Suspended)
+                                </DropdownMenuCheckboxItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </section>
+                </div>
+                <DataTable onRowClick={handleRowClick} columns={columns} loading={isLoading} data={data?.data?.data} />
+
+                <CustomeSheet open={sheetOpen} setOpen={setSheetOpen}>
+                    <ViewEditLawyer lawyer={selectedUser} sheetType={sheetType} setOpen={setSheetOpen} />
+                </CustomeSheet>
+
+            </div>
+        </>
+
+    );
 }
 
 

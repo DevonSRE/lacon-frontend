@@ -13,7 +13,7 @@ import { ROLES } from "./types/auth";
  * @type {string[]}
  */
 export const authRoutes = [
-  "/signin"
+  "/signin", "/invitation", "/password/forgot", "/password/password-otp"
 ];
 
 export const publicRoutes = [
@@ -21,6 +21,8 @@ export const publicRoutes = [
   "/",
   "probuno",
   "/invitation",
+  "/password/forgot",
+  "/password/password-otp"
 ];
 
 /**

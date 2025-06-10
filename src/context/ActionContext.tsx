@@ -4,6 +4,9 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 type ActionContextType = {
   isOpen: boolean;
 
+  selectedUnit: string;
+  setSelectedUnit: (isHovered: string) => void;
+
   selectedZoneId: string;
   setSelectedZoneId: (isHovered: string) => void;
 
@@ -37,8 +40,8 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedStateId, setSeletedStateId] = useState("");
   const [selectedZoneId, setSelectedZoneId] = useState("");
   const [selectedDuration, setselectedDuration] = useState("");
-  const [selectedCentreId, setselectedCentreId ] = useState("");
-
+  const [selectedCentreId, setselectedCentreId] = useState("");
+  const [selectedUnit, setSelectedUnit] = useState("");
 
   const toggleOpen = () => {
     setIsOpen((prev) => !prev);
@@ -48,6 +51,8 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
   return (
     <ActionContext.Provider
       value={{
+        selectedUnit,
+        setSelectedUnit,
         isOpen,
         selectedStateId,
         setSeletedStateId,

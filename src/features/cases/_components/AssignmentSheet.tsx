@@ -1,79 +1,56 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { TCase } from "@/lib/types";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-
-type CaseType = "Criminal" | "Civil" | "Decongestion";
-
+import { useActionState, useState } from "react";
+import { ICase } from "./table-columns";
+import { SubmitButton } from "@/components/submit-button";
+import { AssignCaseAction } from "../server/caseAction";
 
 
-interface AssignmentSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  assignmentCase: TCase | null;
-  lawyers: string[];
-  setShowAssignSheet: (open: boolean) => void;
-  getCaseTypeBadgeColor: (caseType: CaseType) => string;
-}
 
-export const AssignmentSheet = ({
-  open,
-  onOpenChange,
-  assignmentCase,
-  lawyers,
-  setShowAssignSheet,
-  getCaseTypeBadgeColor,
-}: AssignmentSheetProps) => {
+export const AssignmentSheet = (details: { details: ICase | null }) => {
+  const [state, dispatch, isPending] = useActionState(AssignCaseAction, undefined);
+
   // const [open, setOpen] = useState(false);
   const [department, setDepartment] = useState("");
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[480px] flex flex-col gap-6 p-6">
-        <div className="space-y-2">
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="text-left p-0 text-sm"
-          >
-            ←
-          </Button>
-          <h2 className="text-lg font-semibold">Assign New case</h2>
-          <p className="text-sm text-gray-500">Case No: #LCN 001</p>
-        </div>
-
-        <div className="relative">
-          <Input placeholder="Search........" className="pr-10" />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-red-500 text-sm font-medium">
-            Filled: 08/04/25 by 8:30am
-          </p>
-          <div className="flex gap-2">
-            <Badge variant="secondary">Criminal Case</Badge>
-            <Badge variant="secondary">Lagos</Badge>
+    <div className="h-screen">
+      {/* Header Section */}
+      <div className="border-b  border-gray-200 pb-4 mb-6">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">
+              Assign New Case
+            </h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Case NO:  {details.details?.filed_date ?? "-"}
+            </p>
           </div>
         </div>
+        <div className=" bg-red-50 text-red-500 p-3 w-full  text-sm font-medium mb-2 text-center items-center">
+          Filled:   {details.details?.case_type ?? "-"}
+        </div>
+        <div className="flex justify-between gap-4">
+          <div className=" bg-red-50 text-red-500 p-3 w-full  text-sm font-medium mb-2 text-center items-center">
+            {details.details?.case_type ?? "-"} Cases
+          </div>
+          <div className=" bg-red-50 text-red-500 p-3 w-full  text-sm font-medium mb-2 text-center items-center">
+            {details.details?.location ?? "state"}
+          </div>
+        </div>
+      </div>
 
+      <form action={dispatch} className="w-full space-y-6">
+         <input type="hidden" name="casefile_id" value={details.details?.id ?? ""} />
         <div className="pt-4">
           <Label htmlFor="department" className="block text-sm font-medium">
             Select Department
           </Label>
-          <Select onValueChange={setDepartment}>
-            <SelectTrigger id="department">
+          <Select onValueChange={setDepartment} name="assigned_to" >
+            <SelectTrigger id="department" className="h-11">
               <SelectValue placeholder="Choose Department to Assign case" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounde-xs">
               <SelectItem value="criminal">Criminal Justice Department Head</SelectItem>
               <SelectItem value="civil">Civil Justice Department Head</SelectItem>
               <SelectItem value="decongestion">Decongestion Unit Head</SelectItem>
@@ -84,10 +61,17 @@ export const AssignmentSheet = ({
           </Select>
         </div>
 
-        <div className="mt-auto">
-          <Button className="w-full">Next →</Button>
+        <div className="mt-14">
+          <SubmitButton
+            value="Submit"
+            // loading={isPending}
+            pendingValue="Processing..."
+            className="w-full  bg-red-500 hover:bg-red-600 text-white py-2 rounded mt-2"
+          />
+
         </div>
-      </SheetContent>
-    </Sheet>
+      </form>
+
+    </div>
   );
 };

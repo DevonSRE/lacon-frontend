@@ -7,20 +7,7 @@ import { Icons } from '@/icons/icons';
 import { Button } from '@/components/ui/button';
 
 
-/**
- * A component that renders a report page, which
- * displays a table and charts of data.
- *
- * The component has two views: a sheet report and a
- * visual report. The sheet report displays a table
- * with some data, while the visual report displays
- * charts and other visualizations of the same data.
- *
- * The component also has a button that allows the
- * user to toggle between the two views.
- *
- * @returns {JSX.Element} The JSX element representing the Report component.
- */
+
 export default function Report() {
 
 

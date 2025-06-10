@@ -57,7 +57,7 @@ const navItems: NavItem[] = [
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
+    roles: ["ZONAL DIRECTOR", "OSCAR UNIT HEAD", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
   },
   {
     icon: <Icons.report />,

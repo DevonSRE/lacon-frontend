@@ -41,6 +41,7 @@ export interface ILawyerManagement {
   name?: string;
   email: string;
   phone_number: string;
+  max_case_load: string;
   gender?: string;
   date_of_birth?: string;
   user_type: string;
