@@ -1,4 +1,4 @@
-import React, { useActionState, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react';
 import { ChevronLeft, Upload, User, FileText, Scale, Router } from 'lucide-react';
 import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema } from '../server/probonoSchema';
 import InputField from '@/components/form/input/InputField';
@@ -16,10 +16,15 @@ import { submitPublicCaseForm } from '../server/action';
 import CaseIntakeDialog from './CaseIntakeDialog';
 import { useAction } from '@/context/ActionContext';
 
+interface CivilCaseFormProps {
+    currentStep?: number;
+    setCurrentStep?: Dispatch<SetStateAction<number>>;
+}
 
-const CivilCaseForm = () => {
+export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}}: CivilCaseFormProps) {
+
     const router = useRouter();
-    const [currentStep, setCurrentStep] = useState(1);
+    // const [currentStep, setCurrentStep] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [open, setOpen] = useState(false);
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
@@ -121,7 +126,7 @@ const CivilCaseForm = () => {
     };
 
     const handleNext = () => {
-        if (validateStep(currentStep)) {
+        if (validateStep(currentStep ?? "")) {
             if (currentStep < 2) {
                 setCurrentStep(currentStep + 1);
             } else {
@@ -160,14 +165,12 @@ const CivilCaseForm = () => {
                 onOpenChange={setOpen}
                 caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
             />
-            <div className="min-h-screen px-4">
+            <div className="min-h-screen">
                 {/* Header */}
-                <div className="w-full max-w-6xl mt-10 flex flex-col sm:flex-row sm:items-center">
+                <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                     <div className="flex items-center mb-4 sm:mb-0">
-                        <button className="p-2 hover:bg-gray-100" onClick={handleBack}>
-                            <ChevronLeft className="w-5 h-5" />
-                        </button>
-                        <h1 className="text-lg font-semibold text-gray-900 ml-2 sm:ml-4">
+
+                        <h1 className="text-lg font-semibold text-gray-900">
                             Filing A Civil Case
                         </h1>
                     </div>
@@ -567,5 +570,3 @@ const CivilCaseForm = () => {
 
     );
 };
-
-export default CivilCaseForm;

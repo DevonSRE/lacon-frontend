@@ -14,6 +14,9 @@ import { useAction } from "@/context/ActionContext";
 import { CustomeSheet } from "@/components/CustomSheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CivilCaseForm from "../probunoLawyers/components/CivilCaseForm";
+import CriminalCaseForm from "../probunoLawyers/components/CriminalCaseForm";
+import PDSSCaseForm from "../probunoLawyers/components/PSDDCaseForm";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 interface StatCardProps {
@@ -40,12 +43,16 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, titleColor 
 
 export default function CivilCriminalDashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
+
     const role = user?.role;
     const { setIsOpen } = useAction();
     const [openFileACase, setOpenFileACase] = useState(false);
     const [openCaseType, setCaseType] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
+
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
-    const handleCaseType = () => {
+    const handleCaseTypez = () => {
+        console.log(caseTypeFilter);
         setCaseType(true);
     }
     return (
@@ -66,10 +73,13 @@ export default function CivilCriminalDashboard() {
                             )}
 
                             {(role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT) && (
-                                <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
-                                    <CirclePlus size={20} />
-                                    Add New Lawyer
-                                </Button>
+                                <>
+                                    <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
+                                        <CirclePlus size={20} />
+                                        Add New Lawyer
+                                    </Button>
+                                    <AddLawyerSheet />
+                                </>
                             )}
 
                         </div>
@@ -109,24 +119,23 @@ export default function CivilCriminalDashboard() {
                     </div>
                 </div>
                 {/* Add a Lawyer Component shee */}
-                <AddLawyerSheet />
                 <CustomeSheet open={openFileACase} setOpen={setOpenFileACase} >
-                    <div className="mt-6 space-y-10">
+                    <div className="mt-6 space-y-6">
                         <h1 className="text-xl font-semibold">File A Case</h1>
-
                         <Select value={caseTypeFilter} onValueChange={setCaseTypeFilter}>
                             <SelectTrigger className="w-full h-11">
                                 <SelectValue placeholder="Case Type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Criminal">Criminal</SelectItem>
                                 <SelectItem value="Civil">Civil</SelectItem>
-                                <SelectItem value="Decongestion">Decongestion</SelectItem>
+                                <SelectItem value="Criminal">Criminal</SelectItem>
+                                <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
+                                <SelectItem value="PDSS2">PDSS(In Organanization)</SelectItem>
                             </SelectContent>
                         </Select>
 
                         <Button
-                            onClick={handleCaseType}
+                            onClick={handleCaseTypez}
                             disabled={!caseTypeFilter}
                             className={`w-full bg-red-500 h-11 ${caseTypeFilter ? 'bg-red-600 hover:bg-red-700' : ''}`}>
                             Proceed
@@ -134,8 +143,13 @@ export default function CivilCriminalDashboard() {
                     </div>
                 </CustomeSheet>
 
-                <CustomeSheet open={openCaseType} setOpen={setCaseType} >
-                  ({caseTypeFilter === "Civil" && <CivilCaseForm />})
+                <CustomeSheet open={openCaseType} setOpen={setCaseType} className="min-w-3xl " >
+                    <div className="mt-6">
+                        {caseTypeFilter === "Civil" && <CivilCaseForm />}
+                        {caseTypeFilter === "Criminal" && <CriminalCaseForm />}
+                        {caseTypeFilter === "PDSS1" && <PDSSCaseForm />}
+                        {caseTypeFilter === "PDSS2" && <PDSSCaseForm />}
+                    </div>
                 </CustomeSheet>
             </div >
         </>
