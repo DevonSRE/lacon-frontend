@@ -23,10 +23,7 @@ export default function Dashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
-    // PDSS / Paralegal
-    if (role === ROLES.PARALEGAL) {
-        return <PdssDashboard />;
-    }
+
 
     // Lawyers
     if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER) {
@@ -58,7 +55,7 @@ export default function Dashboard() {
         );
     }
 
-    if (role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || role === ROLES.OSCAR_UNIT_HEAD) {
+    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS || role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || role === ROLES.OSCAR_UNIT_HEAD) {
         return (<CivilCriminalDashboard />);
     }
 

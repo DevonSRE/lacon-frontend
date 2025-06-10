@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useActionState, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
 import { ChevronLeft, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
@@ -17,16 +17,22 @@ import CaseIntakeDialog from './CaseIntakeDialog'
 import { useAction } from '@/context/ActionContext'
 import { Label } from '@/components/ui/label'
 
+interface CivilCaseFormProps {
+  currentStep?: number;
+  setCurrentStep?: Dispatch<SetStateAction<number>>;
+}
 
-export default function CriminalCaseForm() {
+export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
+
+  // export default function CriminalCaseForm() {
   const router = useRouter();
-  const [currentStep, setCurrentStep] = useState(1);
+  // const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
   const { selectedStateId, setIsOpen } = useAction();
   useEffect(() => {
-    console.log("selectedStateId => " +selectedStateId);
+    console.log("selectedStateId => " + selectedStateId);
     if (selectedStateId === "") {
       setIsOpen(true);
     }
@@ -168,11 +174,11 @@ export default function CriminalCaseForm() {
       />
       <div className="mx-auto bg-white">
         {/* Header */}
-        <div className="flex items-center justify-between p-4">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <button onClick={handleBack} className="p-1">
+            {/* <button onClick={handleBack} className="p-1">
               <ChevronLeft className="w-5 h-5" />
-            </button>
+            </button> */}
             <h1 className="text-lg font-semibold">Filing A Criminal Case</h1>
           </div>
           <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">

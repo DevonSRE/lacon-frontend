@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useActionState, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
 import { ChevronLeft, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
@@ -18,9 +18,16 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 
-export default function PDSSCaseForm() {
+
+interface CivilCaseFormProps {
+    currentStep?: number;
+    setCurrentStep?: Dispatch<SetStateAction<number>>;
+}
+
+export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
+
+    // export default function PDSSCaseForm() {
     const router = useRouter();
-    const [currentStep, setCurrentStep] = useState(1)
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();
     const [open, setOpen] = useState(false);
@@ -157,11 +164,11 @@ export default function PDSSCaseForm() {
             />
             <div className="min-h-screen px-4">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 ">
+                <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        <button onClick={handleBack} className="p-1">
+                        {/* <button onClick={handleBack} className="p-1">
                             <ChevronLeft className="w-5 h-5" />
-                        </button>
+                        </button> */}
                         <h1 className="text-lg font-semibold">Filing A PDSS Case</h1>
                     </div>
                     <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
