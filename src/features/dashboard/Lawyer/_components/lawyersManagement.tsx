@@ -78,7 +78,7 @@ export default function Lawyers() {
     return (
         <>
             <AddLawyerSheet />
-            <div className="p-6">
+            <div className="">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-semibold">Lawyer Management</h1>
                     <Button onClick={() => setIsOpen(true)} className="bg-red-600 text-white h-11">

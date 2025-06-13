@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
 
 export default function CasesPage() {
-    redirect("/users-role/all");
+    redirect("/users/all");
 }

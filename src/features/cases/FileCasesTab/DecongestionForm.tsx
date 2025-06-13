@@ -1,6 +1,7 @@
+
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react';
 import { ChevronLeft, Upload, User, FileText, Scale, Router } from 'lucide-react';
-import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema } from '../server/probonoSchema';
+import { caseDetailsSchema, FormDataDEcongestionCase, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema';
 import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
 import SelectField from '@/components/SelectField';
@@ -8,20 +9,19 @@ import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
-import { useFormState, useFormStatus } from 'react-dom';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
-import { submitPublicCaseForm } from '../server/action';
-import CaseIntakeDialog from './CaseIntakeDialog';
+import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
+import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { useAction } from '@/context/ActionContext';
 
-interface CivilCaseFormProps {
+interface DecongestionFormProps {
     currentStep?: number;
     setCurrentStep?: Dispatch<SetStateAction<number>>;
 }
 
-export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}}: CivilCaseFormProps) {
+export default function DecongestionForm({ currentStep = 1, setCurrentStep = () => { } }: DecongestionFormProps) {
 
     const router = useRouter();
     // const [currentStep, setCurrentStep] = useState(1);
@@ -54,7 +54,8 @@ export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}
         }
     }, [state]);
 
-    const [formData, setFormData] = useState<FormDataCivilCase>({
+    const [formData, setFormData] = useState<FormDataDEcongestionCase>({
+        // Personal Info
         first_name: '',
         middle_name: '',
         last_name: '',
@@ -68,27 +69,45 @@ export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}
         occupation: '',
         disability_proof: null,
         disability_status: '',
-        complaint: '',
-        average_income: '',
-        offence: '',
-        legal_aid_reason: '',
-        number_of_dependants: '',
-        client_location: '',
-        registration_number: '',
-        case_number: '',
-        court_of_hearing: '',
-        case_status: '',
-        defendant_name: '',
-        defendant_address: '',
-        defendant_phone_number: '',
-        court_location: '',
-        date_of_admission: '',
-        bail_status: '',
+
+        // Case Details
+        case_name: '',
+        name_of_defendant: '',
+        offence_charged: '',
+        charge_number: 0,
         court_of_trial: '',
-        prosecuting_agency: ''
+        date_of_arrest_or_complaint: '',
+        date_of_arraignment_or_commencement: '',
+        date_of_remand: '',
+        last_date_in_court: '',
+        next_adjournment: '',
+        bail_status: '',
+
+        // Defendant Info
+        sex: '',
+        date_of_birth_or_age: '',
+        name_of_relative: '',
+        relative_phone_number: '',
+
+        // Legal Service Info
+        offence: '',
+        arrest_date: '',
+        client_location: '',
+        last_court_date: '',
+        remand_date: '',
+        arraignment_date: '',
+        days_in_detention: 0,
+        counsel_paralegal: '',
+        counsel_designation: '',
+        name_of_counsel_or_firm_or_organisation_id: '',
+        nature_of_legal_service_provided: '',
+        case_status: '',
+        date_trial_ended: '',
+        case_outcome: ''
     });
 
-    const handleSelectChange = (value: string, name: keyof FormDataCivilCase) => {
+
+    const handleSelectChange = (value: string, name: keyof FormDataDEcongestionCase) => {
         console.log('Select changed:', name, value); // Debug log
         setFormData(prev => ({
             ...prev,
@@ -101,7 +120,7 @@ export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}
         }
     };
 
-    const updateField = (field: keyof FormDataCivilCase, value: string | File | null) => {
+    const updateField = (field: keyof FormDataDEcongestionCase, value: string | File | null) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         if (errors[field]) {
             // toast.error(errors[field]);
@@ -394,143 +413,155 @@ export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}
                         {currentStep === 2 && (
                             <div className="bg-white flex flex-col  mt-5 ">
 
-                                <div className="mb-6">
-                                    <TextAreaField
-                                        name="complaint"
-                                        label="Complaint"
-                                        placeholder="Type the Complaint Here"
+                                <InputField
+                                    label="Case Name"
+                                    required
+                                    name="case_name"
+                                    type="text"
+                                    placeholder="Enter Case Name"
+                                    value={formData.case_name}
+                                    onChange={(e) => updateField('case_name', e.target.value)}
+                                    className={`${errors.case_name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Name of Defendant"
+                                    required
+                                    name="name_of_defendant"
+                                    type="text"
+                                    placeholder="Enter Defendant's Name"
+                                    value={formData.name_of_defendant}
+                                    onChange={(e) => updateField('name_of_defendant', e.target.value)}
+                                    className={`${errors.name_of_defendant ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Offence charged"
+                                    required
+                                    name="offence_charged"
+                                    type="text"
+                                    placeholder="Type the Offence Here"
+                                    value={formData.offence_charged}
+                                    onChange={(e) => updateField('offence_charged', e.target.value)}
+                                    className={`${errors.offence_charged ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Charge Number"
+                                    name="charge_number"
+                                    type="number"
+                                    placeholder="0"
+                                    value={formData.charge_number}
+                                    onChange={(e) => updateField('charge_number', e.target.value)}
+                                    className={`${errors.charge_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Court of Trial"
+                                    required
+                                    name="court_of_trial"
+                                    type="text"
+                                    placeholder="Enter Court"
+                                    value={formData.court_of_trial}
+                                    onChange={(e) => updateField('court_of_trial', e.target.value)}
+                                    className={`${errors.court_of_trial ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Date of Arrest/Complaint"
+                                    required
+                                    name="arrest_date"
+                                    type="date"
+                                    value={formData.arrest_date}
+                                    onChange={(e) => updateField('arrest_date', e.target.value)}
+                                    className={`${errors.arrest_date ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Date of Arraignment/Commencement"
+                                    required
+                                    name="arraignment_date"
+                                    type="date"
+                                    value={formData.arraignment_date}
+                                    onChange={(e) => updateField('arraignment_date', e.target.value)}
+                                    className={`${errors.arraignment_date ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+
+                                <InputField
+                                    label="Date of Remand (if different)"
+                                    name="remand_date"
+                                    type="date"
+                                    value={formData.remand_date}
+                                    onChange={(e) => updateField('remand_date', e.target.value)}
+                                    className={`${errors.remand_date ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
+                                <div>
+                                    <SelectField
+                                        name="gender"
+                                        label="Gender"
+                                        placeholder="Select Gender"
+                                        options={[
+                                            { value: 'Male', label: 'Male' },
+                                            { value: 'Female', label: 'Female' }
+                                        ]}
                                         required
-                                        value={formData.complaint}
-                                        onChange={(e) => updateField('complaint', e.target.value)}
-                                        error={errors.complaint}
+                                        value={formData.gender} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'gender')}
+                                        error={!!errors.gender}
+                                        errorMessage={errors.gender}
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <InputField
-                                            label='Average Income '
-                                            name="average_income"
-                                            type="text"
-                                            required
-                                            placeholder="N 00,000,000.00"
-                                            value={formData.average_income}
-                                            onChange={(e) => updateField('average_income', e.target.value)}
-                                            className={` ${errors.average_income ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.average_income && <p className="text-red-500 text-xs mt-1">{errors.average_income}</p>}
-                                    </div>
 
-                                    <div>
-                                        <InputField
-                                            label='Number of Dependants '
-                                            type="number"
-                                            name="number_of_dependants"
-                                            required
-                                            placeholder="0"
-                                            value={formData.number_of_dependants}
-                                            onChange={(e) => updateField('number_of_dependants', e.target.value)}
-                                            className={` ${errors.number_of_dependants ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.number_of_dependants && <p className="text-red-500 text-xs mt-1">{errors.number_of_dependants}</p>}
-                                    </div>
-                                </div>
-
-                                <div className="mb-6">
-                                    <TextAreaField
-                                        name="legal_aid_reason"
-                                        label="Reasons for applying for legal aid"
-                                        placeholder="Type the reasons for legal aid here"
+                                <div>
+                                    <SelectField
+                                        name="marital_status"
+                                        label="Marital Status"
+                                        placeholder="Marital Status"
+                                        options={[
+                                            { value: 'Single', label: 'Single' },
+                                            { value: 'Married', label: 'Married' },
+                                            { value: 'Divorced', label: 'Divorced' },
+                                            { value: 'Widowed', label: 'Widowed' }
+                                        ]}
                                         required
-                                        value={formData.legal_aid_reason}
-                                        onChange={(e) => updateField('legal_aid_reason', e.target.value)}
-                                        error={errors.legal_aid_reason}
+                                        value={formData.marital_status} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'marital_status')}
+                                        error={!!errors.marital_status}
+                                        errorMessage={errors.marital_status}
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <div>
-                                        <InputField
-                                            type="text"
-                                            required
-                                            name="registration_number"
-                                            label=' Registration Number'
-                                            placeholder="000000000000000"
-                                            value={formData.registration_number}
-                                            onChange={(e) => updateField('registration_number', e.target.value)}
-                                            className={` ${errors.registration_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.registration_number && <p className="text-red-500 text-xs mt-1">{errors.registration_number}</p>}
-                                    </div>
+                                <InputField
+                                    label="Last Date in Court"
+                                    name="last_court_date"
+                                    type="date"
+                                    value={formData.last_court_date}
+                                    onChange={(e) => updateField('last_court_date', e.target.value)}
+                                    className={`${errors.last_court_date ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
 
-                                    <div>
-                                        <InputField
-                                            label='Case No'
-                                            name="case_number"
-                                            type="text"
-                                            placeholder="000000000000"
-                                            value={formData.case_number}
-                                            onChange={(e) => updateField('case_number', e.target.value)}
-                                            className={` ${errors.case_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.case_number && <p className="text-red-500 text-xs mt-1">{errors.case_number}</p>}
-                                    </div>
+                                <InputField
+                                    label="Next Adjournment"
+                                    required
+                                    name="next_adjournment"
+                                    type="date"
+                                    value={formData.next_adjournment}
+                                    onChange={(e) => updateField('next_adjournment', e.target.value)}
+                                    className={`${errors.next_adjournment ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
 
-                                    <div>
-                                        <InputField
-                                            label='Court of Hearing'
-                                            type="text"
-                                            name="court_of_hearing"
-                                            placeholder="Enter Court Name"
-                                            value={formData.court_of_hearing}
-                                            onChange={(e) => updateField('court_of_hearing', e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                        />
-                                    </div>
-                                </div>
+                                <InputField
+                                    label="Bail Status"
+                                    required
+                                    name="bail_status"
+                                    type="text"
+                                    placeholder="Granted, Denied, etc."
+                                    value={formData.bail_status}
+                                    onChange={(e) => updateField('bail_status', e.target.value)}
+                                    className={`${errors.bail_status ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                />
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                                    <div>
-                                        <InputField
-                                            type="text"
-                                            name="defendant_name"
-                                            label="Defendant's Name"
-                                            required
-                                            placeholder="Enter Name"
-                                            value={formData.defendant_name}
-                                            onChange={(e) => updateField('defendant_name', e.target.value)}
-                                            className={` ${errors.defendant_name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.defendant_name && <p className="text-red-500 text-xs mt-1">{errors.defendant_name}</p>}
-                                    </div>
-
-                                    <div>
-                                        <InputField
-                                            type="text"
-                                            name="defendant_address"
-                                            label="Defendant's Address"
-                                            required
-                                            placeholder="Enter Address"
-                                            value={formData.defendant_address}
-                                            onChange={(e) => updateField('defendant_address', e.target.value)}
-                                            className={` ${errors.defendant_address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.defendant_address && <p className="text-red-500 text-xs mt-1">{errors.defendant_address}</p>}
-                                    </div>
-
-                                    <div>
-                                        <InputField
-                                            type="tel"
-                                            name="defendant_phone_number"
-                                            label=" Defendant's Phone number"
-                                            placeholder="080 0000 000"
-                                            value={formData.defendant_phone_number}
-                                            onChange={(e) => updateField('defendant_phone_number', e.target.value)}
-                                            className={` ${errors.defendant_phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.defendant_phone_number && <p className="text-red-500 text-xs mt-1">{errors.defendant_phone_number}</p>}
-                                    </div>
-                                </div>
                             </div>
                         )}
 

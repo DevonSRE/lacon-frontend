@@ -16,13 +16,6 @@ import { CustomeSheet } from '@/components/CustomSheet';
 import ViewCase from './_components/viewCase';
 import { ROLES } from '@/types/auth';
 
-const lawyers = [
-    'John Adebayo',
-    'Sarah Okonkwo',
-    'Michael Usman',
-    'Grace Okoro',
-    'David Lawal'
-];
 
 export default function CasesPage() {
     const [selectedCase, setSelectedCase] = useState<TCase | null>(null);
@@ -84,7 +77,7 @@ export default function CasesPage() {
     };
 
     return (
-        <div className="p-6">
+        <div className="">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Cases</h1>
 
             <SearchFilterSection

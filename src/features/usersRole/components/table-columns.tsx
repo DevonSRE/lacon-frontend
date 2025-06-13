@@ -221,3 +221,71 @@ export const createLawyerRequestColumns = (
     },
   ];
 };
+
+
+
+
+export const createProbunoRequestColumns = (userRole: ROLES,
+  onReview: (user: ILawyerRequest) => void): ColumnDef<ILawyerRequest>[] => {
+  return [
+    {
+      accessorKey: "LawyerName",
+      header: "Name",
+      cell: ({ row }) => <span>{row.original.LawyerName}</span>,
+    },
+    {
+      accessorKey: "Experience",
+      header: "Experience",
+      cell: ({ row }) => <span>{row.original.Experience}</span>,
+    },
+    {
+      accessorKey: "Speciaty",
+      header: "Speciaty",
+      cell: ({ row }) => <span>{row.original.Speciaty}</span>,
+    },
+    {
+      accessorKey: "MaxLoad",
+      header: "Preferred Load",
+      cell: ({ row }) => <span>{row.original.MaxLoad}</span>,
+    },
+    {
+      accessorKey: "Status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = row.original.Status;
+        const statusMap: Record<string, { label: string; color: string }> = {
+          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
+          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
+          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
+        };
+
+        const current = statusMap[status] || {
+          label: status,
+          color: "bg-gray-100 text-gray-800",
+        };
+
+        return (
+          <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
+            {current.label}
+          </span>
+        );
+      },
+    },
+
+    {
+      id: "actions",
+      header: "Action",
+      cell: ({ row }) => {
+        const user = row.original;
+        const status = row.original.Status;
+        return (
+          (status === "pending") ? (
+            <Button className="bg-red-500 text-white " onClick={() => onReview(user)}>Review</Button>
+          ) : (
+            <Button className="bg-gray-500 text-white " onClick={() => onReview(user)}>View</Button>
+          )
+        );
+      },
+    },
+  ];
+};

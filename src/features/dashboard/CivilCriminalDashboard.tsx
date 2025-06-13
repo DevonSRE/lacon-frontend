@@ -2,10 +2,7 @@ import React, { useState } from "react";
 import CaseStatCard from "./components/CaseStatsSummaryChart";
 import Intro from "@/components/Intro";
 import { AddLawyerSheet } from "./Lawyer/_components/addLawyer";
-import CaseStatsSummaryChart from "./components/CaseStatsSummaryChart";
 import { CircleFadingArrowUp, CirclePlus, CloudUpload, Plus, PlusCircle } from "lucide-react";
-
-import { CustomDialog } from "@/components/CustomDialog";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
@@ -13,9 +10,9 @@ import BulkCaseUploadDialog from "./components/BulkUpload";
 import { useAction } from "@/context/ActionContext";
 import { CustomeSheet } from "@/components/CustomSheet";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CivilCaseForm from "../probunoLawyers/components/CivilCaseForm";
-import CriminalCaseForm from "../probunoLawyers/components/CriminalCaseForm";
-import PDSSCaseForm from "../probunoLawyers/components/PSDDCaseForm";
+import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
+import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
+import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 
@@ -35,11 +32,6 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, titleColor 
         </div>
     );
 };
-
-// loading Screen
-// if (role === ROLES.PARALEGAL) {
-//     return <PdssDashboard />;
-// }
 
 export default function CivilCriminalDashboard() {
     const { data: user } = useAppSelector((state) => state.profile);

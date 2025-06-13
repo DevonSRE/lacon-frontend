@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import TablePagination from "@/components/TablePagination";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, Search } from "lucide-react";
+import { Filter, ListFilter, Plus, Search } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
 import { GetUserAction } from "./userRoleAction";
@@ -16,7 +16,6 @@ import { Input } from "@/components/ui/input";
 import { Icons } from "@/icons/icons";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-
 import { useDebounce } from 'use-debounce';
 import { ROLES } from "@/types/auth";
 import { useAppSelector } from "@/hooks/redux";
@@ -51,7 +50,6 @@ export default function UserRoles() {
             createUserColumns(user?.role as ROLES,
                 (user) => handleOpenSheet(user, "suspend"),
                 (user) => handleOpenSheet(user, "delete"),
-                // createUserColumns(user?.role!, "all"),
             ),
         [user?.role]
     );
@@ -64,7 +62,7 @@ export default function UserRoles() {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 keyword: debouncedSearchTerm ?? "",
-                user_type: selectedRole ?? "",
+                user_type: selectedRole ? selectedRole : "",
             };
             return await GetUserAction(filters);
         },
@@ -72,15 +70,11 @@ export default function UserRoles() {
     });
 
     const tabs = Object.entries(ROLES).map(([id, label]) => ({ id, label }));
-    const actionType: string[] = [
-        "create", "Suspension", "Delete"
-    ];
-    const handleRoleFilter = (role: ROLES) => {
-        setSelectedRole(role);
-        console.log("Filtering users by role:", role);
-    };
-    const handleActionType = (role: any) => {
-        setSelectedRole(role);
+
+    const handleRoleFilter = (role: ROLES | "All") => {
+        setSelectedRole(role === "All" ? undefined : role);
+        const searchInput = document.getElementsByName("searchTerm")[0] as HTMLInputElement;
+        if (searchInput) searchInput.value = "";
         console.log("Filtering users by role:", role);
     };
 
@@ -112,27 +106,27 @@ export default function UserRoles() {
                 <section className="flex gap-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="text-sm h-11 w-32">
-                                <Filter size={20} className="mr-2" />
-                                Filter
+                            <Button variant="outline" className="text-sm h-11 w-auto">
+                                <ListFilter size={20} className="mr-1" />
+                                {selectedRole ?? "All"}
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
-                            {/* {(tab === "request") ? (
-                actionType.map((action) => (
-                  <DropdownMenuCheckboxItem key={action} onClick={() => handleActionType(action)}>
-                    {action}
-                  </DropdownMenuCheckboxItem>
-                ))
-              ) : ( */}
+                        <DropdownMenuContent side="bottom" className="h-auto space-y-1 space-x-1 overflow-y-auto mr-10">
+                            <DropdownMenuCheckboxItem 
+                                checked={!selectedRole} 
+                                onCheckedChange={() => handleRoleFilter("All")}
+                            >
+                                All
+                            </DropdownMenuCheckboxItem>
                             {tabs.map((tab) => (
-                                <DropdownMenuCheckboxItem key={tab.id} onClick={() => handleRoleFilter(tab.label)}>
+                                <DropdownMenuCheckboxItem 
+                                    key={tab.id} 
+                                    checked={selectedRole === tab.label} 
+                                    onCheckedChange={() => handleRoleFilter(tab.label)}
+                                >
                                     {tab.label}
                                 </DropdownMenuCheckboxItem>
-                            ))
-                            }
-                            {/* )} */}
-
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </section>
