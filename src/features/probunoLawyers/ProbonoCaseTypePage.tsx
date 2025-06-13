@@ -1,8 +1,8 @@
 'use client'
 import { useParams, useRouter } from "next/navigation";
-import CivilCaseForm from "./components/CivilCaseForm";
-import CriminalCaseForm from "./components/CriminalCaseForm";
-import PDSSCaseForm from "./components/PSDDCaseForm";
+import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
+import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
+import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
 import { ChevronLeft } from "lucide-react";
 import { useState } from "react";
 

@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { Ban, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import TableContentLoader from "@/components/table-content-loader";
 import { Table } from "@/components/ui/table";
 
@@ -276,17 +276,24 @@ export const createLawyersManagementColumns = (
                 <MoreHorizontal className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="p-1 space-y-2">
+            <DropdownMenuContent align="end" className="p-1 space-y-2 border-[1px] border-black bg-gray-50">
               {(userRole !== ROLES.PLATFORM_ADMIN && userRole !== ROLES.DIRECTOR_GENERAL) && (
                 <>
-                  <DropdownMenuItem onClick={() => onView(user)}>View</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onEdit(user)}>Edit</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onView(user)}>
+                    View
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onEdit(user)}>
+                    Edit
+                  </DropdownMenuItem>
                 </>
               )}
-              <DropdownMenuItem onClick={() => onSuspend(user)}>Suspend Account</DropdownMenuItem>
-              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL) && (
+              <DropdownMenuItem onClick={() => onSuspend(user)}>
+                Suspend Lawyer
+              </DropdownMenuItem>
+
+              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL || userRole === ROLES.DECONGESTION_UNIT_HEAD) && (
                 <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
-                  Delete Account
+                  Delete Lawyer
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

@@ -216,6 +216,9 @@ export const PDSSCaseFullSchema = z.object({
 
 
 
+export type ReviewProbuno = {
+  decision: string;
+}
 export type FormDataCivilCase = {
   // Personal Info
   first_name: string;
@@ -290,6 +293,64 @@ export type FormDataPDSSCase = {
   date_trial_ended?: string;
   case_outcome?: string;
 };
+
+
+
+
+export type FormDataDEcongestionCase = {
+
+  // Personal Info
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  gender: string;
+  permanent_address: string;
+  age: number;
+  phone_number: string;
+  marital_status: string;
+  email: string;
+  state_of_origin: string;
+  occupation: string;
+  disability_proof: File | null;
+  disability_status: string;
+
+  // Case Details
+  case_name: string;
+  name_of_defendant: string;
+  offence_charged: string;
+  charge_number: number;
+  court_of_trial: string;
+  date_of_arrest_or_complaint: string; // ISO date string
+  date_of_arraignment_or_commencement: string; // ISO date string
+  date_of_remand?: string; // ISO date string
+  last_date_in_court?: string; // ISO date string
+  next_adjournment: string; // ISO date string
+  bail_status: string;
+
+  // Defendant Info
+  sex: string;
+  date_of_birth_or_age: string;
+  name_of_relative: string;
+  relative_phone_number: string;
+
+  // Original fields preserved if still applicable
+  offence: string;
+  arrest_date: string;
+  arraignment_date: string;
+  remand_date: string;
+  last_court_date: string;
+  client_location: string;
+  days_in_detention: number;
+  counsel_paralegal: string;
+  counsel_designation: string;
+  name_of_counsel_or_firm_or_organisation_id: string;
+  nature_of_legal_service_provided?: string;
+  case_status?: string;
+  date_trial_ended?: string;
+  case_outcome?: string;
+};
+
+
 
 
 

@@ -28,6 +28,9 @@ export interface ILawyerRequest {
   first_name: string;
   Status: string;
   LawyerEmail: string;
+  Experience: string;
+  MaxLoad: string;
+  Speciaty: string;
   RequestedByID: string;
   RequestedName: string;
   status: string;
