@@ -11,6 +11,14 @@ const UserService = {
     async updateLawyers(payload: any, id: string) {
         return await axiosInstance.patch(`/users/${id}`, payload);
     },
+    async deleteUser(id: string) {
+        return await axiosInstance.delete(`/users/${id}`);
+    },
+    async suspendUser(id: string) {
+        return await axiosInstance.patch(`/users/${id}`, { status: "INACTIVE" });
+    },
+
+ 
 }
 
 export default UserService;

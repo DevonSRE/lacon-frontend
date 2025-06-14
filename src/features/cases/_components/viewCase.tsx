@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export default function ViewCase(details: { details: ICase | null }) {
 
     return (
-        <div className="h-screen">
+        <div className="h-screen w-full">
             {/* Header Section */}
             <div className="border-b h-1/12 border-gray-200 pb-4 mb-6">
                 <div className="flex justify-between items-start mb-2">
@@ -19,11 +19,11 @@ export default function ViewCase(details: { details: ICase | null }) {
                         </p>
                     </div>
                 </div>
-                <div className="flex justify-between gap-4">
-                    <div className="inline-block bg-red-50 text-red-500 p-3 w-full  text-sm font-medium mb-2 text-center items-center">
+                <div className="flex justify-between gap-4 text-xs">
+                    <div className="inline-block bg-red-50 text-red-500 p-3 w-full font-medium mb-2 text-center items-center">
                         {details.details?.case_type ?? "-"}
                     </div>
-                    <div className="inline-block bg-red-50 text-red-500 p-3 w-full  text-sm font-medium mb-2 text-center items-center">
+                    <div className="inline-block bg-red-50 text-red-500 p-3 w-full font-medium mb-2 text-center items-center">
                         {details.details?.location ?? "state"}
                     </div>
                 </div>
@@ -37,7 +37,7 @@ export default function ViewCase(details: { details: ICase | null }) {
                         <div className="space-y-3">
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Name of Client:</span>
-                                <span className="text-gray-900 font-semibold">{details?.details?.name ?? "-"}</span>
+                                <span className="text-gray-900 font-semibold">{details?.details?.first_name ?? "-"} {details?.details?.last_name ?? "-"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Sex:</span>
@@ -83,49 +83,114 @@ export default function ViewCase(details: { details: ICase | null }) {
                         Case Information
                     </h2>
                     <div className="grid grid-cols-1  gap-4 text-xs">
-                        <div className="space-y-3">
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Offenses:</span>
-                                <span className="text-gray-900 font-semibold">{details?.details?.offenses ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Date Case Opened:</span>
-                                <span className="text-gray-900">{details?.details?.date_case_opened ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Client Location:</span>
-                                <span className="text-gray-900">{details?.details?.client_location ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Date of Admission:</span>
-                                <span className="text-gray-900">{details?.details?.date_of_admission ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Average Monthly Income:</span>
-                                <span className="text-gray-900">{details?.details?.average_monthly_income ?? "-"}</span>
-                            </div>
+                        {details.details?.case_type === "PDSS ORGANIZATION" && (
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Offenses:</span>
+                                    <span className="text-gray-900 font-semibold">{details?.details?.pdss?.offence ?? "-"}</span>
+                                </div>
+                                {/* <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Date Case Opened:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.date_case_opened ?? "-"}</span>
+                                </div> */}
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Client Location:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.client_location ?? "-"}</span>
+                                </div>
+                                {/* <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Date of Admission:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.date_of_admission ?? "-"}</span>
+                                </div> */}
 
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Reason for Legal Aid:</span>
-                                <span className="text-gray-900">{details?.details?.reason_for_legal_aid ?? "-"}</span>
+
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Days in Detention:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.days_in_detention ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Counsel or Paralegal:</span>
+                                    <span className="text-green-700 font-semibold">{details?.details?.pdss?.counsel_or_paralegal ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Counsel Designation:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.counsel_designation ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Counsel Firm or Org ID:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.counsel_firm_or_org_id ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Nature of Legal Service:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.nature_of_legal_service ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Case Status:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.case_status ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Bail Status:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.bail_status ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Date Trial Ended:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.date_trial_ended ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Case Outcome:</span>
+                                    <span className="text-gray-900">{details?.details?.pdss?.case_outcome ?? "-"}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Legal Aid Application Status:</span>
-                                <span className="text-green-700 font-semibold">{details?.details?.legal_aid_application_status ?? "-"}</span>
+                        )}
+
+                        {details.details?.case_type === "CIVIL CASE" && (
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Casefile ID:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.casefile_id ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Complaint:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.complaint ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Average Income:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.average_income ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Legal Aid Reason:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.legal_aid_reason ?? "-"}</span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Number of Dependants:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.number_of_dependants ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Registration Number:</span>
+                                    <span className="text-green-700 font-semibold">{details?.details?.civil_case?.registration_number ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Case Number:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.case_number ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Court of Hearing:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.court_of_hearing ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Defendant Name:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.defendant_name ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Defendant Address:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.defendant_address ?? "-"}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500 font-medium">Defendant Phone Number:</span>
+                                    <span className="text-gray-900">{details?.details?.civil_case?.defendant_phone_number ?? "-"}</span>
+                                </div>
                             </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Date Legal Aid Granted:</span>
-                                <span className="text-gray-900">{details?.details?.date_legal_aid_granted ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Counsel Assigned:</span>
-                                <span className="text-gray-900">{details?.details?.counsel_assigned ?? "-"}</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-gray-500 font-medium">Counsel Designation:</span>
-                                <span className="text-gray-900">{details?.details?.counsel_designation ?? "-"}</span>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
                 <div>
@@ -136,23 +201,23 @@ export default function ViewCase(details: { details: ICase | null }) {
                         <div className="space-y-3">
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Court Suit/Case No:</span>
-                                <span className="text-gray-900 font-semibold">{details?.details?.offenses ?? "-"}</span>
+                                <span className="text-gray-900 font-semibold">{details?.details?.judiciary?.case_number ?? "-"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Bail Status:</span>
-                                <span className="text-gray-900">{details?.details?.date_case_opened ?? "-"}</span>
+                                <span className="text-gray-900">{details?.details?.judiciary?.bail_status ?? "-"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Court of Trial:</span>
-                                <span className="text-gray-900">{details?.details?.client_location ?? "-"}</span>
+                                <span className="text-gray-900">{details?.details?.judiciary?.trial_of_court ?? "-"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Prosecuting Agency::</span>
-                                <span className="text-gray-900">{details?.details?.date_of_admission ?? "-"}</span>
+                                <span className="text-gray-900">{details?.details?.judiciary?.prosecuting_agency ?? "-"}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-gray-500 font-medium">Current Case Status:</span>
-                                <span className="text-gray-900">{details?.details?.average_monthly_income ?? "-"}</span>
+                                <span className="text-gray-900">{details?.details?.judiciary?.current_case_status ?? "-"}</span>
                             </div>
 
                         </div>

@@ -19,13 +19,15 @@ type CustomeSheetProps = {
 
 export function CustomeSheet({ open, setOpen, children, className, backButton = true }: CustomeSheetProps) {
     return (
-        <Sheet open={open} onOpenChange={setOpen}>
-            <SheetContent className={cn(className, "h-screen overflow-auto")} >
+        <Sheet open={open} onOpenChange={setOpen}  >
+            {/* <SheetContent  className={cn(className)}> */}
+            <SheetContent side="right" className={cn("w-full sm:max-w-[450px]", className)}>
+
                 <div className="space-y-10 p-5">
                     {backButton &&
                         <span><ArrowLeft onClick={() => setOpen(false)} /></span>
                     }
-                    <div>{children}</div>
+                    <div className="mt-4">{children}</div>
                 </div>
             </SheetContent>
         </Sheet>

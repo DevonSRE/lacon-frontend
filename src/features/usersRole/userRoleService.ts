@@ -16,6 +16,11 @@ const usersServices = {
             params: param,
         });
     },
+    async getUserType(param: any) {
+        return await axiosInstance.get("/users/get-user-by-type", {
+            params: param,
+        });
+    },
 }
 
 export default usersServices;

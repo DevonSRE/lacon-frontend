@@ -5,7 +5,7 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Ban, Trash2 } from "lucide-react";
+import { MoreHorizontal, Ban, Trash2, MoreVertical } from "lucide-react";
 import { ROLES } from "@/types/auth";
 
 
@@ -81,9 +81,7 @@ export const createUserColumns = (
         };
 
         return (
-          <span
-            className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}
-          >
+          <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
             <span className="h-2 w-2 rounded-full bg-current" />
             {current.label}
           </span>
@@ -97,29 +95,20 @@ export const createUserColumns = (
         const user = row.original;
 
         // Optional: restrict actions based on role
-        if (userRole !== "ADMIN") return null;
+        if (userRole !== "ADMIN" && userRole !== "DIRECTOR GENERAL") return null;
 
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="p-1 space-y-4">
+            <DropdownMenuContent align="end" className="p-1 space-y-2 bg-gray-50 rounded-xs hover:bg-gray-200 text-xs" >
               <DropdownMenuItem onClick={() => onSuspend(user)}>
-                <Ban className="h-4 w-4 mr-2" />
                 Suspend Account
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  if (confirm(`Are you sure you want to delete ${user.first_name}?`)) {
-                    onDelete(user);
-                  }
-                }}
-                className="text-red-600"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
+              <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
                 Delete Account
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -132,8 +121,9 @@ export const createUserColumns = (
 
 export const createLawyerRequestColumns = (
   userRole: ROLES,
-  onSuspend: (user: ILawyerRequest) => void,
-  onDelete: (user: ILawyerRequest) => void
+  onDetails: (user: ILawyerRequest) => void,
+  onApprove: (user: ILawyerRequest) => void,
+  onRejeect: (user: ILawyerRequest) => void
 ): ColumnDef<ILawyerRequest>[] => {
   return [
     {
@@ -195,24 +185,18 @@ export const createLawyerRequestColumns = (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="p-1 space-y-4">
-              <DropdownMenuItem onClick={() => onSuspend(user)}>
-                <Ban className="h-4 w-4 mr-2" />
-                Suspend Account
+            <DropdownMenuContent align="end" className="p-1 space-y-2 bg-gray-50 rounded-xs hover:bg-gray-200 text-xs" >
+              <DropdownMenuItem onClick={() => onDetails(user)}>
+                Details
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  if (confirm(`Are you sure you want to delete ${user.first_name}?`)) {
-                    onDelete(user);
-                  }
-                }}
-                className="text-red-600"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Account
+              <DropdownMenuItem onClick={() => onApprove(user)}>
+                Approve
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onRejeect(user)}>
+                Reject
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
