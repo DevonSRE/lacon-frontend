@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Ban, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { Ban, MoreHorizontal, MoreVerticalIcon, Pencil, Trash2 } from "lucide-react";
 import TableContentLoader from "@/components/table-content-loader";
 import { Table } from "@/components/ui/table";
 
@@ -273,7 +273,7 @@ export const createLawyersManagementColumns = (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
+                <MoreVerticalIcon className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="p-1 space-y-2 border-[1px] border-black bg-gray-50">
@@ -291,7 +291,7 @@ export const createLawyersManagementColumns = (
                 Suspend Lawyer
               </DropdownMenuItem>
 
-              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.DIRECTOR_GENERAL || userRole === ROLES.DECONGESTION_UNIT_HEAD) && (
+              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.ZONAL_DIRECTOR || userRole === ROLES.DIRECTOR_GENERAL || userRole === ROLES.DECONGESTION_UNIT_HEAD) && (
                 <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
                   Delete Lawyer
                 </DropdownMenuItem>

@@ -132,7 +132,8 @@ export const createLawyerRequestColumns = (
       cell: ({ row }) => {
         const action = row.original.Action;
         const actionMap: Record<string, { label: string; color: string }> = {
-          Creation: { label: "Creation", color: "bg-teal-100 text-teal-700" },
+          Creation: { label: "Create", color: "bg-green-100 text-teal-700" },
+          approve: { label: "approve", color: "bg-yellow-100 text-yellow-700" },
           Suspension: { label: "Suspension", color: "bg-yellow-100 text-yellow-700" },
           "Delete Request": { label: "Delete Request", color: "bg-red-100 text-red-600" },
         };
@@ -143,7 +144,7 @@ export const createLawyerRequestColumns = (
         };
 
         return (
-          <div className={`inline-flex  items-center px-10 gap-2   py-2 text-sm font-medium rounded-xs ${current.color}`}>
+          <div className={`inline-flex w-52 h-11  items-center px-10 gap-2   py-2 text-sm font-medium rounded-xs ${current.color}`}>
             <input type="checkbox" className="mr-2" />
             {current.label}
           </div>

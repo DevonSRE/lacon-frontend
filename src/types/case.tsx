@@ -21,7 +21,8 @@ export interface IUser {
   status: string;
 }
 export interface ILawyerRequest {
-  id: string;
+  ID: string;
+  LawyerID: string;
   LawyerName: string;
   Reason: string;
   Action : string;

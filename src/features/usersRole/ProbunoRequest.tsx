@@ -108,12 +108,12 @@ export default function ProbunoRequest() {
                                 <DropdownMenuCheckboxItem checked={selectedRole === tab} onClick={() => handleActionType(tab)}>
                                     {tab}
                                 </DropdownMenuCheckboxItem>
-                            ))};
+                            ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </section>
             </div>
-            <DataTable columns={columns} loading={isLoading} data={data?.data.data} />
+            <DataTable onRowClick={(user) => handleOpenSheet(user, "review")} columns={columns} loading={isLoading} data={data?.data.data} />
             {data?.data?.data.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
@@ -125,7 +125,7 @@ export default function ProbunoRequest() {
                 </div>
             )}
             <AddUserSheet />
-            <CustomDialog open={dailogOpen} setOpen={setdailogOpen} className="w-4xl">
+            <CustomDialog open={dailogOpen} setOpen={setdailogOpen} className="w-4xl h-[700px] overflow-auto">
                 <ReviewProbuno open={dailogOpen} setOpen={setdailogOpen} />
             </CustomDialog>
         </div>

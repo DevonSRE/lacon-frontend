@@ -17,10 +17,10 @@ import { Icons } from "@/icons/icons";
 import { useAppSelector } from "@/hooks/redux";
 import { ILawyerManagement } from "@/types/case";
 import { ROLES } from "@/types/auth";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { CustomeSheet } from "@/components/CustomSheet";
 import ViewEditLawyer from "./sheet/ViewEditLawyer";
 import { useDebounce } from 'use-debounce';
+import TablePagination from "@/components/TablePagination";
 
 
 export default function Lawyers() {
@@ -123,6 +123,16 @@ export default function Lawyers() {
                     </section>
                 </div>
                 <DataTable onRowClick={handleRowClick} columns={columns} loading={isLoading} data={data?.data?.data} />
+                {data?.data?.data.length > 0 && (
+                    <div className="flex justify-end pt-4">
+                        <TablePagination
+                            currentPage={currentPage}
+                            totalCount={data?.data.total_rows}
+                            pageSize={DEFAULT_PAGE_SIZE}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
+                    </div>
+                )}
 
                 <CustomeSheet open={sheetOpen} setOpen={setSheetOpen}>
                     <ViewEditLawyer lawyer={selectedUser} sheetType={sheetType} setOpen={setSheetOpen} />

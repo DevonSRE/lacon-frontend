@@ -32,6 +32,7 @@ import { set } from "zod";
 export default function LawyersRequest() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
+    const [reason, setReason] = useState("");
     const { setIsOpen } = useAction();
     const [Actiontype, setActiontype] = useState<ROLES | undefined>(undefined);
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
@@ -63,8 +64,6 @@ export default function LawyersRequest() {
             ),
         [user?.role]
     );
-
-
     const { data, isLoading } = useQuery({
         queryKey: ["getLawyersRequest", currentPage, debouncedSearchTerm, Actiontype],
         queryFn: async () => {
@@ -92,9 +91,10 @@ export default function LawyersRequest() {
     const dispatchAction = (type: "approve" | "reject") => {
         startTransition(() => {
             const formData = new FormData();
-            formData.append("id", String(selectedUser?.id));
+            formData.append("id", String(selectedUser?.ID));
             formData.append("type", String(type));
-            // dispatch(formData);
+            formData.append("reason", String(reason));
+            dispatch(formData);
         });
 
     };
@@ -157,8 +157,6 @@ export default function LawyersRequest() {
                         />
                     </div>
                 )}
-
-
                 <CustomDialog open={openDetails} setOpen={setDetailsDailog} className="w-lg">
                     <div className="mt-4">
                         <h2 className="text-xl font-semibold mb-4">Request Details</h2>
@@ -191,11 +189,14 @@ export default function LawyersRequest() {
                         <div className="flex text-xl font-semibold justify-center text-center">Approval Request</div>
                         <div className="justify-center text-center">Are You Sure You Want To Approvet this request</div>
                         <div className="p-1">
-                            <TextAreaField name="permanent_address" className="focus:ring-black-500 border-black" label="" placeholder="Add any note for the record" />
+                            <TextAreaField name="reason"
+                                value={reason}
+                                onChange={(e) => setReason(e.target.value)}
+                                className="focus:ring-black-500 border-black" label="" placeholder="Add any note for the record" />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <Button onClick={() => dispatchAction("approve")} className="w-full h-11 bg-[#006458] text-white border-0  ">
+                            <Button disabled={isPending} onClick={() => dispatchAction("approve")} className="w-full h-11 bg-[#006458] text-white border-0" >
                                 {isPending ? "Approving..." : " Yes, Approve"}
                             </Button>
                             <Button variant={"outline"} className="w-full h-11 border-black border-2" onClick={() => setApproveDailog(false)}>
@@ -210,11 +211,14 @@ export default function LawyersRequest() {
                             <div className="flex text-xl font-semibold justify-center text-center">Reject Request</div>
                             <div className="justify-center text-center">Please confirm you want to reject this request</div>
                             <div className="p-1">
-                                <TextAreaField name="permanent_address" className="focus:ring-black-500 border-black" label="" placeholder="Please specify the reason here..." />
+                                <TextAreaField name="reason"
+                                    value={reason}
+                                    onChange={(e) => setReason(e.target.value)}
+                                    className="focus:ring-black-500 border-black" label="" placeholder="Please specify the reason here..." />
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
-                                <Button onClick={() => dispatchAction("approve")} className="w-full h-11 bg-red-500 text-white border-0  ">
+                                <Button disabled={isPending} onClick={() => dispatchAction("reject")} className="w-full h-11 bg-red-500 text-white border-0  ">
                                     {isPending ? "Rejecting..." : " Confirm, Rejection"}
                                 </Button>
                                 <Button variant={"outline"} className="w-full h-11 border-black border-2" onClick={() => setRejectDailog(false)}>
@@ -224,7 +228,6 @@ export default function LawyersRequest() {
                         </div>
                     </div>
                 </CustomDialog>
-
             </div>
         </>
 

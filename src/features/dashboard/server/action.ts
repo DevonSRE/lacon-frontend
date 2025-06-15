@@ -238,10 +238,12 @@ export async function ApproveRejectLawyerRequest(_prevState: unknown, formData: 
     console.log(data);
     try {
         let response;
-        if (data?.type === "delete") {
-            response = await UserService.deleteUser(typeof data?.id === "string" ? data.id : "");
+        const id = typeof data?.id === "string" ? data.id : "";
+        console.log(id);
+        if (data?.type == "approve") {
+            response = await UserService.apporveUser(data, id);
         } else {
-            response = await UserService.suspendUser(typeof data?.id === "string" ? data.id : "");
+            response = await UserService.rejectUser(data, id);
         }
         console.log(response.data);
         return {
