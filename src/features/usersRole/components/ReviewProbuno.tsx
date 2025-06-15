@@ -114,7 +114,7 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
     };
 
     return (
-        <div className="mx-auto mr-3 bg-white ">
+        <div className="mx-auto  mr-3 bg-white ">
             <h1 className="text-2xl font-bold text-center mb-8 text-gray-800">
                 Review Pro Bono Lawyer Application
             </h1>

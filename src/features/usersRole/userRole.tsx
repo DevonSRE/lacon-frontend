@@ -1,28 +1,28 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { startTransition, useActionState, useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/data-table";
 import { createUserColumns } from "./components/table-columns";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import TablePagination from "@/components/TablePagination";
-import { redirect, useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Filter, ListFilter, Plus, Search } from "lucide-react";
+import { ArrowLeft, Filter, ListFilter, Plus, Search, ThumbsDown, ThumbsUp } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
 import { GetUserAction } from "./userRoleAction";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { CLIENT_ERROR_STATUS, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/icons/icons";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useDebounce } from 'use-debounce';
 import { ROLES } from "@/types/auth";
 import { useAppSelector } from "@/hooks/redux";
 import { IUser } from "@/types/case";
-
-
-
+import { CustomDialog } from "@/components/CustomDialog";
+import { DeleteUser } from "../dashboard/server/action";
+import useEffectAfterMount from "@/hooks/use-effect-after-mount";
+import { toast } from "sonner";
+import { stat } from "fs";
 
 
 export default function UserRoles() {
@@ -33,18 +33,36 @@ export default function UserRoles() {
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
     const { data: user } = useAppSelector((state) => state.profile);
     const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-
     const [sheetOpen, setSheetOpen] = useState(false);
-    const [sheetType, setSheetType] = useState<"suspend" | "delete" | null>(null);
+    const [dailogOpen, setdailogOpen] = useState(false);
+    const [state, dispatch, isPending] = useActionState(DeleteUser, undefined);
+    const queryClient = useQueryClient();
 
-
+    useEffectAfterMount(() => {
+        if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+            toast.error(state?.message, {
+                description: typeof state?.errors === "string"
+                    ? state.errors
+                    : state?.errors
+                        ? Object.values(state.errors).flat().join(", ")
+                        : undefined,
+            });
+        } else if (state?.status === 200 || state?.status === 201) {
+            queryClient.invalidateQueries({ queryKey: ["getUsers"] });
+            if (state.type === "suspend") toast.success("User Suspended successfully!");
+            if (state.type === "delete") toast.success("User Deleted successfully!");
+            setTimeout(() => {
+                setdailogOpen(false);
+                setSheetOpen(false);
+            }, 2000);
+        }
+    }, [state]);
 
     const handleOpenSheet = (user: IUser, type: "suspend" | "delete") => {
         setSelectedUser(user);
-        setSheetType(type);
-        setSheetOpen(true);
+        if (type === "suspend") setSheetOpen(true);
+        if (type === "delete") setdailogOpen(true);
     };
-
     const columns = useMemo(
         () =>
             createUserColumns(user?.role as ROLES,
@@ -53,8 +71,6 @@ export default function UserRoles() {
             ),
         [user?.role]
     );
-
-
     const { data, isLoading } = useQuery({
         queryKey: ["getUsers", currentPage, debouncedSearchTerm, selectedRole],
         queryFn: async () => {
@@ -68,14 +84,22 @@ export default function UserRoles() {
         },
         staleTime: 100000,
     });
-
     const tabs = Object.entries(ROLES).map(([id, label]) => ({ id, label }));
-
     const handleRoleFilter = (role: ROLES | "All") => {
         setSelectedRole(role === "All" ? undefined : role);
         const searchInput = document.getElementsByName("searchTerm")[0] as HTMLInputElement;
         if (searchInput) searchInput.value = "";
         console.log("Filtering users by role:", role);
+    };
+
+    const dispatchAction = (type: "suspend" | "delete") => {
+        startTransition(() => {
+            const formData = new FormData();
+            formData.append("id", String(selectedUser?.id));
+            formData.append("type", String(type));
+            dispatch(formData);
+        });
+
     };
 
     return (
@@ -87,6 +111,7 @@ export default function UserRoles() {
                     New User
                 </Button>
             </div>
+
 
             {/* <CasesDataTableToolbar /> */}
             <div className="flex items-center mt-6 gap-6 w-full justify-between">
@@ -112,16 +137,15 @@ export default function UserRoles() {
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent side="bottom" className="h-auto space-y-1 space-x-1 overflow-y-auto mr-10">
-                            <DropdownMenuCheckboxItem 
-                                checked={!selectedRole} 
-                                onCheckedChange={() => handleRoleFilter("All")}
-                            >
+                            <DropdownMenuCheckboxItem
+                                checked={!selectedRole}
+                                onCheckedChange={() => handleRoleFilter("All")}>
                                 All
                             </DropdownMenuCheckboxItem>
                             {tabs.map((tab) => (
-                                <DropdownMenuCheckboxItem 
-                                    key={tab.id} 
-                                    checked={selectedRole === tab.label} 
+                                <DropdownMenuCheckboxItem
+                                    key={tab.id}
+                                    checked={selectedRole === tab.label}
                                     onCheckedChange={() => handleRoleFilter(tab.label)}
                                 >
                                     {tab.label}
@@ -145,24 +169,76 @@ export default function UserRoles() {
 
             <AddUserSheet />
 
-            <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-                <SheetContent side="right" className="w-[400px] sm:w-[540px]">
-                    <SheetHeader>
-                        <SheetTitle>
-                            {sheetType === "suspend" ? "View User" : "Edit User"}
-                        </SheetTitle>
-                    </SheetHeader>
-                    {selectedUser && (
-                        <div className="mt-4 space-y-4">
-                            <p><strong>Name:</strong> {selectedUser.first_name} {selectedUser.last_name}</p>
-                            <p><strong>Email:</strong> {selectedUser.email}</p>
-                            {sheetType === "delete" && (
-                                <Button>Edit Form Here</Button>
-                            )}
+
+            <CustomDialog open={dailogOpen} setOpen={setdailogOpen} className="w-xl h-[400px]">
+                <div className="mt-4 space-y-8 ">
+                    <div className="flex justify-between bg-[#BD2B12] text-white rounded-xl text-center mb-10 shadow ">
+                        <Icons.smallLeftFlowwer />
+                        <div className="justify-center items-center text-center flex flex-col space-y-2">
+                            <Button className="bg-white rounded-full"
+                                onClick={() => setdailogOpen(false)}>
+                                <ArrowLeft className="h-5 text-red-500 w-5" />
+                            </Button>
                         </div>
-                    )}
-                </SheetContent>
-            </Sheet>
+                        <Icons.smallRightFlowwer />
+                    </div>
+                    <div className="space-y-4">
+                        <div className="flex text-xl font-semibold justify-center text-center">Delete User</div>
+                        <div className="justify-center text-center">Are You Sure You Want To Delete This User</div>
+                        <Button onClick={() => dispatchAction("delete")} className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
+                            {isPending ? "Deleting..." :
+                                <>
+                                    <span className="transition-opacity duration-300 group-hover:opacity-0">
+                                        Yes, Delete
+                                    </span>
+                                    <ThumbsUp className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5" />
+                                </>
+                            }
+                        </Button>
+                        <Button variant="outline" className="w-full h-11 group relative overflow-hidden" onClick={() => setdailogOpen(false)}>
+                            <span className="transition-opacity duration-300 group-hover:opacity-0">
+                                No, I'll Do it Later
+                            </span>
+                            <ThumbsDown className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5 text-gray-500" />
+                        </Button>
+                    </div>
+                </div>
+            </CustomDialog>
+
+            <CustomDialog open={sheetOpen} setOpen={setSheetOpen} className="w-xl h-[400px]">
+                <div className="mt-4 space-y-8 ">
+                    {/* <div className="flex justify-between bg-[#BD2B12] text-white rounded-xl text-center mb-10 shadow ">
+                        <Icons.smallLeftFlowwer />
+                        <div className="justify-center items-center text-center flex flex-col space-y-2">
+                            <Button className="bg-white rounded-full"
+                                onClick={() => setdailogOpen(false)}>
+                                <ArrowLeft className="h-5 text-red-500 w-5" />
+                            </Button>
+                        </div>
+                        <Icons.smallRightFlowwer />
+                    </div> */}
+                    <div className="space-y-4">
+                        <div className="flex text-xl font-semibold justify-center text-center">Suspend User</div>
+                        <div className="justify-center text-center">Are You Sure You Want To Suspend This User</div>
+                        <Button onClick={() => dispatchAction("suspend")} className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden">
+                            {isPending ? "Suspending..." :
+                                <>
+                                    <span className="transition-opacity duration-300 group-hover:opacity-0">
+                                        Yes, Suspend
+                                    </span>
+                                    <ThumbsUp className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5" />
+                                </>
+                            }
+                        </Button>
+                        <Button variant="outline" className="w-full h-11 group relative overflow-hidden" onClick={() => setdailogOpen(false)}>
+                            <span className="transition-opacity duration-300 group-hover:opacity-0">
+                                No, I'll Do it Later
+                            </span>
+                            <ThumbsDown className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5 text-gray-500" />
+                        </Button>
+                    </div>
+                </div>
+            </CustomDialog>
 
         </div>
     )

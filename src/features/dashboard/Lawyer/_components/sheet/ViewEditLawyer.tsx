@@ -252,7 +252,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
             )}
 
             {sheetType === "edit" && (
-                <form className="space-y-4 p-6 mt-10" action={dispatchAction}>
+                <form className="space-y-4 p-6 mt-5" action={dispatchAction}>
                     <h2 className="text-xl font-semibold">Edit Lawyer</h2>
 
                     {/* First Name */}

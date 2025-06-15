@@ -16,7 +16,7 @@ export function CustomDialog({ open, setOpen, children, className }: CustomeDial
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className={cn("sm:max-w-5xl ", className)}>
-                <ScrollArea className="h-[600px]">
+                <ScrollArea className="h-auto max:h-[600px]">
                     <div className="">
                         <div>{children}</div>
                     </div>

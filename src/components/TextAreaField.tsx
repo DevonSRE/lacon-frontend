@@ -1,5 +1,6 @@
 import React from 'react';
 import { Label } from '@/components/ui/label'; // Adjust based on your project structure
+import { cn } from "@/lib/utils";
 
 interface TextAreaFieldProps {
   name: string;
@@ -9,6 +10,8 @@ interface TextAreaFieldProps {
   value?: string;
   onChange?: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   error?: string;
+  className?: string;
+
 }
 
 const TextAreaField: React.FC<TextAreaFieldProps> = ({
@@ -18,7 +21,8 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
   required = false,
   value,
   onChange,
-  error
+  error,
+  className
 }) => {
   return (
     <div className="space-y-1">
@@ -32,9 +36,10 @@ const TextAreaField: React.FC<TextAreaFieldProps> = ({
         value={value}
         onChange={onChange}
         rows={4}
-        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent ${
+        className={cn(
+          'w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:border-transparent',
           error ? 'border-red-400' : 'border-gray-300'
-        }`}
+        )}
       />
       {error && <p className="text-red-400 text-xs">{error}</p>}
     </div>

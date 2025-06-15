@@ -21,4 +21,5 @@ export interface Ipage {
     status?: string;
     duration?: string
     user_type?: string
+    type?: string
 }

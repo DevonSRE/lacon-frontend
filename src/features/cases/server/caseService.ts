@@ -7,7 +7,7 @@ const casesServices = {
         });
     },
     async AssignCases(payload: any) {
-        return await axiosInstance.post("/admin/casefile/case-assignment", payload);
+        return await axiosInstance.patch("/admin/casefile/case-assignment", payload);
     },
 }
 

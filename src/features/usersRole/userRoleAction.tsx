@@ -8,7 +8,6 @@ import usersServices from "./userRoleService";
 export async function GetUserAction(params: Ipage) {
     try {
         const response = await usersServices.getUsers(params);
-        console.log("response state  =>" + JSON.stringify(response.data.data));
         return { data: response.data?.data, success: true };
 
     } catch (err: unknown) {
@@ -19,7 +18,6 @@ export async function GetUserAction(params: Ipage) {
 export async function GetLawyersManagementAction(params: Ipage) {
     try {
         const response = await usersServices.getLawyers(params);
-        console.log("response state  =>" + JSON.stringify(response.data.data));
         return { data: response.data?.data, success: true };
 
     } catch (err: unknown) {
@@ -30,7 +28,16 @@ export async function GetLawyersManagementAction(params: Ipage) {
 export async function GetLawyerRequestAction(params: Ipage) {
     try {
         const response = await usersServices.getLawyersRequest(params);
-        console.log("response state  =>" + JSON.stringify(response.data.data));
+        return { data: response.data?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+export async function GetUserByTypes(params: Ipage) {
+    try {
+        const response = await usersServices.getUserType(params);
         return { data: response.data?.data, success: true };
 
     } catch (err: unknown) {
