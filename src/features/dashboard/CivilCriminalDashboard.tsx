@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CaseStatCard from "./components/CaseStatsSummaryChart";
 import Intro from "@/components/Intro";
 import { AddLawyerSheet } from "./Lawyer/_components/addLawyer";
-import { CircleFadingArrowUp, CirclePlus, CloudUpload, Plus, PlusCircle } from "lucide-react";
+import {  CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
@@ -13,8 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
 import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
 import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
 
 interface StatCardProps {
     title: string;
@@ -110,6 +108,7 @@ export default function CivilCriminalDashboard() {
                         </div>
                     </div>
                 </div>
+                
                 {/* Add a Lawyer Component shee */}
                 <CustomeSheet open={openFileACase} setOpen={setOpenFileACase} >
                     <div className="mt-6 space-y-6">

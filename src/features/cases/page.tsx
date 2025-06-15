@@ -12,7 +12,17 @@ import { GetCaseAction } from './server/caseAction';
 import { useAppSelector } from '@/hooks/redux';
 import { CustomeSheet } from '@/components/CustomSheet';
 import ViewCase from './_components/viewCase';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { ROLES } from '@/types/auth';
+import BulkCaseUploadDialog from '../dashboard/components/BulkUpload';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import CivilCaseForm from './FileCasesTab/CivilCaseForm';
+import CriminalCaseForm from './FileCasesTab/CriminalCaseForm';
+import PDSSCaseForm from './FileCasesTab/PSDDCaseForm';
+import DecongestionForm from './FileCasesTab/DecongestionForm';
+import MercyApplication from './FileCasesTab/MercyApplication';
 
 
 export default function CasesPage() {
@@ -20,13 +30,17 @@ export default function CasesPage() {
     const [caseIdSearch, setCaseIdSearch] = useState('');
     const [stateFilter, setStateFilter] = useState('');
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
+    const [selectedCaseForm, setCaseForm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearchTerm] = useDebounce(clientNameSearch, 500);
     const [viewCase, setViewCase] = useState(false);
     const [viewAssignment, setViewAssignment] = useState(false);
+    const [openFileACase, setOpenFileACase] = useState(false);
+    const [openCaseType, setCaseType] = useState(false);
     const { data: user } = useAppSelector((state) => state.profile);
+    const role = user?.role;
 
     const { data, isLoading } = useQuery({
         queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter],
@@ -47,6 +61,10 @@ export default function CasesPage() {
         setCaseDetails(user);
         setViewAssignment(true);
     };
+    const handleCaseTypez = () => {
+        console.log(caseTypeFilter);
+        setCaseType(true);
+    }
 
     const columns = useMemo(
         () => createCaseColumns(user?.role as ROLES,
@@ -61,7 +79,21 @@ export default function CasesPage() {
 
     return (
         <div className="">
-            <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
+                <div className="flex gap-4">
+                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS) && (
+                        <>
+                            <BulkCaseUploadDialog />
+                            <Button onClick={() => setOpenFileACase(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
+                                <PlusCircle className="w-4 h-4" />
+                                File a Case
+                            </Button>
+                        </>
+                    )}
+
+                </div>
+            </div>
 
             <SearchFilterSection
                 clientNameSearch={clientNameSearch}
@@ -95,6 +127,52 @@ export default function CasesPage() {
 
             <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
                 <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} />
+            </CustomeSheet>
+
+
+            {/* Add a Lawyer Component shee */}
+            <CustomeSheet open={openFileACase} setOpen={setOpenFileACase} >
+                <div className="mt-6 space-y-6">
+                    <h1 className="text-xl font-semibold">File A Case</h1>
+                    <Select value={selectedCaseForm} onValueChange={setCaseForm}>
+                        <SelectTrigger className="w-full h-11">
+                            <SelectValue placeholder="Case Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL) && (
+                                <>
+                                    <SelectItem value="Civil">Civil</SelectItem>
+                                    <SelectItem value="Criminal">Criminal</SelectItem>
+                                    <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
+                                    <SelectItem value="PDSS2">PDSS(In Organanization)</SelectItem>
+                                </>
+                            )}
+                            {(role === ROLES.DECONGESTION_UNIT_HEAD) && (
+                                <SelectItem value="Decongestion">Decongestion</SelectItem>
+                            )}
+                            {(role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
+                                <SelectItem value="MercyApplication">Mercy Application</SelectItem>
+                            )}
+                        </SelectContent>
+                    </Select>
+                    <Button
+                        onClick={handleCaseTypez}
+                        disabled={!selectedCaseForm}
+                        className={`w-full bg-red-500 h-11 ${selectedCaseForm ? 'bg-red-600 hover:bg-red-700' : ''}`}>
+                        Proceed
+                    </Button>
+                </div>
+            </CustomeSheet>
+
+            <CustomeSheet open={openCaseType} setOpen={setCaseType} className="min-w-3xl " >
+                <div className="mt-6 overflow-auto">
+                    {selectedCaseForm === "Civil" && <CivilCaseForm />}
+                    {selectedCaseForm === "Criminal" && <CriminalCaseForm />}
+                    {selectedCaseForm === "PDSS1" && <PDSSCaseForm />}
+                    {selectedCaseForm === "PDSS2" && <PDSSCaseForm />}
+                    {selectedCaseForm === "Decongestion" && <DecongestionForm />}
+                    {selectedCaseForm === "MercyApplication" && <MercyApplication />}
+                </div>
             </CustomeSheet>
         </div>
     );

@@ -295,60 +295,95 @@ export type FormDataPDSSCase = {
 };
 
 
+export interface FormDataDEcongestionCase {
+    // Step 1 - Personal Info
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    gender: string;
+    age: number;
+    last_address: string;
+    marital_status: string;
+    has_lawyer: string;
+    legal_aid_representation: string;
+    custodial_legal_visited: string;
+    date_of_visit: string;
+    date_of_visit_specific: string;
+    
+    // Step 2 - Case Details
+    case_name: string;
+    name_of_defendant: string;
+    offence_charged_description: string;
+    offence_charged: string;
+    charge_number: string;
+    court_of_trial: string;
+    arrest_date: string;
+    arraignment_date: string;
+    remand_date: string;
+    last_court_date: string;
+    next_adjournment: string;
+    bail_status: string;
+    sex: string;
+    date_of_birth_age: string;
+    name_of_relative: string;
+    relative_phone_number: string;
+    state_of_origin: string;
+    religion: string;
+    average_monthly_income: string;
+    stage_of_case: string;
+    need_interpreter: string;
+    disability_ailment: string;
+    confessional_statement: string;
+}
 
 
-export type FormDataDEcongestionCase = {
 
-  // Personal Info
-  first_name: string;
-  middle_name: string;
-  last_name: string;
-  gender: string;
-  permanent_address: string;
-  age: number;
-  phone_number: string;
-  marital_status: string;
-  email: string;
-  state_of_origin: string;
-  occupation: string;
-  disability_proof: File | null;
-  disability_status: string;
+// Step 1 - Personal Info Schema
+export const personalDecongestionInfoSchema = z.object({
+  first_name: z.string(),
+  middle_name: z.string(),
+  last_name: z.string(),
+  gender: z.string(),
+  age: z.number(),
+  last_address: z.string(),
+  marital_status: z.string(),
+  has_lawyer: z.string(),
+  legal_aid_representation: z.string(),
+  custodial_legal_visited: z.string(),
+  date_of_visit: z.string(),
+  date_of_visit_specific: z.string(),
+});
 
-  // Case Details
-  case_name: string;
-  name_of_defendant: string;
-  offence_charged: string;
-  charge_number: number;
-  court_of_trial: string;
-  date_of_arrest_or_complaint: string; // ISO date string
-  date_of_arraignment_or_commencement: string; // ISO date string
-  date_of_remand?: string; // ISO date string
-  last_date_in_court?: string; // ISO date string
-  next_adjournment: string; // ISO date string
-  bail_status: string;
+// Step 2 - Case Details Schema
+export const decongestionCaseDetails = z.object({
+  case_name: z.string(),
+  name_of_defendant: z.string(),
+  offence_charged_description: z.string(),
+  offence_charged: z.string(),
+  charge_number: z.string(),
+  court_of_trial: z.string(),
+  arrest_date: z.string(),
+  arraignment_date: z.string(),
+  remand_date: z.string(),
+  last_court_date: z.string(),
+  next_adjournment: z.string(),
+  bail_status: z.string(),
+  sex: z.string(),
+  date_of_birth_age: z.string(),
+  name_of_relative: z.string(),
+  relative_phone_number: z.string(),
+  state_of_origin: z.string(),
+  religion: z.string(),
+  average_monthly_income: z.string(),
+  stage_of_case: z.string(),
+  need_interpreter: z.string(),
+  disability_ailment: z.string(),
+  confessional_statement: z.string(),
+});
 
-  // Defendant Info
-  sex: string;
-  date_of_birth_or_age: string;
-  name_of_relative: string;
-  relative_phone_number: string;
+// Full Combined Schema
+export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(decongestionCaseDetails);
 
-  // Original fields preserved if still applicable
-  offence: string;
-  arrest_date: string;
-  arraignment_date: string;
-  remand_date: string;
-  last_court_date: string;
-  client_location: string;
-  days_in_detention: number;
-  counsel_paralegal: string;
-  counsel_designation: string;
-  name_of_counsel_or_firm_or_organisation_id: string;
-  nature_of_legal_service_provided?: string;
-  case_status?: string;
-  date_trial_ended?: string;
-  case_outcome?: string;
-};
 
 
 
