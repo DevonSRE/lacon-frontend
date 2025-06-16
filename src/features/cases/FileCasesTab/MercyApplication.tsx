@@ -5,6 +5,7 @@ import { useState } from "react";
 export default function MercyApplication() {
     const [recommendationImage, setRecommendationImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -22,8 +23,23 @@ export default function MercyApplication() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-6 font-sans">
-            <h2 className="font-bold text-xl mb-2">Filing A Mercy Application</h2>
+        <div className="mx-auto">
+            {/* <h2 className="font-bold text-xl mb-2">Filing A Mercy Application</h2> */}
+            <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
+                <div className="flex items-center mb-4 sm:mb-0">
+                    <h1 className="text-lg font-semibold text-gray-900">
+                        Filing A Mercy Application
+                    </h1>
+                </div>
+                <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
+                    <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
+                        1
+                    </div>
+                    <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+                        2
+                    </div>
+                </div>
+            </div>
             <div className="mb-4">
                 <label className="font-medium text-sm">Case Type</label>
                 <div className="bg-gray-100 p-2 rounded mt-1 text-gray-700">Mercy Application</div>

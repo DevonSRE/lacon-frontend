@@ -2,19 +2,13 @@ import React, { useState } from "react";
 import CaseStatCard from "./components/CaseStatsSummaryChart";
 import Intro from "@/components/Intro";
 import { AddLawyerSheet } from "./Lawyer/_components/addLawyer";
-import { CirclePlus, PlusCircle } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
 import BulkCaseUploadDialog from "./components/BulkUpload";
 import { useAction } from "@/context/ActionContext";
-import { CustomeSheet } from "@/components/CustomSheet";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
-import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
-import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
-import DecongestionForm from "../cases/FileCasesTab/DecongestionForm";
-import MercyApplication from "../cases/FileCasesTab/MercyApplication";
+import FileACaseComponent from "../component/FileACase";
 
 interface StatCardProps {
     title: string;
@@ -35,18 +29,15 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, titleColor 
 
 export default function CivilCriminalDashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
-
     const role = user?.role;
     const { setIsOpen } = useAction();
-    const [openFileACase, setOpenFileACase] = useState(false);
-    const [openCaseType, setCaseType] = useState(false);
-    const [currentStep, setCurrentStep] = useState(1);
 
-    const [caseTypeFilter, setCaseTypeFilter] = useState('');
-    const handleCaseTypez = () => {
-        console.log(caseTypeFilter);
-        setCaseType(true);
-    }
+    const handleCaseSubmitted = () => {
+        // You can add any dashboard-specific logic here
+        // For example, refresh dashboard statistics
+        console.log("Case submitted from dashboard, refreshing stats...");
+    };
+
     return (
         <>
             <div className="grid grid-cols-12 gap-4 md:gap-6">
@@ -54,13 +45,17 @@ export default function CivilCriminalDashboard() {
                     <div className="flex justify-between items-center mb-8">
                         <Intro user={user?.first_name ?? "Admin"} />
                         <div className="flex gap-4">
-                            {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD) && (
+                            {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                                 <>
                                     <BulkCaseUploadDialog />
-                                    <Button onClick={() => setOpenFileACase(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
-                                        <PlusCircle className="w-4 h-4" />
-                                        File a Case
-                                    </Button>
+                                    <FileACaseComponent
+                                        userRole={role as ROLES}
+                                        buttonText="File a Case"
+                                        showIcon={true}
+
+                                        buttonClassName="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11"
+                                        onCaseSubmitted={handleCaseSubmitted}
+                                    />
                                 </>
                             )}
 
@@ -73,7 +68,6 @@ export default function CivilCriminalDashboard() {
                                     <AddLawyerSheet />
                                 </>
                             )}
-
                         </div>
                     </div>
 
@@ -110,54 +104,7 @@ export default function CivilCriminalDashboard() {
                         </div>
                     </div>
                 </div>
-
-                {/* Add a Lawyer Component shee */}
-                <CustomeSheet open={openFileACase} setOpen={setOpenFileACase} >
-                    <div className="mt-6 space-y-6">
-                        <h1 className="text-xl font-semibold">File A Case</h1>
-                        <Select value={caseTypeFilter} onValueChange={setCaseTypeFilter}>
-                            <SelectTrigger className="w-full h-11">
-                                <SelectValue placeholder="Case Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL) && (
-                                    <>
-                                        <SelectItem value="Civil">Civil</SelectItem>
-                                        <SelectItem value="Criminal">Criminal</SelectItem>
-                                        <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
-                                        <SelectItem value="PDSS2">PDSS(In Organanization)</SelectItem>
-                                    </>
-                                )}
-                                {(role === ROLES.DECONGESTION_UNIT_HEAD) && (
-                                    <SelectItem value="Decongestion">Decongestion</SelectItem>
-                                )}
-                                {(role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
-                                    <SelectItem value="MercyApplication">Mercy Application</SelectItem>
-                                )}
-                            </SelectContent>
-                        </Select>
-
-                        <Button
-                            onClick={handleCaseTypez}
-                            disabled={!caseTypeFilter}
-                            className={`w-full bg-red-500 h-11 ${caseTypeFilter ? 'bg-red-600 hover:bg-red-700' : ''}`}>
-                            Proceed
-                        </Button>
-                    </div>
-                </CustomeSheet>
-
-                <CustomeSheet open={openCaseType} setOpen={setCaseType} className="min-w-3xl " >
-                    <div className="mt-6">
-                        {caseTypeFilter === "Civil" && <CivilCaseForm />}
-                        {caseTypeFilter === "Criminal" && <CriminalCaseForm />}
-                        {caseTypeFilter === "PDSS1" && <PDSSCaseForm />}
-                        {caseTypeFilter === "PDSS2" && <PDSSCaseForm />}
-                        {caseTypeFilter === "Decongestion" && <DecongestionForm />}
-                        {caseTypeFilter === "MercyApplication" && <MercyApplication />}
-                    </div>
-                </CustomeSheet>
-            </div >
+            </div>
         </>
     );
 };
-
