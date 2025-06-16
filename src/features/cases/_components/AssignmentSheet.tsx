@@ -1,94 +1,207 @@
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { TCase } from "@/lib/types";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-
-type CaseType = "Criminal" | "Civil" | "Decongestion";
-
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dispatch,
+  SetStateAction,
+  startTransition,
+  useActionState,
+  useEffect,
+  useState,
+} from "react";
+import { ICase } from "./table-columns";
+import { SubmitButton } from "@/components/submit-button";
+import { AssignCaseAction } from "../server/caseAction";
+import {
+  keepPreviousData,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { GetUserByTypes } from "@/features/usersRole/userRoleAction";
+import LoadingDialog from "@/components/LoadingDialog";
+import useEffectAfterMount from "@/hooks/use-effect-after-mount";
+import { toast } from "sonner";
+import { CLIENT_ERROR_STATUS } from "@/lib/constants";
+import { useAppSelector } from "@/hooks/redux";
+import { ROLES } from "@/types/auth";
 
 interface AssignmentSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  assignmentCase: TCase | null;
-  lawyers: string[];
-  setShowAssignSheet: (open: boolean) => void;
-  getCaseTypeBadgeColor: (caseType: CaseType) => string;
+  details: ICase | null;
+  type: string;
+  setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export const AssignmentSheet = ({
-  open,
-  onOpenChange,
-  assignmentCase,
-  lawyers,
-  setShowAssignSheet,
-  getCaseTypeBadgeColor,
-}: AssignmentSheetProps) => {
-  // const [open, setOpen] = useState(false);
-  const [department, setDepartment] = useState("");
+export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps) {
+  const [state, dispatch, isPending] = useActionState(AssignCaseAction, undefined);
+  const [selectedTitle, setSelectedTitle] = useState<string | undefined>();
+  const { data: user } = useAppSelector((state) => state.profile);
+  const role = user?.role;
+  const [dialogState, setDialogState] = useState({
+    open: false,
+    title: "",
+    details: "",
+  });
+
+  const queryClient = useQueryClient();
+
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["userByType", 'role'],
+    queryFn: async () => {
+      if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS) {
+        const filters = { type: "lawyers" };
+        return await GetUserByTypes(filters);
+      } else {
+        const filters = { type: "unit_heads" };
+        return await GetUserByTypes(filters);
+      }
+    },
+    placeholderData: keepPreviousData,
+    staleTime: 50000,
+  },);
+
+  const handleDivisionChange = (newValue: string) => {
+    setSelectedTitle(newValue === "all" ? "all" : newValue);
+  };
+
+  const dispatchAction = (formData: FormData) => {
+    startTransition(() => {
+      dispatch(formData);
+    });
+  };
+
+  // Automatically show loading dialog when dispatching
+  useEffect(() => {
+    if (isPending) {
+      setDialogState({
+        open: true,
+        title: "loading",
+        details: "Assigning case...",
+      });
+    }
+  }, [isPending]);
+
+  // Handle success or error response
+  useEffectAfterMount(() => {
+    console.log(state);
+
+    if (!state) return;
+
+    if (CLIENT_ERROR_STATUS.includes(state.status)) {
+      setDialogState({ open: false, title: "", details: "" });
+      toast.error(state.message, {
+        description:
+          typeof state.errors === "string"
+            ? state.errors
+            : state.errors
+              ? Object.values(state.errors).flat().join(", ")
+              : undefined,
+      });
+    } else if (state.status === 200 || state.status === 201) {
+      setDialogState({
+        open: true,
+        title: "done",
+        details: "Case Assigned successfully!",
+      });
+      console.log("am here");
+
+      queryClient.invalidateQueries({ queryKey: ["getCases"] });
+
+      setTimeout(() => {
+        setDialogState({ open: false, title: "", details: "" });
+        setOpen(false);
+      }, 2000);
+    }
+  }, [state]);
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[400px] sm:w-[480px] flex flex-col gap-6 p-6">
-        <div className="space-y-2">
-          <Button
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="text-left p-0 text-sm"
-          >
-            ←
-          </Button>
-          <h2 className="text-lg font-semibold">Assign New case</h2>
-          <p className="text-sm text-gray-500">Case No: #LCN 001</p>
-        </div>
+    <div className="h-screen">
+      <LoadingDialog
+        open={dialogState.open}
+        onOpenChange={(open) =>
+          setDialogState((prev) => ({ ...prev, open }))
+        }
+        details={dialogState.details}
+        title={dialogState.title}
+      />
 
-        <div className="relative">
-          <Input placeholder="Search........" className="pr-10" />
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-red-500 text-sm font-medium">
-            Filled: 08/04/25 by 8:30am
-          </p>
-          <div className="flex gap-2">
-            <Badge variant="secondary">Criminal Case</Badge>
-            <Badge variant="secondary">Lagos</Badge>
+      {/* Header */}
+      <div className="border-b border-gray-200 pb-4 mb-6">
+        <div className="flex justify-between items-start mb-2">
+          <div>
+            <h1 className="text-xl font-bold text-gray-900"> {(type === "assign") ? "Assign New Case" : "Re-Assign Case"}</h1>
+            <p className="text-sm text-gray-600 mt-1">
+              Case NO: {details?.id.slice(0, 10) ?? "-"}
+            </p>
           </div>
         </div>
+
+        <div className="bg-red-50 text-red-500 p-3 w-full text-xs font-medium mb-2 text-center">
+          Filled: {details?.case_type ?? "-"}
+        </div>
+
+        <div className="flex justify-between gap-4">
+          <div className="bg-red-50 text-red-500 p-3 w-full text-xs font-medium mb-2 text-center">
+            {details?.case_type ?? "-"} Cases
+          </div>
+          <div className="bg-red-50 text-red-500 p-3 w-full text-xs font-medium mb-2 text-center">
+            {details?.location ?? "Users"}
+          </div>
+        </div>
+      </div>
+
+      {/* Form */}
+      <form action={dispatchAction} className="w-full space-y-6">
+        <input type="hidden" name="casefile_id" value={details?.id ?? ""} />
+        <input type="hidden" name="is_reassigned" value="true" />
 
         <div className="pt-4">
           <Label htmlFor="department" className="block text-sm font-medium">
             Select Department
           </Label>
-          <Select onValueChange={setDepartment}>
-            <SelectTrigger id="department">
-              <SelectValue placeholder="Choose Department to Assign case" />
+          <Select
+            onValueChange={handleDivisionChange}
+            value={selectedTitle}
+            name="assignee_id"
+          >
+            <SelectTrigger
+              className="h-11 flex justify-between items-center"
+              disabled={loading}
+              variant="underlined"
+            >
+              <SelectValue
+                className="text-neutral-700 text-xs mx-4"
+                placeholder={loading ? "Loading Users..." : "Choose Department to Assign case"}
+              />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="criminal">Criminal Justice Department Head</SelectItem>
-              <SelectItem value="civil">Civil Justice Department Head</SelectItem>
-              <SelectItem value="decongestion">Decongestion Unit Head</SelectItem>
-              <SelectItem value="prerogative">Prerogative of Mercy Unit Head</SelectItem>
-              <SelectItem value="oscar">OSCAR Unit Head</SelectItem>
-              <SelectItem value="dio">DIO</SelectItem>
+            <SelectContent className="bg-white text-zinc-900">
+              {data?.data?.length > 0 ? (
+                data?.data.map((user: any) => (
+                  <SelectItem key={user.ID} value={user.ID} className="py-2">
+                    {user.FirstName} {user.LastName} - {user.UserType}
+                  </SelectItem>
+                ))
+              ) : (
+                <div className="py-2 px-4 text-sm text-gray-500">
+                  No User available
+                </div>
+              )}
             </SelectContent>
           </Select>
         </div>
 
-        <div className="mt-auto">
-          <Button className="w-full">Next →</Button>
+        <div className="mt-14">
+          <SubmitButton
+            value="Submit"
+            pendingValue="Processing..."
+            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded mt-2"
+          />
         </div>
-      </SheetContent>
-    </Sheet>
+      </form>
+    </div>
   );
-};
+}

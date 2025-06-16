@@ -12,7 +12,7 @@ export const stateColumns: ColumnDef<StateData>[] = [
     { accessorKey: "received", ...centerCell("Received") },
     { accessorKey: "accepted", ...centerCell("Accepted") },
     { accessorKey: "completed", ...centerCell("Completed") },
-    { accessorKey: "activeParalegals", ...centerCell("Active Paralegals") },
+    { accessorKey: "active_paralegals", ...centerCell("Active Paralegals") },
 ];
 
 
@@ -32,7 +32,6 @@ export const lawyerColumns: ColumnDef<LawyerData>[] = [
     { accessorKey: "roles", header: "Roles" },
 ];
 
-
 export const CorrectionalCenterVisit: ColumnDef<StateData>[] = [
     { accessorKey: "Center", ...centerCell("Center") },
     { accessorKey: "Visits", ...centerCell("Visits") },
@@ -46,20 +45,50 @@ export const PdssBailatStation: ColumnDef<StateData>[] = [
     { accessorKey: "Offenses", ...centerCell("Offenses") },
 ];
 export const BiAnnualStatistic: ColumnDef<StateData>[] = [
-    { accessorKey: "Period", ...centerCell("Period") },
-    { accessorKey: "Approved Cases", ...centerCell("Approved Cases") },
-    { accessorKey: "Completed Cases", ...centerCell("Completed Cases") },
+    { accessorKey: "period", ...centerCell("period") },
+    { accessorKey: "received", ...centerCell("Reveived Cases") },
+    { accessorKey: "completed", ...centerCell("Completed Cases") },
 ];
 export const offenceComplain: ColumnDef<StateData>[] = [
-    { accessorKey: "Types", ...centerCell("Types") },
-    { accessorKey: "Count", ...centerCell("Count") },
-    { accessorKey: "criminal", ...centerCell("criminal") },
-    { accessorKey: "Civil", ...centerCell("Civil") },
-    { accessorKey: "Resolution Rate", ...centerCell("Resolution Rate") },
+    {
+        accessorKey: "department",
+        header: "Department",
+        cell: ({ row }) => (
+            <div className="text-left">{row.getValue("department")}</div>
+        ),
+    },
+    { accessorKey: "total_cases", ...centerCell("total cases") },
+    { accessorKey: "completed_cases", ...centerCell("completed cases") },
+    { accessorKey: "resolution_rate", ...centerCell("resolution rate") },
 ];
 
 export const demographicsTable: ColumnDef<StateData>[] = [
-    { accessorKey: "Sex", ...centerCell("Sex") },
-    { accessorKey: "Marital Status", ...centerCell("Marital Status") },
-    { accessorKey: "Count", ...centerCell("Count") },
+    { accessorKey: "sex", ...centerCell("Sex") },
+    { accessorKey: "marital_status", ...centerCell("Marital Status") },
+    { accessorKey: "count", ...centerCell("Count") },
 ];
+export const laconLawyerColumns: ColumnDef<StateData>[] = [
+    {
+        id: "lawyer",
+        header: "Lawyer",
+        accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+        cell: ({ getValue }) => <div className="text-left">{String(getValue())}</div>,
+    },
+    { accessorKey: "case_granted", ...centerCell("Cases granted") },
+    { accessorKey: "completed", ...centerCell("Completed") },
+    { accessorKey: "state_name", ...centerCell("State") },
+    { accessorKey: "success_rate", ...centerCell("Success Rate") },
+];
+export const ProbunoLawyerColumns: ColumnDef<StateData>[] = [
+    {
+        id: "lawyer",
+        header: "Lawyer",
+        accessorFn: (row) => `${row.first_name} ${row.last_name}`,
+        cell: ({ getValue }) => <div className="text-left">{String(getValue())}</div>,
+    },
+    { accessorKey: "case_granted", ...centerCell("Cases granted") },
+    { accessorKey: "completed", ...centerCell("Completed") },
+    { accessorKey: "state_name", ...centerCell("State") },
+    { accessorKey: "success_rate", ...centerCell("Success Rate") },
+];
+

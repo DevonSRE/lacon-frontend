@@ -5,6 +5,7 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{js,ts,jsx,tsx,mdx}"
   ],
   prefix: "",
   theme: {
@@ -26,6 +27,10 @@ const config: Config = {
       colors: {
         app: {
           primary: "#BD2B12",
+          secondary: "#EB963F",
+          tertiary: "#3C2003",
+          btn: "#4A3928",
+          coffee: "#997E63",
         },
         background: "hsl(var(--background))",
         neutral: {
@@ -41,7 +46,7 @@ const config: Config = {
           foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: "#EB4335", // 🔴 Updated to reflect the red from the UI
+          DEFAULT: "#BD2B12",
           foreground: "#FCEAE9", // light pinkish foreground for contrast, modify to your preference
         },
         secondary: {
@@ -89,6 +94,10 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        "wiggleX": {
+          "0%, 100%": { transform: "translateX(0)" },
+          "50%": { transform: "translateX(5px)" },
+        },
       },
       boxShadow: {
         customOne: "0px 4px 4px -4px rgba(12, 12, 13, 0.05)",
@@ -98,6 +107,7 @@ const config: Config = {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.25s ease-out infinite",
+        "wiggle-x": "wiggleX 0.6s ease-in-out infinite",
       },
     },
   },

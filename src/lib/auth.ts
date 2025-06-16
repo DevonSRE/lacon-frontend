@@ -1,10 +1,10 @@
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies, headers } from 'next/headers'
 import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies'
-import { TFullUser } from '@/lib/types'
+// import { TFullUser } from '@/lib/types'
 import { ALGORITHM, SECRET } from '@/lib/constants'
 import { decodeToken } from '@/lib/utils'
-import { TSessionData } from '@/types/auth'
+import { TSessionData, TUser } from '@/types/auth'
 
 export type ErrorResponse = {
   name: string;
@@ -44,7 +44,7 @@ const cookieHelper: TCookieHelper = {
 
 
 const auth = {
-  user: <TFullUser | null>null,
+  user: <TUser | null>null,
   tokens: null,
   sessionCookie: null,
   cookieStore: await cookies(),

@@ -23,26 +23,49 @@ export type TFullUser = {
 };
 
 
-export type TUser = Pick<
-  TFullUser,
-  "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image"
->
+export type TusersRoles =
+  "all" |
+  "DIRECTOR_GENERAL" |
+  "CRIMINAL_JUSTICE_DEPT" |
+  "CIVIL_JUSTICE_DEPT" |
+  "DECONGESTION_UNIT_HEAD" |
+  "PREROGATIVE_OF_MERCY_UNIT_HEAD" |
+  "PARALEGAL" |
+  "PRO_BONO_LAWYER" |
+  "CENTRE_COORDINATOR" |
+  "ZONAL_DIRECTOR" |
+  "STATE_COORDINATOR" |
+  "OSCAR_UNIT_HEAD" |
+  "ADMIN" |
+  "LACON_LAWYER" |
+  "DIO";
 
 
-export type UserType =
-  | 'Civil Justice Department Head'
-  | 'Decongestion Unit Head'
-  | 'Prerogative Of Mercy Unit Head'
-  | 'OSCAR Unit Head'
-  | 'Pro bono Lawyer'
-  | 'Centre Coordinator'
-  | 'Director General'
-  | 'Criminal Justice Department Head'
-  | 'Paralegal'
-  | 'State Coordinator'
-  | 'Zonal Director'
-  | 'LacON Lawyer'
-  | 'Dio';
+
+export const ROLES = [
+  "DIRECTOR GENERAL",
+  "CRIMINAL JUSTICE DEPT. HEAD",
+  "CIVIL JUSTICE DEPT. HEAD",
+  "DECONGESTION UNIT HEAD",
+  "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD",
+  "DIO",
+  "PDSS",
+  "ZONAL DIRECTOR",
+  "STATE COORDINATOR",
+  "CENTRE COORDINATOR",
+  "LACON LAWYER",
+  "PRO BONO LAWYER",
+  "PARALEGAL",
+] as const;
+
+// 2. Create the union type from the ROLES array
+export type UserType = typeof ROLES[number];
+
+// 3. Reuse ROLES as the userTypeOptions
+export const userTypeOptions: UserType[] = [...ROLES];
+
+export type TUser = Pick< TFullUser, "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image">;
 
 
 export type Designation = 'Head Office' | 'State Office' | 'Zonal Office' | 'Centre lawyer' | 'State Lawyer' | 'Head Quarters';
@@ -57,6 +80,14 @@ export const states = [
   'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo',
   'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'
 ];
+
+
+
+export const stateOptions = states.map(state => ({
+  value: state,
+  label: state === 'FCT' ? 'Federal Capital Territory' : state
+}));
+
 
 
 

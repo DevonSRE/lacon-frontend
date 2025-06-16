@@ -13,12 +13,17 @@ import { ROLES } from "./types/auth";
  * @type {string[]}
  */
 export const authRoutes = [
-  "/signin",
-  "/invitation",
-  "/welcome",
+  "/signin", "/password/forgot", "/password/password-otp"
 ];
 
-export const publicRoutes = ["/invitation"];
+export const publicRoutes = [
+  "/welcome",
+  "/",
+  "probuno",
+  "/invitation",
+  "/password/forgot",
+  "/password/password-otp"
+];
 
 /**
  * The prefix for API authentication routes

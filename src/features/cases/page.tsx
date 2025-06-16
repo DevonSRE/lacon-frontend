@@ -1,99 +1,98 @@
 'use client'
-import React, { useState } from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-} from '@/components/ui/sheet';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import React, { useMemo, useState } from 'react';
 import SearchFilterSection from './_components/SearchFilterSection';
-import CaseDetailsSheet from './_components/CaseDetailsSheet';
-import { TCase } from '@/lib/types';
 import { AssignmentSheet } from './_components/AssignmentSheet';
-// Remove any import of 'Case' from './_components/CaseDetailsSheet' or other files in this file.
-// export interface Case {
-//     id: string;
-//     clientName: string;
-//     caseType: 'Criminal' | 'Civil' | 'Decongestion';
-//     status: 'Assigned' | 'Unassigned';
-//     filedBy: string;
-//     state: string;
-// }
-
-const casesData: TCase[] = [
-    { id: 'LCN - 001', clientName: 'Adaobi Nwankwo', caseType: 'Criminal', status: 'Unassigned', filedBy: 'Paralegal', state: 'Oyo' },
-    { id: 'LCN - 001', clientName: 'Chinonso Okafor', caseType: 'Civil', status: 'Assigned', filedBy: 'Paralegal', state: 'Enugu' },
-    { id: 'LCN - 001', clientName: 'Emeka Uche', caseType: 'Decongestion', status: 'Unassigned', filedBy: 'Paralegal', state: 'Kano' },
-    { id: 'LCN - 001', clientName: 'Ifu Eze', caseType: 'Criminal', status: 'Assigned', filedBy: 'Paralegal', state: 'Rivers' },
-    { id: 'LCN - 001', clientName: 'Chijioke Nwosu', caseType: 'Decongestion', status: 'Unassigned', filedBy: 'Paralegal', state: 'Abia' },
-    { id: 'LCN - 001', clientName: 'Ngozi Obi', caseType: 'Criminal', status: 'Assigned', filedBy: 'Paralegal', state: 'Benue' },
-    { id: 'LCN - 001', clientName: 'Ifeoma Chukwu', caseType: 'Criminal', status: 'Unassigned', filedBy: 'Paralegal', state: 'Ekiti' },
-    { id: 'LCN - 001', clientName: 'Obinna Nnamdi', caseType: 'Criminal', status: 'Assigned', filedBy: 'Paralegal', state: 'Lagos' },
-    { id: 'LCN - 001', clientName: 'Chinwe Ndukwe', caseType: 'Decongestion', status: 'Unassigned', filedBy: 'Paralegal', state: 'Yobe' },
-    { id: 'LCN - 001', clientName: 'Ugochukwu Nwafor', caseType: 'Criminal', status: 'Assigned', filedBy: 'Paralegal', state: 'Sokoto' },
-];
-
-const lawyers = [
-    'John Adebayo',
-    'Sarah Okonkwo',
-    'Michael Usman',
-    'Grace Okoro',
-    'David Lawal'
-];
+import { createCaseColumns, getCaseTypeBadgeColor, getStatusBadgeVariant, ICase } from './_components/table-columns';
+import { DataTable } from '@/components/data-table';
+import TablePagination from '@/components/TablePagination';
+import { useQuery } from '@tanstack/react-query';
+import { DEFAULT_PAGE_SIZE } from '@/lib/constants';
+import { useDebounce } from 'use-debounce';
+import { GetCaseAction } from './server/caseAction';
+import { useAppSelector } from '@/hooks/redux';
+import { CustomeSheet } from '@/components/CustomSheet';
+import ViewCase from './_components/viewCase';
+import { ROLES } from '@/types/auth';
+import BulkCaseUploadDialog from '../dashboard/components/BulkUpload';
+import FileACaseComponent from '../component/FileACase';
 
 export default function CasesPage() {
-    const [selectedCase, setSelectedCase] = useState<TCase | null>(null);
-    const [showCaseDetails, setShowCaseDetails] = useState(false);
-    const [showAssignSheet, setShowAssignSheet] = useState(false);
-    const [assignmentCase, setAssignmentCase] = useState<TCase | null>(null);
     const [clientNameSearch, setClientNameSearch] = useState('');
     const [caseIdSearch, setCaseIdSearch] = useState('');
     const [stateFilter, setStateFilter] = useState('');
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [type, setType] = useState('');
+    const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [debouncedSearchTerm] = useDebounce(clientNameSearch, 500);
+    const [viewCase, setViewCase] = useState(false);
+    const [viewAssignment, setViewAssignment] = useState(false);
+    const { data: user } = useAppSelector((state) => state.profile);
+    const role = user?.role;
 
-    const handleRowClick = (caseItem: TCase) => {
-        setSelectedCase(caseItem);
-        setShowCaseDetails(true);
-    };
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter],
+        queryFn: async () => {
+            const filters = {
+                page: currentPage,
+                size: DEFAULT_PAGE_SIZE,
+                search: debouncedSearchTerm,
+                case_type: (caseTypeFilter) ? caseTypeFilter : "",
+                state: (stateFilter === "all") ? "" : stateFilter,
+                status: (statusFilter === "all") ? "" : statusFilter,
+            };
+            return await GetCaseAction(filters);
+        },
+        staleTime: 100000,
+    });
 
-    const handleAssignClick = (e: React.MouseEvent, caseItem: TCase) => {
-        e.stopPropagation();
-        setAssignmentCase(caseItem);
-        setShowAssignSheet(true);
-    };
-
-    const getStatusBadgeVariant = (status: string) => {
-        return status === 'Assigned' ? 'default' : 'secondary';
-    };
-
-    const getCaseTypeBadgeColor = (caseType: string) => {
-        switch (caseType) {
-            case 'Criminal': return 'bg-red-100 text-red-800';
-            case 'Civil': return 'bg-blue-100 text-blue-800';
-            case 'Decongestion': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+    const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
+        setCaseDetails(user);
+        setType(type);
+        if (type == "viewCase") {
+            setViewCase(true);
+        }
+        if (type === "Assign" || type === "ReAssign") {
+            setViewAssignment(true);
         }
     };
 
+    const handleCaseSubmitted = () => {
+        // Refetch cases data when a new case is submitted
+        refetch();
+    };
+
+    const columns = useMemo(
+        () => createCaseColumns(user?.role as ROLES,
+            (user) => handleOpenSheet(user, "Assign"),
+            (user) => handleOpenSheet(user, "ReAssign"),
+            (user) => handleOpenSheet(user, "Review"),
+            (user) => handleOpenSheet(user, "viewCase"),
+            (user) => handleOpenSheet(user, "suspend"),
+        ),
+        [user?.role]
+    );
 
     return (
-        <div className="p-6">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Cases</h1>
+        <div className="">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
+                <div className="flex gap-4">
+                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
+                        <>
+                            <BulkCaseUploadDialog />
+                            <FileACaseComponent
+                                userRole={role as ROLES}
+                                showIcon={true}
+                                buttonText="File a Case"
+                                buttonClassName="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11"
+                                onCaseSubmitted={handleCaseSubmitted}
+                            />
+                        </>
+                    )}
+                </div>
+            </div>
 
             <SearchFilterSection
                 clientNameSearch={clientNameSearch}
@@ -109,123 +108,29 @@ export default function CasesPage() {
             />
 
             {/* Cases Table */}
-            <div className="bg-white rounded-lg shadow-sm">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-gray-50 border-b">
-                            <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    <input type="checkbox" className="rounded" />
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Case ID
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Client Name
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Case Type
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Filed By
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    State
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {casesData.map((caseItem, index) => (
-                                <tr
-                                    key={index}
-                                    className="hover:bg-gray-50 cursor-pointer"
-                                    onClick={() => handleRowClick(caseItem)}
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <input
-                                            type="checkbox"
-                                            className="rounded"
-                                            onClick={(e) => e.stopPropagation()}
-                                        />
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        {caseItem.id}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {caseItem.clientName}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <Badge className={getCaseTypeBadgeColor(caseItem.caseType)}>
-                                            {caseItem.caseType}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <Badge
-                                            variant={getStatusBadgeVariant(caseItem.status)}
-                                            className={caseItem.status === 'Assigned' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                                            {caseItem.status}
-                                        </Badge>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {caseItem.filedBy}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {caseItem.state}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <Button
-                                            onClick={(e) => handleAssignClick(e, caseItem)}
-                                            variant={caseItem.status === 'Assigned' ? 'secondary' : 'default'}
-                                            size="sm"
-                                            className={caseItem.status === 'Assigned' ? 'text-gray-600 w-28' : 'bg-green-600 w-28 hover:bg-green-700' }
-                                        >
-                                            {caseItem.status === 'Assigned' ? 'Re-Assign' : 'Assign'}
-                                        </Button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+            <DataTable
+                columns={columns}
+                loading={isLoading}
+                data={data?.data.data}
+            />
+            {data?.data?.data?.length > 0 && (
+                <div className="flex justify-end pt-4">
+                    <TablePagination
+                        currentPage={currentPage}
+                        totalCount={data?.data.total_rows}
+                        pageSize={DEFAULT_PAGE_SIZE}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
                 </div>
+            )}
 
-                {/* Pagination */}
-                {/* <div className="bg-white px-6 py-3 flex items-center justify-between border-t border-gray-200">
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                        <ChevronLeft className="h-4 w-4" />
-                        Previous
-                    </Button>
-                    <span className="text-sm text-gray-700">1</span>
-                    <Button variant="outline" size="sm" className="flex items-center gap-2">
-                        Next
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div> */}
-            </div>
-            <CaseDetailsSheet
-                show={showCaseDetails}
-                onOpenChange={setShowCaseDetails}
-                selectedCase={selectedCase}
-                onAssignClick={(caseData) => {
-                    setAssignmentCase(caseData);
-                    setShowAssignSheet(true);
-                }}
-                getStatusBadgeVariant={getStatusBadgeVariant}
-                getCaseTypeBadgeColor={getCaseTypeBadgeColor}
-            />
-            <AssignmentSheet
-                open={showAssignSheet}
-                onOpenChange={setShowAssignSheet}
-                assignmentCase={assignmentCase}
-                setShowAssignSheet={setShowAssignSheet}
-                lawyers={lawyers}
-                getCaseTypeBadgeColor={getCaseTypeBadgeColor}
-            />
+            <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
+                <ViewCase details={caseDetails} />
+            </CustomeSheet>
+
+            <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
+                <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} type={type} />
+            </CustomeSheet>
         </div>
     );
 }

@@ -1,28 +1,28 @@
 
 'use client'
-import { useEffect, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { useActionState, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Icons } from '@/icons/icons';
 import Button from '@/components/ui/button/Button';
-import { Label } from '@/components/ui/label';
-import Input from '@/components/form/input/InputField';
-import { useFormState } from 'react-dom';
 import { SignInAction } from '../server/actions';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from "sonner";
-import { isFieldErrorObject } from '@/types/auth';
+import { isFieldErrorObject, ROLES } from '@/types/auth';
 import { LoginPasswordField } from '@/components/passwordField';
 import { SubmitButton } from '@/components/submit-button';
+import InputField from '@/components/form/input/InputField';
+import Link from 'next/link';
+
 
 export default function SigninForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [state, dispatch] = useFormState(SignInAction, undefined);
+  const [state, dispatch, isPending] = useActionState(SignInAction, undefined);
   const [formDisabled, setFormDisabled] = useState(false);
   const [email, setEmail] = useState("");
   const router = useRouter();
+
   const errors = isFieldErrorObject(state?.errors)
     ? state.errors
     : {} as Record<string, string[]>;
@@ -50,9 +50,9 @@ export default function SigninForm() {
     }
   }, [state]);
 
-  useEffect(() => {
-    setEmail((prev) => prev.trimStart().replace(/\s+/g, ""));
-  }, [email]); // Runs every time `email` updates
+  // useEffect(() => {
+  //   setEmail((prev) => prev.trimStart().replace(/\s+/g, ""));
+  // }, [email]);
 
   return (
     <div className="flex h-screen bg-white">
@@ -69,7 +69,7 @@ export default function SigninForm() {
           </p>
           {/* <form className="space-y-4"> */}
           <form action={dispatch} className="w-full space-y-6">
-            <Input
+            <InputField
               type="email"
               name='email'
               label='Email Address'
@@ -79,11 +79,16 @@ export default function SigninForm() {
             <div>
               <LoginPasswordField error={errors.password?.[0]} />
               <div className="text-right text-xs text-red-500 mt-1 cursor-pointer">
-                Forgot Password?
+                <Link href="/password/forgot">
+                  Forgot Password?
+                </Link>
               </div>
             </div>
+
+
             <SubmitButton
               value="LOG IN"
+              loading={isPending}
               pendingValue="Processing..."
               className="w-full  bg-red-500 hover:bg-red-600 text-white py-2 rounded mt-2"
             />
