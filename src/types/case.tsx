@@ -29,6 +29,8 @@ export interface ILawyerRequest {
   FirstName: string;
   MiddleName: string;
   LastName: string;
+  LawyerName: string;
+  RequestedName: string;
   PhoneNumber: string;
   Email: string;
   Gender: string;
@@ -37,6 +39,7 @@ export interface ILawyerRequest {
   Status: string;
   DGStatus: string;
   DepartmentName: string;
+  Action: string;
   Otp: number;
   IsOtpVerify: boolean;
   OtpExpiresAt: string;
@@ -59,7 +62,9 @@ export interface ILawyerRequest {
   YearOfCall: string;
   AltNumber: string;
   Experience: string;
+  Reason: string;
   PreferredCourt: string;
+  Speciaty: string;
 }
 
 

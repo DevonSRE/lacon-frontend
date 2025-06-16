@@ -9,19 +9,17 @@ import { ICase } from "@/features/cases/_components/table-columns";
 import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { GetCaseAction } from "@/features/cases/server/caseAction";
+import CaseManagementDemo from "./components/skeletonLoader";
 
 
 export default function AssignedCases() {
 
-    const [clientNameSearch, setClientNameSearch] = useState('');
-    const [caseIdSearch, setCaseIdSearch] = useState('');
     const [stateFilter, setStateFilter] = useState('');
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [type, setType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [viewCase, setViewCase] = useState(false);
-    const [viewAssignment, setViewAssignment] = useState(false);
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
@@ -47,8 +45,6 @@ export default function AssignedCases() {
         },
         staleTime: 100000,
     });
-
-    console.log(data);
 
     const upcomingEvents = [
         { date: "May 22, 2025", type: "Hearing", title: "State Vs Ahmed Musa" },
@@ -80,17 +76,20 @@ export default function AssignedCases() {
                     </Button>
                 </div>
             </div>
-
-            {/* {view === "grid" ? (
-                <LawyersReportGrid caseData={data?.data?.data} />
-            ) : ( */}
-                <LawyersReportTable tableData={data?.data?.data} />
-            {/* )} */}
-
+            {isLoading ? (
+                <CaseManagementDemo />
+            ) : (
+                view === "grid" ? (
+                    <LawyersReportGrid caseData={data?.data?.data} />
+                ) : (
+                    <LawyersReportTable tableData={data?.data?.data} />
+                )
+            )}
             <div className="mt-10">
                 <h3 className="text-lg font-semibold mb-2">Upcoming Events</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {upcomingEvents.map((event, idx) => (
+                    No events yet
+                    {/* {upcomingEvents.map((event, idx) => (
                         <div
                             key={idx}
                             className="flex items-center space-x-2 border p-3 rounded-lg shadow-sm"
@@ -101,7 +100,7 @@ export default function AssignedCases() {
                                 <span className="mx-1">•</span> {event.title}
                             </p>
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </div>
         </div>

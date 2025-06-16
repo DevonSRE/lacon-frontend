@@ -21,7 +21,8 @@ export default function UploadHistory() {
     });
     return (
         <div>
-            <DataTable columns={uploadHistoryColumns} loading={isLoading} data={data?.data.data} />
+            <DataTable columns={uploadHistoryColumns} loading={isLoading} data={[]} />
+            {/* <DataTable columns={uploadHistoryColumns} loading={isLoading} data={data?.data.data} /> */}
             {data?.data?.data.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination

@@ -22,7 +22,7 @@ const CaseProgressUpdate: NextPage = () => {
         <label className="block text-sm font-medium">Date of Last Update</label>
         <input
           type="text"
-          value="24/04/2025       Wednesday"
+          value="24/04/2025"
           readOnly
           className="w-full mt-1 p-2 border rounded-md bg-gray-100"
         />

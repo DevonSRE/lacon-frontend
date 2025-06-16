@@ -21,7 +21,7 @@ const UploadCaseDocument = () => {
   return (
     <div className="max-w-md mx-auto ">
       <h2 className="text-xl font-semibold mb-6">Upload Case Document</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-10">
         <div>
           <label className="block text-sm font-medium mb-1">Document Title</label>
           <input

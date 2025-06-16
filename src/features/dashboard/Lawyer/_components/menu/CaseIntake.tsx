@@ -87,7 +87,8 @@ export default function CaseIntake() {
                 </div>
             </div>
 
-            <DataTable columns={caseIntakColumns} loading={isLoading} data={data?.data.data} />
+            <DataTable columns={caseIntakColumns} loading={isLoading} data={[]} />
+            {/* <DataTable columns={caseIntakColumns} loading={isLoading} data={data?.data.data} /> */}
             {data?.data?.data.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
