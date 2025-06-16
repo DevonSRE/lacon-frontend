@@ -17,8 +17,8 @@ import { GetState } from '@/components/get-state';
 import CaseCreated from '../_components/CaseCreated';
 
 type CustomeSheetProps = {
-    setOpen: Dispatch<SetStateAction<boolean>>;
     openFileACase: Dispatch<SetStateAction<boolean>>;
+    setOpen: Dispatch<SetStateAction<boolean>>;
 };
 
 export default function DecongestionForm({ openFileACase, setOpen }: CustomeSheetProps) {

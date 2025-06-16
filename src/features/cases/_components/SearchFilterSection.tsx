@@ -51,6 +51,7 @@ const SearchFilterSection: React.FC<Props> = ({
                             <SelectValue placeholder="Case Type" />
                         </SelectTrigger>
                         <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
                             <SelectItem value="Criminal">Criminal</SelectItem>
                             <SelectItem value="Civil">Civil</SelectItem>
                             <SelectItem value="Decongestion">Decongestion</SelectItem>
@@ -74,6 +75,8 @@ const SearchFilterSection: React.FC<Props> = ({
                                 <SelectValue placeholder="Select State" />
                             </SelectTrigger>
                             <SelectContent className="h-60 overflow-y-auto">
+                                <SelectItem value="all">All</SelectItem>
+
                                 {states.map((type) => (
                                     <SelectItem key={type} value={type}>
                                         {type}
@@ -90,6 +93,7 @@ const SearchFilterSection: React.FC<Props> = ({
                         <SelectValue placeholder="Case Status" />
                     </SelectTrigger>
                     <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
                         <SelectItem value="Unassiged">Unassiged</SelectItem>
                         <SelectItem value="Assigned">Assigned</SelectItem>
                         <SelectItem value="Closed">Closed</SelectItem>

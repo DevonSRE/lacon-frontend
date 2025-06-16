@@ -50,9 +50,9 @@ export default function CasesPage() {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 search: debouncedSearchTerm,
-                case_type: caseTypeFilter,
-                state: stateFilter,
-                status: statusFilter,
+                case_type: (caseTypeFilter) ? caseTypeFilter : "",
+                state: (stateFilter === "all") ? "" : stateFilter,
+                status: (statusFilter === "all") ? "" : statusFilter,
             };
             return await GetCaseAction(filters);
         },
@@ -184,7 +184,7 @@ export default function CasesPage() {
                     {selectedCaseForm === "Criminal" && <CriminalCaseForm />}
                     {selectedCaseForm === "PDSS1" && <PDSSCaseForm />}
                     {selectedCaseForm === "PDSS2" && <PDSSCaseForm />}
-                    {selectedCaseForm === "Decongestion" && <DecongestionForm  openFileACase={openFileACase} setOpen={setCaseType} />}
+                    {selectedCaseForm === "Decongestion" && <DecongestionForm openFileACase={setOpenFileACase} setOpen={setCaseType} />}
                     {selectedCaseForm === "MercyApplication" && <MercyApplication />}
                 </div>
             </CustomeSheet>

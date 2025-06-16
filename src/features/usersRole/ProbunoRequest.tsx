@@ -32,7 +32,6 @@ export default function ProbunoRequest() {
     const { data: user } = useAppSelector((state) => state.profile);
     const [selectedUser, setSelectedUser] = useState<ILawyerRequest | null>(null);
     const [dailogOpen, setdailogOpen] = useState(false);
-    const [sheetType, setSheetType] = useState<"suspend" | "delete" | null>(null);
 
     const handleOpenSheet = (user: ILawyerRequest, type: "review") => {
         setSelectedUser(user);
@@ -62,7 +61,7 @@ export default function ProbunoRequest() {
     });
 
     const actionType: string[] = [
-        "create", "Suspension", "Delete"
+        "active", "inactive", "Deleted"
     ];
 
     const handleActionType = (role: any) => {
@@ -74,13 +73,7 @@ export default function ProbunoRequest() {
         <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
             <div className="row flex justify-between">
                 <div className="text-2xl font-semibold">Probuno Request from Website</div>
-                <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white h-11 rounded-sm">
-                    <Icons.plusIcon className="mr-2" />
-                    New User
-                </Button>
             </div>
-
-            {/* <CasesDataTableToolbar /> */}
             <div className="flex items-center mt-6 gap-6 w-full justify-between">
                 <div className="relative w-full">
                     <Search className="absolute left-3 w-4 top-1/2 -translate-y-1/2  text-neutral" />
@@ -94,7 +87,6 @@ export default function ProbunoRequest() {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-
                 <section className="flex gap-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -124,7 +116,6 @@ export default function ProbunoRequest() {
                     />
                 </div>
             )}
-            <AddUserSheet />
             <CustomDialog open={dailogOpen} setOpen={setdailogOpen} className="w-4xl h-[700px] overflow-auto">
                 <ReviewProbuno open={dailogOpen} setOpen={setdailogOpen} />
             </CustomDialog>
