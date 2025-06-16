@@ -4,9 +4,25 @@ import { Button } from "@/components/ui/button";
 import { Grid3X3, List } from "lucide-react";
 import LawyersReportGrid from "../LawyerReportGrid";
 import LawyersReportTable from "../LawyerReportTable";
+import { useAppSelector } from "@/hooks/redux";
+import { ICase } from "@/features/cases/_components/table-columns";
+import { useQuery } from "@tanstack/react-query";
+import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { GetCaseAction } from "@/features/cases/server/caseAction";
+import CaseManagementDemo from "./components/skeletonLoader";
 
 
 export default function AssignedCases() {
+
+    const [stateFilter, setStateFilter] = useState('');
+    const [caseTypeFilter, setCaseTypeFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('');
+    const [type, setType] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const [viewCase, setViewCase] = useState(false);
+    const { data: user } = useAppSelector((state) => state.profile);
+    const role = user?.role;
+
     const [activeTab, setActiveTab] = useState(0);
     // const [view, setView] = useState<"grid" | "list">("grid");
     const [view, setView] = useState("grid");
@@ -15,62 +31,27 @@ export default function AssignedCases() {
         setView(view === "list" ? "grid" : "list");
     };
 
+    const { data, isLoading, refetch } = useQuery({
+        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter],
+        queryFn: async () => {
+            const filters = {
+                page: currentPage,
+                size: DEFAULT_PAGE_SIZE,
+                case_type: (caseTypeFilter) ? caseTypeFilter : "",
+                state: (stateFilter === "all") ? "" : stateFilter,
+                status: (statusFilter === "all") ? "" : statusFilter,
+            };
+            return await GetCaseAction(filters);
+        },
+        staleTime: 100000,
+    });
+
     const upcomingEvents = [
         { date: "May 22, 2025", type: "Hearing", title: "State Vs Ahmed Musa" },
         { date: "June 15, 2025", type: "Trial", title: "State Vs Lisa Tran" },
         { date: "July 30, 2025", type: "Sentencing", title: "State Vs John Doe" },
     ];
 
-    const caseData = [
-        {
-            id: "LCN-23456",
-            title: "Joshua Bulus Vs Micheal OPCDERTYU.......",
-            category: "Criminal Cases",
-            assignedDate: "June 1, 2025",
-            status: "Closed",
-        },
-        {
-            id: "LCN-23457",
-            title: "Jane Doe Vs John Smith",
-            category: "Criminal Cases",
-            assignedDate: "June 2, 2025",
-            status: "Closed",
-        },
-        {
-            id: "LCN-23458",
-            title: "State Vs Emily Brown",
-            category: "Criminal Cases",
-            assignedDate: "June 3, 2025",
-            status: "Closed",
-        },
-    ];
-
-    const tableData = [
-        {
-            id: "LCN - 001",
-            title: "State VS Ahmed SO",
-            client: "Adaobi Nwankwo",
-            type: "Criminal",
-            status: "Closed",
-            dueDate: "May 22, 2025",
-        },
-        {
-            id: "LCN - 002",
-            title: "State VS Lisa Tran",
-            client: "Mark Obi",
-            type: "Criminal",
-            status: "Closed",
-            dueDate: "June 15, 2025",
-        },
-        {
-            id: "LCN - 003",
-            title: "State VS John Doe",
-            client: "Chika Umeh",
-            type: "Criminal",
-            status: "Closed",
-            dueDate: "July 30, 2025",
-        },
-    ];
     const tabs = ["All Cases", "Active", "In Progress", "Closed"];
     return (
         <div>
@@ -95,17 +76,20 @@ export default function AssignedCases() {
                     </Button>
                 </div>
             </div>
-
-            {view === "grid" ? (
-                <LawyersReportGrid caseData={caseData}  />
+            {isLoading ? (
+                <CaseManagementDemo />
             ) : (
-                <LawyersReportTable tableData={tableData} />
+                view === "grid" ? (
+                    <LawyersReportGrid caseData={data?.data?.data} />
+                ) : (
+                    <LawyersReportTable tableData={data?.data?.data} />
+                )
             )}
-
             <div className="mt-10">
                 <h3 className="text-lg font-semibold mb-2">Upcoming Events</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {upcomingEvents.map((event, idx) => (
+                    No events yet
+                    {/* {upcomingEvents.map((event, idx) => (
                         <div
                             key={idx}
                             className="flex items-center space-x-2 border p-3 rounded-lg shadow-sm"
@@ -116,7 +100,7 @@ export default function AssignedCases() {
                                 <span className="mx-1">•</span> {event.title}
                             </p>
                         </div>
-                    ))}
+                    ))} */}
                 </div>
             </div>
         </div>

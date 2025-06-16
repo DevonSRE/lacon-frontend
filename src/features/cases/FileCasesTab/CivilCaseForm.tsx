@@ -21,7 +21,7 @@ interface CivilCaseFormProps {
     setCurrentStep?: Dispatch<SetStateAction<number>>;
 }
 
-export default function CivilCaseForm({currentStep = 1,setCurrentStep = () => {}}: CivilCaseFormProps) {
+export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
 
     const router = useRouter();
     // const [currentStep, setCurrentStep] = useState(1);

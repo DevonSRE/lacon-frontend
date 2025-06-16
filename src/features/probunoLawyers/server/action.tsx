@@ -2,7 +2,7 @@
 'use server';
 
 import { ErrorResponse } from '@/lib/auth';
-import { caseUpdateSchema, DecongestionCaseFullSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
+import { caseUpdateSchema, DecongestionCaseFullSchema, MercyApplicationCaseFullSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
 import { z } from 'zod';
 import ProbunoService from './service';
 import { handleApiError } from '@/lib/utils';
@@ -361,9 +361,30 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
             result = PublicCivilCaseSchema.safeParse(data);
         } else if (data.case_type === "Criminal Case") {
             result = PublicCriminalCaseSchema.safeParse(data);
-        }
-        else if (data.case_type === "Decongestion Case") {
+        } else if (data.case_type === "Decongestion Case") {
             result = DecongestionCaseFullSchema.safeParse(data);
+        } else if (data.case_type === "Mercy Application") {
+            const data = {
+                case_type: formData.get('case_type') as string,
+                state_id: formData.get('state_id') as string,
+                first_name: formData.get('first_name') as string,
+                middle_name: formData.get('middle_name') as string,
+                last_name: formData.get('last_name') as string,
+                gender: formData.get('gender') as string,
+                age: parseInt(formData.get('age') as string),
+                correctional_facility: formData.get('correctional_facility') as string,
+                offence: formData.get('offence') as string,
+                // Reconstruct the nested object from flat fields
+                perogative_of_mercy: {
+                    sentence_passed: formData.get('perogative_sentence_passed') as string || undefined,
+                    date_of_sentence: formData.get('perogative_date_of_sentence') as string || undefined,
+                    perogative_of_mercy: parseInt(formData.get('perogative_mercy_number') as string) || 0,
+                    reason_for_clemency: formData.get('perogative_reason_for_clemency') as string || undefined,
+                    health_condition: formData.get('perogative_health_condition') as string || undefined,
+                    recommendations: formData.get('perogative_recommendations') as string || undefined,
+                }
+            };
+            result = MercyApplicationCaseFullSchema.safeParse(data);
         } else {
             result = PDSSCaseFullSchema.safeParse(data);
         }
@@ -382,7 +403,7 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
         else if (data.case_type === "PDSS") {
             response = await ProbunoService.casesPDSSCase(result.data);
         }
-        else if (data.case_type === "Perogative Case") {
+        else if (data.case_type === "Mercy Application") {
             response = await ProbunoService.casesPerogativeCase(result.data);
         } else {
             response = await ProbunoService.casesPublicCase(result.data);
@@ -398,8 +419,8 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
         };
 
     } catch (err) {
+        console.log("JSON Parse error:", err);
         if (err instanceof SyntaxError) {
-            console.log("JSON Parse error:", err);
             return {
                 status: 400,
                 errors: { cases: ["Invalid cases data format"] },

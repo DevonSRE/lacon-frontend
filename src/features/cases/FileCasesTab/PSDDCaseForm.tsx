@@ -25,8 +25,6 @@ interface CivilCaseFormProps {
 }
 
 export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
-
-    // export default function PDSSCaseForm() {
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();

@@ -179,9 +179,6 @@ export const createLawyerRequestColumns = (
       header: "Action",
       cell: ({ row }) => {
         const user = row.original;
-
-        // if (userRole !== "ADMIN") return null;
-
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

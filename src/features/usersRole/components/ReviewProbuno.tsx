@@ -1,85 +1,89 @@
-import React, { Dispatch, ReactNode, SetStateAction, useState } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, startTransition, useActionState, useEffect, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import SelectField from '@/components/SelectField';
 import { ReviewProbuno } from '@/features/probunoLawyers/server/probonoSchema';
 import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
+import { ILawyerRequest } from '@/types/case';
+import LoadingDialog from '@/components/LoadingDialog';
+import useEffectAfterMount from '@/hooks/use-effect-after-mount';
+import { toast } from "sonner";
+import { CLIENT_ERROR_STATUS } from '@/lib/constants';
+import { AcceptRejectProbunoRequest } from '../server/action';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
 
-interface ApplicationData {
-    fullName: string;
-    lawyerName: string;
-    numLawyers: string;
-    firmAddress: string;
-    email: string;
-    phone: string;
-    altNumber: string;
-    yearOfCall: string;
-    nbaNumber: string;
-    yearsExperience: string;
-    capacity: string;
-    preferredCourt: string;
-    submissionDate: string;
-}
 
 interface DecisionData {
     decision: string;
     reason: string;
 }
-
 type CustomeDialigProps = {
     open: boolean;
     setOpen: Dispatch<SetStateAction<boolean>>;
     children?: ReactNode;
     className?: string;
-
+    user: ILawyerRequest | null,
 };
 
-export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDialigProps) {
-
-    const applicationData: ApplicationData = {
-        fullName: 'Jonathan Potter',
-        lawyerName: 'Emmanuel Okoja',
-        numLawyers: '5',
-        firmAddress: '12 Garki Road, Abuja',
-        email: 'emmanuel.okoja@firm.com',
-        phone: '+234 801 234 5678',
-        altNumber: '+234 801 234 5678',
-        yearOfCall: '2018',
-        nbaNumber: 'Abuja Branch',
-        yearsExperience: '5-10 years',
-        capacity: '3-5 cases at a time',
-        preferredCourt: 'High Court, Magistrate Court',
-        submissionDate: '2025-06-06'
-    };
+export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProps) {
+    const [state, dispatch, isPending] = useActionState(AcceptRejectProbunoRequest, undefined);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    const router = useRouter();
 
-
+    const queryClient = useQueryClient();
     const [decisionData, setDecisionData] = useState<DecisionData>({
         decision: '',
         reason: ''
     });
-
-    const handleDecisionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setDecisionData(prev => ({
-            ...prev,
-            decision: e.target.value
-        }));
+    const [dialogState, setDialogState] = useState({
+        open: false,
+        title: "",
+        details: "",
+    });
+    const dispatchAction = (formData: FormData) => {
+        startTransition(() => {
+            dispatch(formData);
+        });
     };
-
-    const handleReasonChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setDecisionData(prev => ({
-            ...prev,
-            reason: e.target.value
-        }));
-    };
-
-    const handleSubmitDecision = () => {
-        if (decisionData.decision) {
-            console.log('Decision submitted:', decisionData.decision);
-            console.log('Reason:', decisionData.reason);
-            // Handle form submission logic here
+    useEffect(() => {
+        if (isPending) {
+            setDialogState({
+                open: true,
+                title: "loading",
+                details: "Approving Request...",
+            });
         }
-    };
+    }, [isPending]);
+    useEffectAfterMount(() => {
+        console.log(state);
+        if (!state) return;
+        if (CLIENT_ERROR_STATUS.includes(state.status)) {
+            setDialogState({ open: false, title: "", details: "" });
+            toast.error(state.message, {
+                description:
+                    typeof state.errors === "string"
+                        ? state.errors
+                        : state.errors
+                            ? Object.values(state.errors).flat().join(", ")
+                            : undefined,
+            });
+        } else if (state.status === 200 || state.status === 201) {
+            setDialogState({
+                open: true,
+                title: "done",
+                details: "successfully!",
+            });
+            queryClient.invalidateQueries({ queryKey: ["getProbunoLawyersRequest"] });
+            setTimeout(() => {
+                setDialogState({ open: false, title: "", details: "" });
+                if (decisionData.decision === "approved") {
+                    router.push("/users/desination-letter");
+                }
+                setOpen(false);
+            }, 2000);
+        }
+    }, [state]);
 
     const handleCancel = () => {
         setDecisionData({
@@ -89,7 +93,7 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
         setOpen(false);
     };
 
-    const InfoRow = ({ label, value }: { label: string; value: string }) => (
+    const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <div className="flex justify-between items-start py-2 border-gray-200 last:border-b-0">
             <span className="text-xs font-medium text-gray-600 min-w-0 flex-shrink-0 mr-4">
                 {label}:
@@ -106,12 +110,11 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
             ...prev,
             [name]: value
         }));
-
-        // Clear error when user selects
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
     };
+
 
     return (
         <div className="mx-auto  mr-3 bg-white ">
@@ -127,15 +130,14 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
                     </h2>
 
                     <div className="space-y-1 bg-gray-50 p-4">
-                        <InfoRow label="Full Name" value={applicationData.fullName} />
-                        <InfoRow label="Lawyer's Name" value={applicationData.lawyerName} />
-                        <InfoRow label="No. of Lawyers in Firm" value={applicationData.numLawyers} />
-                        <InfoRow label="Firm Address" value={applicationData.firmAddress} />
-                        <InfoRow label="Email" value={applicationData.email} />
-                        <InfoRow label="Phone" value={applicationData.phone} />
-                        <InfoRow label="Alt Number" value={applicationData.altNumber} />
-                        <InfoRow label="Year of Call" value={applicationData.yearOfCall} />
-                        <InfoRow label="NBA Branch" value={applicationData.nbaNumber} />
+                        <InfoRow label="Full Name" value={`${user?.LastName ?? "-"} - ${user?.FirstName ?? "-"}`} />
+                        {/* <InfoRow label="No. of Lawyers in Firm" value={user?.numLawyers ?? "-"} /> */}
+                        {/* <InfoRow label="Firm Address" value={user?.firmAddress ?? "-"} /> */}
+                        <InfoRow label="Email" value={user?.Email ?? "-"} />
+                        <InfoRow label="Phone" value={user?.PhoneNumber ?? "-"} />
+                        <InfoRow label="Alt Number" value={user?.AltNumber ?? "-"} />
+                        <InfoRow label="Year of Call" value={user?.YearOfCall ?? "-"} />
+                        <InfoRow label="NBA Branch" value={user?.NBANumber ?? "-"} />
                     </div>
                 </div>
 
@@ -147,7 +149,7 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
                             Section 2: Criminal Law Experience
                         </h2>
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Years of Experience" value={applicationData.yearsExperience} />
+                            <InfoRow label="Years of Experience" value={user?.Experience ?? "0"} />
                         </div>
                     </div>
 
@@ -158,7 +160,7 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
                         </h2>
 
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Capacity" value={applicationData.capacity} />
+                            <InfoRow label="Capacity" value={user?.MaxLoad ?? 0} />
                         </div>
                     </div>
 
@@ -168,72 +170,79 @@ export default function ProBonoLawyerApplication({ open, setOpen }: CustomeDiali
                             Section 4: Criminal Matters Preference
                         </h2>
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Preferred Court" value={applicationData.preferredCourt} />
+                            <InfoRow label="Preferred Court" value={user?.PreferredCourt ?? ""} />
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Section 5: Submission Data */}
-            {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8"></div> */}
             <div className="grid grid-cols-2 lg:grid-cols-2 mt-8 mr-3">
                 <div className='rounded-lg border-[1px] border-gray-200 p-2'>
                     <h2 className="text-sm font-semibold mb-4 text-gray-700">
                         Section 5: Submission Data
                     </h2>
                     <div className="max-w-md space-y-1 bg-gray-50 p-4">
-                        <InfoRow label="Date of Submission" value={applicationData.submissionDate} />
+                        <InfoRow label="Date of Submission" value={user?.CreatedAt ?? ""} />
                     </div>
-                </div>
-
-                <div>
-
                 </div>
             </div>
 
+
+            <LoadingDialog
+                open={dialogState.open}
+                onOpenChange={(open) =>
+                    setDialogState((prev) => ({ ...prev, open }))
+                }
+                details={dialogState.details}
+                title={dialogState.title}
+            />
+
             {/* Decision Section */}
             <div className="mt-8 bg-white p-6 rounded-lg border-[1px] border-gray-200">
-                <div className='mb-4'>
-                    <SelectField
-                        name="decision"
-                        label="Decision: "
-                        placeholder="Select decision"
-                        options={[
-                            { value: 'Accept', label: 'Accept' },
-                            { value: 'Decline', label: 'Decline' }
-                        ]}
-                        required
-                        value={decisionData.decision} // Add value prop
-                        onValueChange={(value) => handleSelectChange(value, 'decision')}
-                    // error={!!errors.decision}
-                    // errorMessage={errors.decision}
-                    />
-                </div>
+                <form action={dispatchAction} className="w-full space-y-6">
+                    <input type="hidden" name="decision" value={decisionData.decision} />
+                    <input type="hidden" name="lawyer_id" value={user?.ID} />
+                    <div className='mb-4'>
+                        <SelectField
+                            name="decision"
+                            label="Decision:"
+                            placeholder="Select decision"
+                            options={[
+                                { value: 'approved', label: 'Accept' },
+                                { value: 'rejected', label: 'Decline' }
+                            ]}
+                            required
+                            value={decisionData.decision} // Add value prop
+                            onValueChange={(value) => handleSelectChange(value, 'decision')}
+                            error={!!errors.gender}
+                            errorMessage={errors.gender}
+                        />
+                    </div>
 
+                    <div className="mb-6">
+                        <TextAreaField
+                            name="reason"
+                            label="Reason for Decision ( If Rejected ):"
+                            required
+                            placeholder="Enter your permanent address"
+                            error={errors.reason}
+                        />
+                    </div>
 
-                <div className="mb-6">
-                    <TextAreaField
-                        name="reason"
-                        label="Reason for Decision ( If Rejected ):"
-                        required
-                        placeholder="Enter your permanent address"
-                        value={decisionData?.reason}
-                        // onChange={(e) => updateField('reason', e.target.value)}
-                        error={errors.reason}
-                    />
-                </div>
+                    <div className="flex gap-4 text-xs">
+                        <Button
+                            type='submit'
+                            disabled={!decisionData.decision}
+                            className="flex-1 bg-black text-white h-11 py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
+                            {isPending ? "Loading..." : "Yes, Submit Decision"}
+                        </Button>
+                        <Button onClick={handleCancel} className="flex-1 bg-white text-gray-700 h-11 py-3 px-6 rounded-md font-medium border border-gray-300 hover:bg-gray-50 transition duration-200">
+                            No, Cancel
+                        </Button>
+                    </div>
+                </form>
 
-                <div className="flex gap-4 text-xs">
-                    <Button
-                        onClick={handleSubmitDecision}
-                        disabled={!decisionData.decision}
-                        className="flex-1 bg-black text-white h-11 py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed">
-                        Yes, Submit Decision
-                    </Button>
-                    <Button onClick={handleCancel} className="flex-1 bg-white text-gray-700 h-11 py-3 px-6 rounded-md font-medium border border-gray-300 hover:bg-gray-50 transition duration-200">
-                        No, Cancel
-                    </Button>
-                </div>
             </div>
         </div>
     );

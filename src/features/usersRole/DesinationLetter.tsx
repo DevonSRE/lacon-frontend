@@ -21,7 +21,6 @@ const DesinationLetter = () => {
                     </div>
 
                     <div className="text-center flex-1">
-
                         <div className="w-16 h-16 mx-auto  rounded-full flex items-center justify-center">
                             <Image
                                 width={50}

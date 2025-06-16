@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import TablePagination from "@/components/TablePagination";
 import { redirect, useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Filter, Plus, Search } from "lucide-react";
+import { Filter, ListFilter, Plus, Search } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
 import { GetLawyerRequestAction, GetProbunoLawyerRequestAction } from "./userRoleAction";
@@ -20,7 +20,7 @@ import { ROLES } from "@/types/auth";
 import { useAppSelector } from "@/hooks/redux";
 import { ILawyerRequest, IUser } from "@/types/case";
 import { CustomDialog } from "@/components/CustomDialog";
-import ReviewProbuno from "./components/ReviewProbuno";
+import ReviewProbunoDialog from "./components/ReviewProbuno";
 
 
 export default function ProbunoRequest() {
@@ -91,7 +91,7 @@ export default function ProbunoRequest() {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="outline" className="text-sm h-11 w-32">
-                                <Filter size={20} className="mr-2" />
+                                <ListFilter size={20} className="mr-2" />
                                 Filter
                             </Button>
                         </DropdownMenuTrigger>
@@ -117,7 +117,7 @@ export default function ProbunoRequest() {
                 </div>
             )}
             <CustomDialog open={dailogOpen} setOpen={setdailogOpen} className="w-4xl h-[700px] overflow-auto">
-                <ReviewProbuno open={dailogOpen} setOpen={setdailogOpen} />
+                <ReviewProbunoDialog open={dailogOpen} user={selectedUser} setOpen={setdailogOpen} />
             </CustomDialog>
         </div>
     )
