@@ -218,6 +218,7 @@ export const PDSSCaseFullSchema = z.object({
 
 export type ReviewProbuno = {
   decision: string;
+  reason: string;
 }
 export type FormDataCivilCase = {
 

@@ -34,6 +34,7 @@ export interface ICase {
   filed_by: string;
   state: string;
   case_type: string; // e.g., "PDSS ORGANIZATION" or "CIVIL CASE"
+  case_title: string; // e.g., "PDSS ORGANIZATION" or "CIVIL CASE"
   location: string; // General location
   name: string;
   sex: string;

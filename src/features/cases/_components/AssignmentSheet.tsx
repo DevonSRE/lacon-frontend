@@ -12,7 +12,6 @@ import {
   startTransition,
   useActionState,
   useEffect,
-  useRef,
   useState,
 } from "react";
 import { ICase } from "./table-columns";

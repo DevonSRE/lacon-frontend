@@ -11,7 +11,7 @@ export interface IUser {
   id: string;
   user_id: string;
   user_type: string;
-  avatar : string;
+  avatar: string;
   first_name: string;
   profile_image: string;
   last_name: string;
@@ -20,25 +20,50 @@ export interface IUser {
   role: string;
   status: string;
 }
+
+
+
+
 export interface ILawyerRequest {
   ID: string;
-  LawyerID: string;
-  LawyerName: string;
-  LastName: string;
   FirstName: string;
-  Reason: string;
-  Action : string;
-  first_name: string;
+  MiddleName: string;
+  LastName: string;
+  PhoneNumber: string;
+  Email: string;
+  Gender: string;
+  DateOfBirth: string;
+  UserType: string;
   Status: string;
-  LawyerEmail: string;
-  Experience: string;
-  MaxLoad: string;
-  Speciaty: string;
-  RequestedByID: string;
-  RequestedName: string;
-  status: string;
+  DGStatus: string;
+  DepartmentName: string;
+  Otp: number;
+  IsOtpVerify: boolean;
+  OtpExpiresAt: string;
+  ZoneID: string;
+  ZoneName: string;
+  StateID: string;
+  CenterID: string | null;
+  StateName: string;
+  CenterName: string | null;
+  MaxLoad: number;
+  CaseAssignmentCount: number;
+  CompletedCasesCount: number;
   CreatedAt: string;
+  UpdatedAt: string;
+  DeletedAt: string | null;
+  UpdatedBy: string;
+  ProfileImage: string;
+  DecisionReason: string;
+  NBANumber: string;
+  YearOfCall: string;
+  AltNumber: string;
+  Experience: string;
+  PreferredCourt: string;
 }
+
+
+
 export interface ILawyerManagement {
   id: string;
   first_name: string;

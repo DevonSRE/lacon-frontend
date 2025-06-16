@@ -32,9 +32,9 @@ export default function LawyersReportTable({ tableData }: { tableData: any[] }) 
                             <input type="checkbox" />
                         </TableCell>
                         <TableCell>{row.id}</TableCell>
-                        <TableCell>{row.title}</TableCell>
-                        <TableCell>{row.client}</TableCell>
-                        <TableCell>{row.type}</TableCell>
+                        <TableCell>{row.case_title ?? "-"}</TableCell>
+                        <TableCell>{row.first_name}</TableCell>
+                        <TableCell>{row.case_type}</TableCell>
                         <TableCell>
                             <span className="text-red-500 bg-red-100 px-2 py-1 rounded-full">
                                 {row.status}
@@ -42,9 +42,7 @@ export default function LawyersReportTable({ tableData }: { tableData: any[] }) 
                         </TableCell>
                         <TableCell>{row.dueDate}</TableCell>
                         <TableCell>
-                            <span className="text-blue-600 underline cursor-pointer">
-                                View Details
-                            </span>
+                           -
                         </TableCell>
                         <TableCell>
                             <Button variant="secondary">View</Button>
