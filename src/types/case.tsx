@@ -24,6 +24,8 @@ export interface ILawyerRequest {
   ID: string;
   LawyerID: string;
   LawyerName: string;
+  LastName: string;
+  FirstName: string;
   Reason: string;
   Action : string;
   first_name: string;

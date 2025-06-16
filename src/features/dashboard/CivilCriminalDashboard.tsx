@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import CaseStatCard from "./components/CaseStatsSummaryChart";
 import Intro from "@/components/Intro";
 import { AddLawyerSheet } from "./Lawyer/_components/addLawyer";
-import {  CirclePlus, PlusCircle } from "lucide-react";
+import { CirclePlus, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
@@ -13,6 +13,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
 import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
 import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
+import DecongestionForm from "../cases/FileCasesTab/DecongestionForm";
+import MercyApplication from "../cases/FileCasesTab/MercyApplication";
 
 interface StatCardProps {
     title: string;
@@ -52,7 +54,7 @@ export default function CivilCriminalDashboard() {
                     <div className="flex justify-between items-center mb-8">
                         <Intro user={user?.first_name ?? "Admin"} />
                         <div className="flex gap-4">
-                            {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL) && (
+                            {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD) && (
                                 <>
                                     <BulkCaseUploadDialog />
                                     <Button onClick={() => setOpenFileACase(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2  flex items-center gap-2 transition-colors h-11">
@@ -108,7 +110,7 @@ export default function CivilCriminalDashboard() {
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Add a Lawyer Component shee */}
                 <CustomeSheet open={openFileACase} setOpen={setOpenFileACase} >
                     <div className="mt-6 space-y-6">
@@ -118,10 +120,20 @@ export default function CivilCriminalDashboard() {
                                 <SelectValue placeholder="Case Type" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Civil">Civil</SelectItem>
-                                <SelectItem value="Criminal">Criminal</SelectItem>
-                                <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
-                                <SelectItem value="PDSS2">PDSS(In Organanization)</SelectItem>
+                                {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL) && (
+                                    <>
+                                        <SelectItem value="Civil">Civil</SelectItem>
+                                        <SelectItem value="Criminal">Criminal</SelectItem>
+                                        <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
+                                        <SelectItem value="PDSS2">PDSS(In Organanization)</SelectItem>
+                                    </>
+                                )}
+                                {(role === ROLES.DECONGESTION_UNIT_HEAD) && (
+                                    <SelectItem value="Decongestion">Decongestion</SelectItem>
+                                )}
+                                {(role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
+                                    <SelectItem value="MercyApplication">Mercy Application</SelectItem>
+                                )}
                             </SelectContent>
                         </Select>
 
@@ -140,6 +152,8 @@ export default function CivilCriminalDashboard() {
                         {caseTypeFilter === "Criminal" && <CriminalCaseForm />}
                         {caseTypeFilter === "PDSS1" && <PDSSCaseForm />}
                         {caseTypeFilter === "PDSS2" && <PDSSCaseForm />}
+                        {caseTypeFilter === "Decongestion" && <DecongestionForm />}
+                        {caseTypeFilter === "MercyApplication" && <MercyApplication />}
                     </div>
                 </CustomeSheet>
             </div >

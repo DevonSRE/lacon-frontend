@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Filter, Plus, Search } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
-import { GetLawyerRequestAction } from "./userRoleAction";
+import { GetLawyerRequestAction, GetProbunoLawyerRequestAction } from "./userRoleAction";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/icons/icons";
@@ -56,7 +56,7 @@ export default function ProbunoRequest() {
                 keyword: debouncedSearchTerm ?? "",
                 user_type: selectedRole ?? "",
             };
-            return await GetLawyerRequestAction(filters);
+            return await GetProbunoLawyerRequestAction(filters);
         },
         staleTime: 100000,
     });

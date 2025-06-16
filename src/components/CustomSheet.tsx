@@ -22,7 +22,6 @@ export function CustomeSheet({ open, setOpen, children, className, backButton = 
         <Sheet open={open} onOpenChange={setOpen}  >
             {/* <SheetContent  className={cn(className)}> */}
             <SheetContent side="right" className={cn("w-full max-h-screen overflow-auto sm:max-w-[450px]", className)}>
-
                 <div className="space-y-10 p-5">
                     {backButton &&
                         <span><ArrowLeft onClick={() => setOpen(false)} /></span>

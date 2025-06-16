@@ -2,7 +2,7 @@
 'use server';
 
 import { ErrorResponse } from '@/lib/auth';
-import { caseUpdateSchema, DecongestionCaseFullSchema,  PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
+import { caseUpdateSchema, DecongestionCaseFullSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
 import { z } from 'zod';
 import ProbunoService from './service';
 import { handleApiError } from '@/lib/utils';
@@ -361,6 +361,9 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
             result = PublicCivilCaseSchema.safeParse(data);
         } else if (data.case_type === "Criminal Case") {
             result = PublicCriminalCaseSchema.safeParse(data);
+        }
+        else if (data.case_type === "Decongestion Case") {
+            result = DecongestionCaseFullSchema.safeParse(data);
         } else {
             result = PDSSCaseFullSchema.safeParse(data);
         }
@@ -372,7 +375,19 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
             };
         }
         console.log(result.data);
-        const response = await ProbunoService.casesPublicCase(result.data);
+        let response;
+        if (data.case_type === "Decongestion Case") {
+            response = await ProbunoService.casesDecongestionCase(result.data);
+        }
+        else if (data.case_type === "PDSS") {
+            response = await ProbunoService.casesPDSSCase(result.data);
+        }
+        else if (data.case_type === "Perogative Case") {
+            response = await ProbunoService.casesPerogativeCase(result.data);
+        } else {
+            response = await ProbunoService.casesPublicCase(result.data);
+        }
+
         console.log(JSON.stringify(response.data));
 
         return {
@@ -403,7 +418,7 @@ export async function submitDecongestionForm(prevState: unknown, formData: FormD
 
     try {
         const result = DecongestionCaseFullSchema.safeParse(data);
-       
+
         if (!result.success) {
             return {
                 status: 400,

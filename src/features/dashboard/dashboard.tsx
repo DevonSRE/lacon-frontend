@@ -19,7 +19,6 @@ import CivilCriminalDashboard from "./CivilCriminalDashboard";
 
 export default function Dashboard() {
     const { setIsOpen } = useAction();
-
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
@@ -49,13 +48,13 @@ export default function Dashboard() {
                     <CaseAssignmentPage />
                     <CaseDistributionChart />
                 </div>
-                {/* <CreateUserRole /> */}
                 <AddUserSheet />
             </div>
         );
     }
 
-    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS || role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || role === ROLES.OSCAR_UNIT_HEAD) {
+    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS || 
+        role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || role === ROLES.OSCAR_UNIT_HEAD) {
         return (<CivilCriminalDashboard />);
     }
 

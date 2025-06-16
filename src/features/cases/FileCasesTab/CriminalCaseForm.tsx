@@ -23,10 +23,7 @@ interface CivilCaseFormProps {
 }
 
 export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
-
-  // export default function CriminalCaseForm() {
   const router = useRouter();
-  // const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);

@@ -296,67 +296,67 @@ export type FormDataPDSSCase = {
 
 
 export interface FormDataDEcongestionCase {
-    // Step 1 - Personal Info
-    first_name: string;
-    middle_name: string;
-    last_name: string;
-    gender: string;
-    age: number;
-    last_address: string;
-    marital_status: string;
-    has_lawyer: string;
-    legal_aid_representation: string;
-    custodial_legal_visited: string;
-    date_of_visit: string;
-    date_of_visit_specific: string;
-    
-    // Step 2 - Case Details
-    case_name: string;
-    name_of_defendant: string;
-    offence_charged_description: string;
-    offence_charged: string;
-    charge_number: string;
-    court_of_trial: string;
-    arrest_date: string;
-    arraignment_date: string;
-    remand_date: string;
-    last_court_date: string;
-    next_adjournment: string;
-    bail_status: string;
-    sex: string;
-    date_of_birth_age: string;
-    name_of_relative: string;
-    relative_phone_number: string;
-    state_of_origin: string;
-    religion: string;
-    average_monthly_income: string;
-    stage_of_case: string;
-    need_interpreter: string;
-    disability_ailment: string;
-    confessional_statement: string;
+  // Step 1 - Personal Info
+  first_name: string;                  // "John"
+  middle_name: string;                 // "Michael"
+  last_name: string;                   // "Doe"
+  gender: string;                      // "Male"
+  age: number;                         // 35
+  last_address: string;                // e.g., "No. 10 Some Street, Abuja"
+  marital_status: string;             // "Single"
+  have_a_lawyer: string;              // "Yes" / "No"
+  need_legal_aid: string;             // "Yes" / "No"
+  custodial_visit: string;            // "Yes" / "No"
+  date_of_visit: string;              // "2025-06-10"
+
+  // Step 2 - Case Details
+  case_name: string;                  // "State vs John Doe"
+  name_of_defendant: string;          // "John Doe"
+  offence_charged_description: string;// "Armed robbery"
+  offence_charged: string;            // "Armed robbery"
+  charge_number: string;              // "CR/2025/00123"
+  court_of_trial: string;             // "Magistrate Court, Abuja"
+  arrest_date: string;                // "2025-05-01"
+  arraignment_date: string;           // "2025-05-05"
+  remand_date: string;                // "2025-05-06"
+  last_court_date: string;            // "2025-06-01"
+  next_adjournment: string;           // "2025-07-01"
+  bail_status: string;                // "Granted" / "Not Granted"
+  sex: string;                        // "Male"
+  date_of_birth_age: string;          // "1990-08-15"
+  name_of_relative: string;           // "Jane Doe"
+  relative_phone_number: string;      // "+2348012345678"
+  state_of_origin: string;            // "Kogi"
+  religion: string;                   // "Christianity"
+  average_monthly_income: string;     // "30000"
+  stage_of_case: string;              // "Trial"
+  need_interpreter: string;           // "Yes" / "No"
+  disability_ailment: string;         // "None" / e.g., "Visual Impairment"
+  confessional_statement: string;     // "No confession made"
 }
 
 
 
-// Step 1 - Personal Info Schema
+
 export const personalDecongestionInfoSchema = z.object({
   first_name: z.string(),
   middle_name: z.string(),
   last_name: z.string(),
   gender: z.string(),
-  age: z.number(),
+  age: z.coerce.number(),
   last_address: z.string(),
   marital_status: z.string(),
-  has_lawyer: z.string(),
-  legal_aid_representation: z.string(),
-  custodial_legal_visited: z.string(),
+  have_a_lawyer: z.string(),
+  need_legal_aid: z.string(),
+  custodial_visit: z.string(),
   date_of_visit: z.string(),
-  date_of_visit_specific: z.string(),
 });
 
-// Step 2 - Case Details Schema
+
 export const decongestionCaseDetails = z.object({
   case_name: z.string(),
+  case_type: z.string().optional(),
+  state_id: z.string().optional(),
   name_of_defendant: z.string(),
   offence_charged_description: z.string(),
   offence_charged: z.string(),
@@ -381,11 +381,8 @@ export const decongestionCaseDetails = z.object({
   confessional_statement: z.string(),
 });
 
-// Full Combined Schema
+
 export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(decongestionCaseDetails);
-
-
-
 
 
 

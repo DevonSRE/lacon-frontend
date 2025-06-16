@@ -18,7 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, MoreVerticalIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 
@@ -104,6 +104,10 @@ export const getCaseTypeBadgeColor = (caseType: string) => {
 export const createCaseColumns = (
   userRole: ROLES,
   onAssign: (caseItem: ICase) => void,
+  onReAssign: (caseItem: ICase) => void,
+  onReview: (caseItem: ICase) => void,
+  onViewDetails: (caseItem: ICase) => void,
+  onSuspend: (caseItem: ICase) => void,
   type?: "pending" | "all"
 ): ColumnDef<ICase>[] => {
   const columns: ColumnDef<ICase>[] = [
@@ -181,28 +185,60 @@ export const createCaseColumns = (
 
   columns.push({
     id: "actions",
-    header: "Actions",
+    header: "",
     cell: ({ row }) => {
-      const caseItem = row.original;
-      const isAssigned = caseItem.status === "ASSIGNED";
+      const user = row.original;
+
       return (
-        <Button
-          onClick={(e) => {
-            e.stopPropagation();
-            onAssign(caseItem);
-          }}
-          variant={isAssigned ? "secondary" : "default"}
-          size="sm"
-          className={
-            isAssigned
-              ? "text-gray-600 w-28"
-              : "bg-green-600 w-28 hover:bg-green-700"
-          }
-        >
-          {isAssigned ? "Re-Assign" : "Assign"}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <MoreVerticalIcon className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="p-1 space-y-2 border-[1px] border-black bg-gray-50">
+
+            <DropdownMenuItem onClick={() => onAssign(user)}>
+              Assign
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onReAssign(user)}>
+              Re Assign
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onReview(user)}>
+              Review
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onViewDetails(user)}>
+              View Case Details
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onSuspend(user)}>
+              Suspend Case
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       );
     },
+    // id: "actions",
+    // header: "Actions",
+    // cell: ({ row }) => {
+    //   const caseItem = row.original;
+    //   const isAssigned = caseItem.status === "ASSIGNED";
+    //   return (
+    //     <Button onClick={(e) => {
+    //         e.stopPropagation();
+    //         onAssign(caseItem);
+    //       }}
+    //       variant={isAssigned ? "secondary" : "default"}
+    //       size="sm"
+    //       className={
+    //         isAssigned
+    //           ? "text-gray-600 w-28"
+    //           : "bg-green-600 w-28 hover:bg-green-700"
+    //       }
+    //     >
+    //       {isAssigned ? "Re-Assign" : "Assign"}
+    //     </Button>
+    //   );
+    // },
   });
 
   return columns;

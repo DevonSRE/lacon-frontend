@@ -32,6 +32,7 @@ export default function CasesPage() {
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
     const [selectedCaseForm, setCaseForm] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [type, setType] = useState('');
     const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [debouncedSearchTerm] = useDebounce(clientNameSearch, 500);
@@ -57,9 +58,16 @@ export default function CasesPage() {
         },
         staleTime: 100000,
     });
-    const handleOpenSheet = (user: ICase, type: "Assigned") => {
+    const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
         setCaseDetails(user);
-        setViewAssignment(true);
+        setType(type);
+        if (type == "viewCase") {
+            setViewCase(true);
+        }
+        if (type === "Assign" || type === "ReAssign") {
+            setViewAssignment(true);
+        }
+
     };
     const handleCaseTypez = () => {
         console.log(caseTypeFilter);
@@ -68,14 +76,18 @@ export default function CasesPage() {
 
     const columns = useMemo(
         () => createCaseColumns(user?.role as ROLES,
-            (user) => handleOpenSheet(user, "Assigned"),),
+            (user) => handleOpenSheet(user, "Assign"),
+            (user) => handleOpenSheet(user, "ReAssign"),
+            (user) => handleOpenSheet(user, "Review"),
+            (user) => handleOpenSheet(user, "viewCase"),
+            (user) => handleOpenSheet(user, "suspend"),
+        ),
         [user?.role]
     );
-
-    const handleRowClick = (row: ICase) => {
-        setViewCase(true);
-        setCaseDetails(row);
-    };
+    // const handleRowClick = (row: ICase) => {
+    //     setViewCase(true);
+    //     setCaseDetails(row);
+    // };
 
     return (
         <div className="">
@@ -109,7 +121,9 @@ export default function CasesPage() {
             />
 
             {/* Cases Table */}
-            <DataTable onRowClick={handleRowClick} columns={columns} loading={isLoading} data={data?.data.data} />
+            <DataTable
+                // onRowClick={handleRowClick}
+                columns={columns} loading={isLoading} data={data?.data.data} />
             {data?.data?.data?.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
@@ -126,7 +140,7 @@ export default function CasesPage() {
             </CustomeSheet>
 
             <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
-                <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} />
+                <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} type={type} />
             </CustomeSheet>
 
 
@@ -165,12 +179,12 @@ export default function CasesPage() {
             </CustomeSheet>
 
             <CustomeSheet open={openCaseType} setOpen={setCaseType} className="min-w-3xl " >
-                <div className="mt-6 overflow-auto">
+                <div className="mt-6 ">
                     {selectedCaseForm === "Civil" && <CivilCaseForm />}
                     {selectedCaseForm === "Criminal" && <CriminalCaseForm />}
                     {selectedCaseForm === "PDSS1" && <PDSSCaseForm />}
                     {selectedCaseForm === "PDSS2" && <PDSSCaseForm />}
-                    {selectedCaseForm === "Decongestion" && <DecongestionForm />}
+                    {selectedCaseForm === "Decongestion" && <DecongestionForm  openFileACase={openFileACase} setOpen={setCaseType} />}
                     {selectedCaseForm === "MercyApplication" && <MercyApplication />}
                 </div>
             </CustomeSheet>
