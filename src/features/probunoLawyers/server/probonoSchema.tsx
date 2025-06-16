@@ -295,62 +295,94 @@ export type FormDataPDSSCase = {
 };
 
 
+export interface FormDataDEcongestionCase {
+  // Step 1 - Personal Info
+  first_name: string;                  // "John"
+  middle_name: string;                 // "Michael"
+  last_name: string;                   // "Doe"
+  gender: string;                      // "Male"
+  age: number;                         // 35
+  last_address: string;                // e.g., "No. 10 Some Street, Abuja"
+  marital_status: string;             // "Single"
+  have_a_lawyer: string;              // "Yes" / "No"
+  need_legal_aid: string;             // "Yes" / "No"
+  custodial_visit: string;            // "Yes" / "No"
+  date_of_visit: string;              // "2025-06-10"
+
+  // Step 2 - Case Details
+  case_name: string;                  // "State vs John Doe"
+  name_of_defendant: string;          // "John Doe"
+  offence_charged_description: string;// "Armed robbery"
+  offence_charged: string;            // "Armed robbery"
+  charge_number: string;              // "CR/2025/00123"
+  court_of_trial: string;             // "Magistrate Court, Abuja"
+  arrest_date: string;                // "2025-05-01"
+  arraignment_date: string;           // "2025-05-05"
+  remand_date: string;                // "2025-05-06"
+  last_court_date: string;            // "2025-06-01"
+  next_adjournment: string;           // "2025-07-01"
+  bail_status: string;                // "Granted" / "Not Granted"
+  sex: string;                        // "Male"
+  date_of_birth_age: string;          // "1990-08-15"
+  name_of_relative: string;           // "Jane Doe"
+  relative_phone_number: string;      // "+2348012345678"
+  state_of_origin: string;            // "Kogi"
+  religion: string;                   // "Christianity"
+  average_monthly_income: string;     // "30000"
+  stage_of_case: string;              // "Trial"
+  need_interpreter: string;           // "Yes" / "No"
+  disability_ailment: string;         // "None" / e.g., "Visual Impairment"
+  confessional_statement: string;     // "No confession made"
+}
 
 
-export type FormDataDEcongestionCase = {
-
-  // Personal Info
-  first_name: string;
-  middle_name: string;
-  last_name: string;
-  gender: string;
-  permanent_address: string;
-  age: number;
-  phone_number: string;
-  marital_status: string;
-  email: string;
-  state_of_origin: string;
-  occupation: string;
-  disability_proof: File | null;
-  disability_status: string;
-
-  // Case Details
-  case_name: string;
-  name_of_defendant: string;
-  offence_charged: string;
-  charge_number: number;
-  court_of_trial: string;
-  date_of_arrest_or_complaint: string; // ISO date string
-  date_of_arraignment_or_commencement: string; // ISO date string
-  date_of_remand?: string; // ISO date string
-  last_date_in_court?: string; // ISO date string
-  next_adjournment: string; // ISO date string
-  bail_status: string;
-
-  // Defendant Info
-  sex: string;
-  date_of_birth_or_age: string;
-  name_of_relative: string;
-  relative_phone_number: string;
-
-  // Original fields preserved if still applicable
-  offence: string;
-  arrest_date: string;
-  arraignment_date: string;
-  remand_date: string;
-  last_court_date: string;
-  client_location: string;
-  days_in_detention: number;
-  counsel_paralegal: string;
-  counsel_designation: string;
-  name_of_counsel_or_firm_or_organisation_id: string;
-  nature_of_legal_service_provided?: string;
-  case_status?: string;
-  date_trial_ended?: string;
-  case_outcome?: string;
-};
 
 
+export const personalDecongestionInfoSchema = z.object({
+  first_name: z.string(),
+  middle_name: z.string(),
+  last_name: z.string(),
+  gender: z.string(),
+  age: z.coerce.number(),
+  last_address: z.string(),
+  marital_status: z.string(),
+  have_a_lawyer: z.string(),
+  need_legal_aid: z.string(),
+  custodial_visit: z.string(),
+  date_of_visit: z.string(),
+});
+
+
+export const decongestionCaseDetails = z.object({
+  case_name: z.string(),
+  case_type: z.string().optional(),
+  state_id: z.string().optional(),
+  name_of_defendant: z.string(),
+  offence_charged_description: z.string(),
+  offence_charged: z.string(),
+  charge_number: z.string(),
+  court_of_trial: z.string(),
+  arrest_date: z.string(),
+  arraignment_date: z.string(),
+  remand_date: z.string(),
+  last_court_date: z.string(),
+  next_adjournment: z.string(),
+  bail_status: z.string(),
+  sex: z.string(),
+  date_of_birth_age: z.string(),
+  name_of_relative: z.string(),
+  relative_phone_number: z.string(),
+  state_of_origin: z.string(),
+  religion: z.string(),
+  average_monthly_income: z.string(),
+  stage_of_case: z.string(),
+  need_interpreter: z.string(),
+  disability_ailment: z.string(),
+  confessional_statement: z.string(),
+});
+
+
+export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(decongestionCaseDetails);
 
 
 

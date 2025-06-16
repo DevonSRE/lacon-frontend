@@ -302,7 +302,6 @@ export const createLawyersManagementColumns = (
       },
     },
   ];
-
   return columns;
 };
 

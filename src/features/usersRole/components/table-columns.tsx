@@ -216,17 +216,17 @@ export const createProbunoRequestColumns = (userRole: ROLES,
     {
       accessorKey: "LawyerName",
       header: "Name",
-      cell: ({ row }) => <span>{row.original.LawyerName}</span>,
+      cell: ({ row }) => <span>{row.original.FirstName} {row.original.LastName}</span>,
     },
     {
       accessorKey: "Experience",
       header: "Experience",
-      cell: ({ row }) => <span>{row.original.Experience}</span>,
+      cell: ({ row }) => <span>{row.original.Experience ?? "-"}</span>,
     },
     {
       accessorKey: "Speciaty",
       header: "Speciaty",
-      cell: ({ row }) => <span>{row.original.Speciaty}</span>,
+      cell: ({ row }) => <span>{row.original.Speciaty ?? "-"}</span>,
     },
     {
       accessorKey: "MaxLoad",

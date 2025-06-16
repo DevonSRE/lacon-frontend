@@ -28,15 +28,20 @@ import LoadingDialog from "@/components/LoadingDialog";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { toast } from "sonner";
 import { CLIENT_ERROR_STATUS } from "@/lib/constants";
+import { useAppSelector } from "@/hooks/redux";
+import { ROLES } from "@/types/auth";
 
 interface AssignmentSheetProps {
   details: ICase | null;
+  type: string;
   setOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-export function AssignmentSheet({ details, setOpen }: AssignmentSheetProps) {
+export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps) {
   const [state, dispatch, isPending] = useActionState(AssignCaseAction, undefined);
   const [selectedTitle, setSelectedTitle] = useState<string | undefined>();
+  const { data: user } = useAppSelector((state) => state.profile);
+  const role = user?.role;
   const [dialogState, setDialogState] = useState({
     open: false,
     title: "",
@@ -46,14 +51,19 @@ export function AssignmentSheet({ details, setOpen }: AssignmentSheetProps) {
   const queryClient = useQueryClient();
 
   const { data, isLoading: loading } = useQuery({
-    queryKey: ["userByType"],
+    queryKey: ["userByType", 'role'],
     queryFn: async () => {
-      const filters = { type: "unit_heads" };
-      return await GetUserByTypes(filters);
+      if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS) {
+        const filters = { type: "lawyers" };
+        return await GetUserByTypes(filters);
+      } else {
+        const filters = { type: "unit_heads" };
+        return await GetUserByTypes(filters);
+      }
     },
     placeholderData: keepPreviousData,
     staleTime: 50000,
-  });
+  },);
 
   const handleDivisionChange = (newValue: string) => {
     setSelectedTitle(newValue === "all" ? "all" : newValue);
@@ -79,7 +89,7 @@ export function AssignmentSheet({ details, setOpen }: AssignmentSheetProps) {
   // Handle success or error response
   useEffectAfterMount(() => {
     console.log(state);
-    
+
     if (!state) return;
 
     if (CLIENT_ERROR_STATUS.includes(state.status)) {
@@ -124,7 +134,7 @@ export function AssignmentSheet({ details, setOpen }: AssignmentSheetProps) {
       <div className="border-b border-gray-200 pb-4 mb-6">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Assign New Case</h1>
+            <h1 className="text-xl font-bold text-gray-900"> {(type === "assign") ? "Assign New Case" : "Re-Assign Case"}</h1>
             <p className="text-sm text-gray-600 mt-1">
               Case NO: {details?.id.slice(0, 10) ?? "-"}
             </p>

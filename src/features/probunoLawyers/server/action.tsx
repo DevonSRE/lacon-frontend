@@ -2,7 +2,7 @@
 'use server';
 
 import { ErrorResponse } from '@/lib/auth';
-import { caseUpdateSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
+import { caseUpdateSchema, DecongestionCaseFullSchema, PDSSCaseFullSchema, proBonoSchema, probunoInventoryCaseformSchema, probunoUpdateForm, PublicCivilCaseSchema, PublicCriminalCaseSchema } from '@/features/probunoLawyers/server/probonoSchema';
 import { z } from 'zod';
 import ProbunoService from './service';
 import { handleApiError } from '@/lib/utils';
@@ -361,9 +361,64 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
             result = PublicCivilCaseSchema.safeParse(data);
         } else if (data.case_type === "Criminal Case") {
             result = PublicCriminalCaseSchema.safeParse(data);
+        }
+        else if (data.case_type === "Decongestion Case") {
+            result = DecongestionCaseFullSchema.safeParse(data);
         } else {
             result = PDSSCaseFullSchema.safeParse(data);
         }
+        if (!result.success) {
+            return {
+                status: 400,
+                errors: result.error.flatten().fieldErrors,
+                message: "Invalid field found",
+            };
+        }
+        console.log(result.data);
+        let response;
+        if (data.case_type === "Decongestion Case") {
+            response = await ProbunoService.casesDecongestionCase(result.data);
+        }
+        else if (data.case_type === "PDSS") {
+            response = await ProbunoService.casesPDSSCase(result.data);
+        }
+        else if (data.case_type === "Perogative Case") {
+            response = await ProbunoService.casesPerogativeCase(result.data);
+        } else {
+            response = await ProbunoService.casesPublicCase(result.data);
+        }
+
+        console.log(JSON.stringify(response.data));
+
+        return {
+            status: 200,
+            message: response.data.message,
+            success: true,
+            data: response.data?.data,
+        };
+
+    } catch (err) {
+        if (err instanceof SyntaxError) {
+            console.log("JSON Parse error:", err);
+            return {
+                status: 400,
+                errors: { cases: ["Invalid cases data format"] },
+                message: "Invalid form data",
+            };
+        } else {
+            const error = err as ErrorResponse;
+            console.log("Error response:", error);
+            return handleApiError(error);
+        }
+    }
+}
+export async function submitDecongestionForm(prevState: unknown, formData: FormData) {
+    const data = Object.fromEntries(formData);
+    console.log("Raw form data:", data);
+
+    try {
+        const result = DecongestionCaseFullSchema.safeParse(data);
+
         if (!result.success) {
             return {
                 status: 400,
