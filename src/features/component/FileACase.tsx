@@ -132,7 +132,9 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                         />
                     )}
                     {selectedCaseForm === "MercyApplication" && (
-                        <MercyApplication />
+                        <MercyApplication openFileACase={setOpenFileACase}
+                            setOpen={setCaseType}
+                        />
                     )}
                 </div>
             </CustomeSheet>

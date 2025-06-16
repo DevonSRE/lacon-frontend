@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const proBonoSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().min(1),
-  // principal_name: z.string().min(1),
+
   lawyers_count_in_firm: z.number().optional(),
   law_firm_address: z.string().min(1).optional(),
   email: z.string().email(),
@@ -90,7 +90,7 @@ export const caseUpdateSchema = z.object({
 export type TProbunoCaseUpdatePayload = z.infer<typeof caseUpdateSchema>;
 
 
-// Zod-like validation (simplified implementation)
+
 const createSchema = (fields: Record<string, any>) => ({
   parse: (data: any) => {
     const errors: Record<string, string> = {};
@@ -162,22 +162,22 @@ export const legalAidFormSchema = z.object({
   prosecuting_agency: z.string().min(1, { message: "Prosecuting agency is required" }),
 });
 
-// Define the validation schema for the legal case form
-// export const pdsslegalCaseFormSchema = z.object({
-//   offence: z.string().min(1, "Offence is required").max(200, "Offence must be less than 200 characters"),
-//   client_location: z.string().min(1, "Client location is required").max(100, "Client location must be less than 100 characters"),
-//   case_classification: z.string().min(1, "Case classification is required").max(100, "Case classification must be less than 100 characters"),
-//   counsel_designation: z.string().min(1, "Counsel designation is required").max(100, "Counsel designation must be less than 100 characters"),
-//   court_stage: z.string().min(1, "Court/Stage is required").max(100, "Court/Stage must be less than 100 characters"),
-//   name_of_counsel_or_legal_officer: z.string().min(1, "Name of Counsel/Paralegal Officer or Firm, Organization ID is required").max(150, "Name must be less than 150 characters"),
-//   nature_of_legal_service_provided: z.string().max(500, "Nature of legal service must be less than 500 characters").optional().or(z.literal("")),
-//   case_status: z.string().max(100, "Case status must be less than 100 characters").optional().or(z.literal("")),
-//   brief_status: z.string().max(100, "Brief status must be less than 100 characters").optional().or(z.literal("")),
-//   date_first_engaged: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format").optional().or(z.literal("")),
-//   case_outcome: z.string().max(200, "Case outcome must be less than 200 characters").optional().or(z.literal(""))
-// });
 
-// export type LegalCaseFormData = z.infer<typeof pdsslegalCaseFormSchema>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const pdssCaseSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
@@ -193,12 +193,12 @@ export const pdssCaseSchema = z.object({
   nature_of_legal_service_provided: z.string().optional(),
   case_status: z.string().optional(),
   bail_status: z.string().optional(),
-  date_trial_ended: z.string().optional(), // can be changed to z.date() if using date objects
+  date_trial_ended: z.string().optional(),
   case_outcome: z.string().optional()
 });
 
 
-// Type inference for TypeScript
+
 export type PdssCaseSchema = z.infer<typeof pdssCaseSchema>;
 
 export const PublicCivilCaseSchema = z.object({
@@ -220,7 +220,7 @@ export type ReviewProbuno = {
   decision: string;
 }
 export type FormDataCivilCase = {
-  // Personal Info
+
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -235,7 +235,7 @@ export type FormDataCivilCase = {
   disability_proof: File | null;
   disability_status: string;
 
-  // Case Details
+
   complaint: string;
   offence: string;
   average_income: string;
@@ -265,7 +265,7 @@ export type FormDataCivilCase = {
 };
 
 export type FormDataPDSSCase = {
-  // Personal Info
+
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -280,7 +280,7 @@ export type FormDataPDSSCase = {
   disability_proof: File | null;
   disability_status: string;
 
-  // Case Details
+
   offence: string;
   client_location: string;
   days_in_detention: number;
@@ -296,44 +296,71 @@ export type FormDataPDSSCase = {
 
 
 export interface FormDataDEcongestionCase {
-  // Step 1 - Personal Info
-  first_name: string;                  // "John"
-  middle_name: string;                 // "Michael"
-  last_name: string;                   // "Doe"
-  gender: string;                      // "Male"
-  age: number;                         // 35
-  last_address: string;                // e.g., "No. 10 Some Street, Abuja"
-  marital_status: string;             // "Single"
-  have_a_lawyer: string;              // "Yes" / "No"
-  need_legal_aid: string;             // "Yes" / "No"
-  custodial_visit: string;            // "Yes" / "No"
-  date_of_visit: string;              // "2025-06-10"
 
-  // Step 2 - Case Details
-  case_name: string;                  // "State vs John Doe"
-  name_of_defendant: string;          // "John Doe"
-  offence_charged_description: string;// "Armed robbery"
-  offence_charged: string;            // "Armed robbery"
-  charge_number: string;              // "CR/2025/00123"
-  court_of_trial: string;             // "Magistrate Court, Abuja"
-  arrest_date: string;                // "2025-05-01"
-  arraignment_date: string;           // "2025-05-05"
-  remand_date: string;                // "2025-05-06"
-  last_court_date: string;            // "2025-06-01"
-  next_adjournment: string;           // "2025-07-01"
-  bail_status: string;                // "Granted" / "Not Granted"
-  sex: string;                        // "Male"
-  date_of_birth_age: string;          // "1990-08-15"
-  name_of_relative: string;           // "Jane Doe"
-  relative_phone_number: string;      // "+2348012345678"
-  state_of_origin: string;            // "Kogi"
-  religion: string;                   // "Christianity"
-  average_monthly_income: string;     // "30000"
-  stage_of_case: string;              // "Trial"
-  need_interpreter: string;           // "Yes" / "No"
-  disability_ailment: string;         // "None" / e.g., "Visual Impairment"
-  confessional_statement: string;     // "No confession made"
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  gender: string;
+  age: number;
+  last_address: string;
+  marital_status: string;
+  have_a_lawyer: string;
+  need_legal_aid: string;
+  custodial_visit: string;
+  date_of_visit: string;
+
+
+  case_name: string;
+  name_of_defendant: string;
+  offence_charged_description: string;
+  offence_charged: string;
+  charge_number: string;
+  court_of_trial: string;
+  arrest_date: string;
+  arraignment_date: string;
+  remand_date: string;
+  last_court_date: string;
+  next_adjournment: string;
+  bail_status: string;
+  sex: string;
+  date_of_birth_age: string;
+  name_of_relative: string;
+  relative_phone_number: string;
+  state_of_origin: string;
+  religion: string;
+  average_monthly_income: string;
+  stage_of_case: string;
+  need_interpreter: string;
+  disability_ailment: string;
+  confessional_statement: string;
 }
+
+// export interface FormDataMercyCase {
+
+//   first_name: string;
+//   middle_name?: string;
+//   last_name: string;
+//   gender: string;
+//   age: number | string;
+//   correctional_facility: string;
+
+
+//   case_type?: string;
+//   offence: string;
+
+
+//   sentence_passed?: string;
+//   date_of_sentence?: string;
+//   confessional_statement?: string;
+//   reason_for_clemency?: string;
+//   health_condition?: string;
+//   recommendations?: File | string | null;
+
+
+//   state_id?: string;
+//   id?: string;
+//   created_at?: string;
+// }
 
 
 
@@ -386,8 +413,53 @@ export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(d
 
 
 
+// Alternative: If you prefer to keep the interface separate, you can do this:
+export interface FormDataMercyCase {
+  id?: string;
+  state_id?: string;
+  created_at?: string;
+  correctional_facility: string;
+  case_type?: string;
+  first_name: string;
+  middle_name?: string;
+  last_name: string;
+  gender: string;
+  age: number;
+  offence: string;
+  perogative_of_mercy: {
+    sentence_passed?: string;
+    date_of_sentence?: string;
+    perogative_of_mercy?: number;
+    reason_for_clemency?: string;
+    health_condition?: string;
+    recommendations?: string;
+  };
+}
 
-// probonoUpdate
+// And create a matching Zod schema
+export const MercyApplicationCaseFullSchema = z.object({
+  state_id: z.string().optional(),
+  correctional_facility: z.string().min(1, "Correctional facility is required"),
+  case_type: z.string().optional(),
+  first_name: z.string().min(1, "First name is required"),
+  middle_name: z.string().optional(),
+  last_name: z.string().min(1, "Last name is required"),
+  gender: z.string().min(1, "Gender is required"),
+  age: z.coerce.number().min(1, "Age must be greater than 0"),
+  offence: z.string().min(1, "Offense description is required"),
+  perogative_of_mercy: z.object({
+    sentence_passed: z.string().optional(),
+    date_of_sentence: z.string().optional(),
+    perogative_of_mercy: z.coerce.number().optional(),
+    reason_for_clemency: z.string().optional(),
+    health_condition: z.string().optional(),
+    recommendations: z.string().optional(),
+  })
+}) satisfies z.ZodType<FormDataMercyCase>;
+
+
+
+
 
 export const caseSchema = z.object({
   client_name: z.string(),
@@ -397,7 +469,7 @@ export const caseSchema = z.object({
   offering_charge: z.string(),
   suit_number: z.string(),
   status_of_case: z.string(),
-  // status_of_case: z.enum(["Ongoing", "Concluded"]),
+
   last_date_of_appearance: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   is_client_in_custody: z.coerce.boolean(),
 });
@@ -406,9 +478,9 @@ export const probunoUpdateForm = z.object({
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),
-  // phone_number: z
-  //   .string()
-  //   .regex(/^\+234\d{10}$/, "Invalid Nigerian phone number. Must start with +234 and have 13 digits total."),
+
+
+
   phone_number: z.string(),
   cases: z.array(caseSchema),
 });
