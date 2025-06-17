@@ -62,8 +62,6 @@ export const ROLES = [
 // 2. Create the union type from the ROLES array
 export type UserType = typeof ROLES[number];
 
-// 3. Reuse ROLES as the userTypeOptions
-export const userTypeOptions: UserType[] = [...ROLES];
 
 export type TUser = Pick< TFullUser, "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image">;
 

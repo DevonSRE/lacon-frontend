@@ -1,14 +1,11 @@
 import { ILawyerRequest, IUser } from "@/types/case";
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
+import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Ban, Trash2, MoreVertical } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { ROLES } from "@/types/auth";
-
-
 
 export const createUserColumns = (
   userRole: ROLES,
@@ -17,7 +14,7 @@ export const createUserColumns = (
 ): ColumnDef<IUser>[] => {
   return [
     {
-      accessorKey: "name", // used for column header
+      accessorKey: "name",
       header: "Name",
 
       cell: ({ row }) => {
