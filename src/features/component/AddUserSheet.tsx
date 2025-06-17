@@ -12,19 +12,33 @@ import {
     SelectItem,
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { states, userTypeOptions } from "@/lib/types";
 import { useAction } from "@/context/ActionContext";
 import { InviteUser } from "../dashboard/server/action";
 import { SubmitButton } from "@/components/submit-button";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { CLIENT_ERROR_STATUS } from "@/lib/constants";
 import InputField from "@/components/form/input/InputField";
-import { isFieldErrorObject } from "@/types/auth";
+import { isFieldErrorObject, ROLES } from "@/types/auth";
 import { FormDataUser, zones } from "../dashboard/server/type";
 import { GetState } from "@/components/get-state";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
 
+
+const userTypeOptions = [
+    "CRIMINAL JUSTICE DEPT. HEAD",
+    "CIVIL JUSTICE DEPT. HEAD",
+    "DECONGESTION UNIT HEAD",
+    "PREROGATIVE OF MERCY UNIT HEAD",
+    "OSCAR UNIT HEAD",
+    "DIO",
+    "PDSS",
+    "ZONAL DIRECTOR",
+    "STATE COORDINATOR",
+    "CENTRE COORDINATOR",
+    "LACON LAWYER",
+    "PRO BONO LAWYER",
+] as const;
 
 const defaultFormData: FormDataUser = {
     user_type: "",
@@ -69,13 +83,13 @@ export function AddUserSheet() {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetContent>
-                <div className="space-y-10 p-5">
+                <div className="space-y-10 p-4">
                     <span><ArrowLeft onClick={() => setIsOpen(false)} /></span>
                     <ScrollArea className="h-screen w-full">
                         <form className="space-y-6 p-6 mt-10" action={dispatch}>
                             <h2 className="text-xl font-semibold">Add New User</h2>
                             <div className="space-y-1">
-                                <Label>User Type</Label>
+                                <Label>User Role</Label>
                                 <Select key={formData.user_type + state?.status}
                                     name="user_type"
                                     value={formData.user_type}

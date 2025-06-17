@@ -13,18 +13,17 @@ import {
     SelectItem,
 } from "@/components/ui/select";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
-import { states, userTypeOptions } from "@/lib/types";
 import { useAction } from "@/context/ActionContext";
 import { SubmitButton } from "@/components/submit-button";
-import { useFormState } from "react-dom";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { CLIENT_ERROR_STATUS } from "@/lib/constants";
 import InputField from "@/components/form/input/InputField";
-import { isFieldErrorObject } from "@/types/auth";
+import { isFieldErrorObject, ROLES } from "@/types/auth";
 import { FormDataLawyer } from "../../server/type";
 import { InviteLawyer, InviteUser } from "../../server/action";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
+import { useAppSelector } from "@/hooks/redux";
 
 const defaultFormData: FormDataLawyer = {
     user_type: "",
@@ -46,6 +45,8 @@ export function AddLawyerSheet() {
     const [state, dispatch, isPending] = useActionState(InviteLawyer, undefined);
     const [formData, setFormData] = useState<FormDataLawyer>(defaultFormData);
     const [dailogOpen, setDialogOpen] = useState(false);
+    const { data: user } = useAppSelector((state) => state.profile);
+    const role = user?.role;
     const handleChange = (key: keyof FormDataLawyer, value: string) => {
         setFormData((prev) => ({ ...prev, [key]: value }));
     };
@@ -78,6 +79,33 @@ export function AddLawyerSheet() {
                     <ScrollArea className="h-screen mt-4">
                         <form className="space-y-4" action={dispatch}>
                             <h2 className="text-xl font-semibold">Add New Lawyer</h2>
+
+                            <div className="space-y-1">
+                                <Label>Role <span className="text-red-500">*</span></Label>
+                                <Select
+                                    key={formData.user_type + state?.status}
+                                    name="user_type"
+                                    value={formData.user_type}
+                                    onValueChange={(val) => handleChange("user_type", val)}
+                                >
+                                    <SelectTrigger className={`w-full h-11 ${serverErrors.user_type ? 'border-red-500' : ''}`}>
+                                        <SelectValue placeholder="Select Role" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
+                                        <SelectItem value="PRO BONO LAWYER">Pro bono Lawyer</SelectItem>
+                                        {(role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR || role === ROLES.CENTRE_COORDINATOR || role === ROLES.DIRECTOR_GENERAL) ? (
+                                            <SelectItem value="PARALEGAL">PARALEGAL</SelectItem>
+                                        ) :
+                                            <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
+                                        }
+                                    </SelectContent>
+                                </Select>
+                                {serverErrors.user_type && (
+                                    <p className="text-red-500 text-sm">{serverErrors.user_type[0]}</p>
+                                )}
+                            </div>
+
                             {/* First Name */}
                             <InputField
                                 type="text"
@@ -137,27 +165,7 @@ export function AddLawyerSheet() {
                             {serverErrors.phone_number && (
                                 <p className="text-red-500 text-sm">{serverErrors.phone_number[0]}</p>
                             )}
-                            <div className="space-y-1">
-                                <Label>Role <span className="text-red-500">*</span></Label>
-                                <Select
-                                    key={formData.user_type + state?.status}
-                                    name="user_type"
-                                    value={formData.user_type}
-                                    onValueChange={(val) => handleChange("user_type", val)}
-                                >
-                                    <SelectTrigger className={`w-full h-11 ${serverErrors.user_type ? 'border-red-500' : ''}`}>
-                                        <SelectValue placeholder="Select Role" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
-                                        <SelectItem value="PRO BONO LAWYER">Pro bono Lawyer</SelectItem>
-                                        <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {serverErrors.user_type && (
-                                    <p className="text-red-500 text-sm">{serverErrors.user_type[0]}</p>
-                                )}
-                            </div>
+
                             <div className="space-y-1">
                                 <Label>Status <span className="text-red-500">*</span></Label>
                                 <Select

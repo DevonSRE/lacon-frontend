@@ -353,23 +353,21 @@ const AppSidebar: React.FC = () => {
             <div className="flex justify-center items-center w-full">
               <Image className="dark:hidden" src="/logo.png"
                 alt="Logo"
-                width={80}
-                height={40}
+                width={60}
+                height={30}
               />
             </div>
           ) : (
-            <Image src="/logo.png" alt="Logo" width={32} height={32} />
+            <Image src="/logo.png" alt="Logo" width={24} height={24} />
           )}
         </Link>
       </div>
       {isExpanded  && (
         <div className="justify-center pb-2.5">
-          <p className="text-center text-red-500 font-semibold text-lg">{user?.role}</p>
+          <p className="text-center text-red-500 font-semibold ">{user?.role}</p>
         </div>
       )}
-
       <hr />
-
       <div className="flex flex-col flex-grow overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6 mt-6">
           <div className="flex flex-col gap-4">
