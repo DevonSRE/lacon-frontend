@@ -16,20 +16,29 @@ import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
 import { useAction } from '@/context/ActionContext'
 import { Label } from '@/components/ui/label'
+import { GetState } from '@/components/get-state'
 
 interface CivilCaseFormProps {
   currentStep?: number;
   setCurrentStep?: Dispatch<SetStateAction<number>>;
+  handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
+
+  isPublic: boolean;
+  state_id?: string;
+
 }
 
-export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
+export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
   const { selectedStateId, setIsOpen } = useAction();
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+
   useEffect(() => {
-    console.log("selectedStateId => " + selectedStateId);
     if (selectedStateId === "") {
       setIsOpen(true);
     }
@@ -50,7 +59,10 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
       );
 
     } else if (state && state.status === 200) {
-      toast.success("Case Intake  Submitted successful");
+      setCurrentStep(1);
+      // handleCloseCaseType(true);
+
+      // toast.success("Case Intake  Submitted successful");
       setOpen(true);
     }
   }, [state]);
@@ -133,11 +145,17 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
       if (currentStep < 2) {
         setCurrentStep(currentStep + 1);
       } else {
-        // Submit form
-        console.log('Form submitted:', formData);
         const fd = new FormData();
-        fd.append("case_type", "Criminal Case");
-        fd.append("state_id", selectedStateId);
+        fd.append("case_type", "CRIMINAL CASE");
+        if (isPublic) {
+          fd.append("state_id", selectedStateId);
+        } else {
+          if (!isPublic && state_id != "") {
+            fd.append("state_id", state_id!);
+          } else {
+            fd.append("state_id", selectedState!);
+          }
+        }
         Object.entries(formData).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
             fd.append(key, value instanceof File ? value : String(value));
@@ -167,8 +185,9 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
       <CaseIntakeDialog
         open={open}
         onOpenChange={setOpen}
+        isHome={false}
       />
-      <div className="mx-auto bg-white">
+      <div className="mx-auto  bg-white">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -187,12 +206,30 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
           </div>
         </div>
         <form action={handleNext}>
-          <input type="hidden" name="case_type" value="Criminal Case" />
+          <input type="hidden" name="case_type" value="CRIMINAL CASE" />
+          <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
+          {(!isPublic && state_id != "") ? (
+            <input type="hidden" name="state_id" value={state_id} />
+          ) :
+            <input type="hidden" name="state_id" value={selectedState} />
+          }
+
           {/* Form Content */}
           <div className="mb-10">
             <div className="space-y-6">
               {currentStep === 1 && (
                 <>
+                  {(!isPublic && state_id === "") && (
+                    <div className="space-y-6 my-4">
+                      <Label htmlFor="state-select">Where are you filing from?</Label>
+                      <GetState
+                        value={selectedState}
+                        onValueChange={(val: string) => setSelectedState(val)}
+                        placeholder="Select your state"
+                        onLoadingChange={(loading) => setLoading(loading)}
+                      />
+                    </div>
+                  )}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
                       <InputField
@@ -396,7 +433,7 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
                 </>
               )}
               {currentStep === 2 && (
-                <>
+                <div className="mt-4 space-y-6">
                   <TextAreaField
                     name="offence"
                     label="Offence"
@@ -492,7 +529,7 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
                       className={`${errors.prosecuting_agency ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                     />
                   </div>
-                </>
+                </div>
               )}
             </div>
 

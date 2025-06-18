@@ -29,7 +29,7 @@ export const GetState = ({
         queryFn: async () => {
             const filters = {
                 page: 1,
-                size: DEFAULT_PAGE_SIZE,
+                size: 40,
             };
             return await GetStates(filters);
         },
@@ -67,21 +67,21 @@ export const GetState = ({
                     className={cn("h-11", className, "flex justify-between items-center")}
                     disabled={loading || disabled}
                     loading={loading}
-                    variant={error ? "error" : "underlined"}
-                >
+                    variant={error ? "error" : "underlined"}>
                     <SelectValue
                         className="text-neutral-700 text-xs mx-4"
                         placeholder={loading ? "Loading State..." : placeholder}
                     />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-zinc-900">
-
                     {data?.data?.data?.length > 0 ? (
-                        data?.data?.data.map((location: any) => (
-                            <SelectItem key={location.id} value={location.id} className="py-2">
-                                {location.title}
-                            </SelectItem>
-                        ))
+                        [...(data?.data?.data ?? [])] // clone to avoid mutating original
+                            .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
+                            .map((location: any) => (
+                                <SelectItem key={location.id} value={location.id} className="py-2">
+                                    {location.title}
+                                </SelectItem>
+                            ))
                     ) : (
                         <div className="py-2 px-4 text-sm text-gray-500">No State available</div>
                     )}

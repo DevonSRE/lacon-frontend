@@ -8,27 +8,30 @@ import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
-import { useFormState, useFormStatus } from 'react-dom';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { useAction } from '@/context/ActionContext';
+import { GetState } from '@/components/get-state';
 
 interface CivilCaseFormProps {
     currentStep?: number;
     setCurrentStep?: Dispatch<SetStateAction<number>>;
+    handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
+    isPublic: boolean;
+    state_id?: string;
 }
 
-export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
-
+export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, setCurrentStep = () => { }, handleCloseCaseType = (() => { }) }: CivilCaseFormProps) {
     const router = useRouter();
-    // const [currentStep, setCurrentStep] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [open, setOpen] = useState(false);
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [selectedState, setSelectedState] = useState<string>("");
     useEffect(() => {
         if (selectedStateId === "") {
             setIsOpen(true);
@@ -49,8 +52,11 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
             );
 
         } else if (state && state.status === 200) {
-            toast.success("Case Intake  Submitted successful");
+            setCurrentStep(1);
             setOpen(true);
+            // setTimeout(() => {
+            //     handleCloseCaseType(false);
+            // }, 100);
         }
     }, [state]);
 
@@ -119,22 +125,29 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
             setErrors({});
             return true;
         } catch (error: any) {
-            console.log('Validation error:', error); // Dsle.log(error);
+            console.log('Validation error:', error);
             setErrors(error.errors || {});
             return false;
         }
     };
 
+    // Fixed handleNext function - remove form action and use regular event handler
     const handleNext = () => {
-        if (validateStep(currentStep ?? "")) {
+        if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 setCurrentStep(currentStep + 1);
             } else {
-                console.log("selectedStateId " + selectedStateId);
-                console.log('Form submitted:', formData);
                 const fd = new FormData();
-                fd.append("case_type", "Civil Case");
-                fd.append("state_id", selectedStateId);
+                fd.append("case_type", "CIVIL CASE");
+                if (isPublic) {
+                    fd.append("state_id", selectedStateId);
+                } else {
+                    if (!isPublic && state_id != "") {
+                        fd.append("state_id", state_id!);
+                    } else {
+                        fd.append("state_id", selectedState!);
+                    }
+                }
                 Object.entries(formData).forEach(([key, value]) => {
                     if (value !== null && value !== undefined) {
                         fd.append(key, value instanceof File ? value : String(value));
@@ -150,7 +163,8 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
         updateField('disability_proof', file);
     };
 
-    const handleBack = () => {
+    const handleBack = (e: React.MouseEvent) => {
+        e.preventDefault(); // Prevent form submission
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1)
         } else {
@@ -163,12 +177,12 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
+                isHome={false}
             />
             <div className="min-h-screen">
                 {/* Header */}
                 <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                     <div className="flex items-center mb-4 sm:mb-0">
-
                         <h1 className="text-lg font-semibold text-gray-900">
                             Filing A Civil Case
                         </h1>
@@ -182,12 +196,31 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                         </div>
                     </div>
                 </div>
+
+                {/* Changed form to use onSubmit instead of action */}
                 <form action={handleNext}>
-                    <input type="hidden" name="case_type" value="Civil Case" />
+                    <input type="hidden" name="case_type" value="CIVIL CASE" />
+                    <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
+                    {(!isPublic && state_id != "") ? (
+                        <input type="hidden" name="state_id" value={state_id} />
+                    ) :
+                        <input type="hidden" name="state_id" value={selectedState} />
+                    }
                     <div className="w-full mb-10">
                         {/* Step 1: Personal Information */}
                         {currentStep === 1 && (
                             <div className="bg-white  mt-5 ">
+                                {(!isPublic && state_id === "") && (
+                                    <div className="space-y-6 my-4">
+                                        <Label htmlFor="state-select">Where are you filing from?</Label>
+                                        <GetState
+                                            value={selectedState}
+                                            onValueChange={(val: string) => setSelectedState(val)}
+                                            placeholder="Select your state"
+                                            onLoadingChange={(loading) => setLoading(loading)}
+                                        />
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <div>
                                         <InputField
@@ -241,7 +274,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                                 { value: 'Female', label: 'Female' }
                                             ]}
                                             required
-                                            value={formData.gender} // Add value prop
+                                            value={formData.gender}
                                             onValueChange={(value) => handleSelectChange(value, 'gender')}
                                             error={!!errors.gender}
                                             errorMessage={errors.gender}
@@ -264,13 +297,13 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
 
                                 <div className="mb-6">
                                     <TextAreaField
-                                        name="permanent_address" // Fixed: was "offence"
+                                        name="permanent_address"
                                         label="Permanent Address"
                                         required
                                         placeholder="Enter your permanent address"
                                         value={formData.permanent_address}
                                         onChange={(e) => updateField('permanent_address', e.target.value)}
-                                        error={errors.permanent_address} // Fixed: was errors.offence
+                                        error={errors.permanent_address}
                                     />
                                 </div>
 
@@ -298,7 +331,6 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-
                                     <SelectField
                                         name="marital_status"
                                         label="Marital Status"
@@ -310,7 +342,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                             { value: 'Widowed', label: 'Widowed' }
                                         ]}
                                         required
-                                        value={formData.marital_status} // Add value prop
+                                        value={formData.marital_status}
                                         onValueChange={(value) => handleSelectChange(value, 'marital_status')}
                                         error={!!errors.marital_status}
                                         errorMessage={errors.marital_status}
@@ -321,7 +353,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                         placeholder="State of Origin"
                                         options={stateOptions}
                                         required
-                                        value={formData.state_of_origin} // Add value prop
+                                        value={formData.state_of_origin}
                                         onValueChange={(value: string) => handleSelectChange(value, 'state_of_origin')}
                                         error={!!errors.state_of_origin}
                                         errorMessage={errors.state_of_origin}
@@ -441,20 +473,6 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    {/* <div>
-                                        <InputField
-                                            type="text"
-                                            required
-                                            name="registration_number"
-                                            label=' Registration Number'
-                                            placeholder="000000000000000"
-                                            value={formData.registration_number}
-                                            onChange={(e) => updateField('registration_number', e.target.value)}
-                                            className={` ${errors.registration_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.registration_number && <p className="text-red-500 text-xs mt-1">{errors.registration_number}</p>}
-                                    </div> */}
-
                                     <div>
                                         <InputField
                                             label='Case No'
@@ -540,25 +558,29 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                 </ul>
                             </div>
                         )}
-
                         {/* Navigation Buttons */}
                         <div className="grid grid-cols-2  gap-4 mb-6">
                             {currentStep > 1 && (
-                                <Button onClick={handleBack} className="h-11 w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
+                                <Button
+                                    type="button"
+                                    onClick={handleBack}
+                                    disabled={isPending}
+                                    className="h-11 w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
                                     Back
                                 </Button>
                             )}
-                            <Button type="submit" disabled={isPending} className="h-11  w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="h-11 w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium"
+                            >
                                 {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
                             </Button>
                         </div>
-
-
                     </div>
-                </form>
-
-            </div>
+                </form >
+            </div >
         </>
-
     );
 };
+

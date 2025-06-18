@@ -9,6 +9,7 @@ import CriminalCaseForm from '../cases/FileCasesTab/CriminalCaseForm';
 import PDSSCaseForm from '../cases/FileCasesTab/PSDDCaseForm';
 import DecongestionForm from '../cases/FileCasesTab/DecongestionForm';
 import MercyApplication from '../cases/FileCasesTab/MercyApplication';
+import { useAppSelector } from '@/hooks/redux';
 
 interface FileACaseComponentProps {
     userRole: ROLES;
@@ -23,6 +24,20 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     const [selectedCaseForm, setCaseForm] = useState('');
     const [openFileACase, setOpenFileACase] = useState(false);
     const [openCaseType, setCaseType] = useState(false);
+
+    const [currentStep, setCurrentStep] = useState(1);
+
+    const handleBack = () => {
+        if (currentStep > 1) {
+            setCurrentStep(currentStep - 1)
+        } else {
+            setOpenFileACase(false);
+        }
+    }
+
+    const { data: user } = useAppSelector((state) => state.profile);
+    const state_id = user?.state_id;
+
 
     const handleCaseTypeSelection = () => {
         if (selectedCaseForm) {
@@ -117,13 +132,13 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
             <CustomeSheet open={openCaseType} setOpen={handleCloseCaseType} className="min-w-3xl">
                 <div className="mt-6">
                     {selectedCaseForm === "Civil" && (
-                        <CivilCaseForm />
+                        <CivilCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {selectedCaseForm === "Criminal" && (
-                        <CriminalCaseForm />
+                        <CriminalCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {(selectedCaseForm === "pdss-instation" || selectedCaseForm === "pdss-organisation") && (
-                        <PDSSCaseForm type={selectedCaseForm}  />
+                        <PDSSCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} type={selectedCaseForm} state_id={state_id} />
                     )}
                     {selectedCaseForm === "Decongestion" && (
                         <DecongestionForm

@@ -55,7 +55,7 @@ export default function MercyApplication({ openFileACase, setOpen }: CustomeShee
         age: 0,
         correctional_facility: '',
         offence: '',
-        case_type: 'Mercy Application',
+        case_type: 'MERCY APPLICATION',
         perogative_of_mercy: {
             sentence_passed: '',
             date_of_sentence: '',
@@ -146,7 +146,7 @@ export default function MercyApplication({ openFileACase, setOpen }: CustomeShee
             } else {
                 // Submit form
                 const fd = new FormData();
-                fd.append("case_type", "Mercy Application");
+                fd.append("case_type", "MERCY APPLICATION");
                 if (selectedState) fd.append("state_id", selectedState);
 
                 // Append basic fields

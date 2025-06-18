@@ -12,11 +12,11 @@ const ProbunoService = {
     async casesUpdate(payload: any) {
         return await userConfig.post("/users/probono-lawyers-update-case", payload);
     },
-    async casesPublicCase(payload: any) {
-        return await publicAxiosInstance.post("/casefile/create-public-case", payload);
+    async casesCase(payload: any) {
+        return await axiosInstance.post("/casefile", payload);
     },
     async casesPDSSCase(payload: any) {
-        return await publicAxiosInstance.post("/casefile/create-pdss-case", payload);
+        return await axiosInstance.post("/casefile/create-pdss-case", payload);
     },
 
     async casesDecongestionCase(payload: any) {
@@ -26,6 +26,16 @@ const ProbunoService = {
     async casesPerogativeCase(payload: any) {
         return await axiosInstance.post("/casefile/create-perogative-case", payload);
     },
+
+
+    // PUBLICK API KEY
+    async casesPublicCase(payload: any) {
+        return await publicAxiosInstance.post("/casefile/create-public-case", payload);
+    },
+    async casesPublicPDSSCase(payload: any) {
+        return await publicAxiosInstance.post("/casefile/create-public-pdss-case" , payload);
+    },
+
 }
 
 export default ProbunoService;
