@@ -130,7 +130,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                 console.log(currentStep);
             } else {
                 const fd = new FormData();
-                fd.append("case_type", "Decongestion Case");
+                fd.append("case_type", "DECONGESTION");
                 fd.append("state_id", selectedState);
                 Object.entries(formData).forEach(([key, value]) => {
                     if (value !== null && value !== undefined) {
@@ -179,7 +179,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                             </div>
                         </div>
                         <form action={handleNext}>
-                            <input type="hidden" name="case_type" value="Civil Case" />
+                            <input type="hidden" name="case_type" value="DECONGESTION" />
                             <div className="w-full mb-10">
                                 {/* Step 1: Personal Information */}
                                 {currentStep === 1 && (

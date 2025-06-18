@@ -23,13 +23,13 @@ export default function ProbonoCaseTypePage() {
     const renderTabContent = () => {
         switch (tab) {
             case 'civil':
-                return <CivilCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} />
+                return <CivilCaseForm isPublic={true} currentStep={currentStep} setCurrentStep={setCurrentStep} />
             case 'criminal':
-                return <CriminalCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} />;
+                return <CriminalCaseForm isPublic={true} currentStep={currentStep} setCurrentStep={setCurrentStep} />;
             case 'pdss-instation':
-                return <PDSSCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-instation" />;
+                return <PDSSCaseForm isPublic={true} currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-instation" />;
             case 'pdss-organisation':
-                return <PDSSCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-organisation" />;
+                return <PDSSCaseForm isPublic={true} currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-organisation" />;
             default:
                 return <div className="text-center text-gray-500">No data available for this tab.</div>;
         }

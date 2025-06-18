@@ -344,13 +344,14 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
 
     try {
         let result;
-        if (data.case_type === "Civil Case") {
+        if (data.case_type === "CIVIL CASE") {
             result = PublicCivilCaseSchema.safeParse(data);
-        } else if (data.case_type === "Criminal Case") {
+        } else if (data.case_type === "CRIMINAL CASE") {
             result = PublicCriminalCaseSchema.safeParse(data);
         } else {
             result = PDSSCaseFullSchema.safeParse(data);
         }
+
         if (!result.success) {
             return {
                 status: 400,
@@ -361,10 +362,18 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
         console.log(result.data);
         let response;
 
-        if (data.case_type === "PDSS") {
-            response = await ProbunoService.casesPDSSCase(result.data);
+        if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {
+            if (data.isPublic === "true") {
+                response = await ProbunoService.casesPublicCase(result.data);
+            } else {
+                response = await ProbunoService.casesCase(result.data);
+            }
         } else {
-            response = await ProbunoService.casesPublicCase(result.data);
+            if (data.isPublic === "true") {
+                response = await ProbunoService.casesPublicPDSSCase(result.data);
+            } else {
+                response = await ProbunoService.casesPDSSCase(result.data);
+            }
         }
 
         console.log(JSON.stringify(response.data));

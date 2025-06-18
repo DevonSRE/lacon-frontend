@@ -17,19 +17,27 @@ import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
+import { GetState } from '@/components/get-state'
 
 
 interface CivilCaseFormProps {
     currentStep?: number;
     setCurrentStep?: Dispatch<SetStateAction<number>>;
+    handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
+
     type: string;
+    isPublic: boolean;
+    state_id?: string;
+
 }
 
-export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => { }, type }: CivilCaseFormProps) {
+export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), type }: CivilCaseFormProps) {
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();
     const [open, setOpen] = useState(false);
+    const [selectedState, setSelectedState] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
     useEffect(() => {
         if (selectedStateId === "") {
@@ -50,7 +58,9 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                 }
             );
         } else if (state && state.status === 200) {
-            toast.success("Case Intake  Submitted successful");
+            setCurrentStep(1);
+            // handleCloseCaseType(false);
+            // toast.success("Case Intake  Submitted successful");
             setOpen(true);
         }
     }, [state]);
@@ -128,8 +138,20 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                 console.log("selectedStateId " + selectedStateId);
                 console.log('Form submitted:', formData);
                 const fd = new FormData();
-                fd.append("case_type", "PDSS");
-                fd.append("state_id", selectedStateId);
+                if (type === "pdss-instation") {
+                    fd.append("case_type", "PDSS STATION");
+                } else {
+                    fd.append("case_type", "PDSS ORGANIZATION");
+                }
+                if (isPublic) {
+                    fd.append("state_id", selectedStateId);
+                } else {
+                    if (!isPublic && state_id != "") {
+                        fd.append("state_id", state_id!);
+                    } else {
+                        fd.append("state_id", selectedState!);
+                    }
+                }
                 Object.entries(formData).forEach(([key, value]) => {
                     if (value !== null && value !== undefined) {
                         fd.append(key, value instanceof File ? value : String(value));
@@ -179,16 +201,33 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                 </div>
                 <form action={handleNext}>
                     {(type === "pdss-instation") && (
-                        <input type="hidden" name="case_type" value="PDSSStation" />
+                        <input type="hidden" name="case_type" value="PDSS STATION" />
                     )}
                     {(type === "pdss-organisation") && (
-                        <input type="hidden" name="case_type" value="PDSSOrganisation" />
+                        <input type="hidden" name="case_type" value="PDSS ORGANIZATION" />
                     )}
+                    <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
+                    {(!isPublic && state_id != "") ? (
+                        <input type="hidden" name="state_id" value={state_id} />
+                    ) :
+                        <input type="hidden" name="state_id" value={selectedState} />
+                    }
                     {/* Form Content */}
                     <div className="space-y-6">
                         {/* Step 1: Personal Information */}
                         {currentStep === 1 && (
                             <div className="bg-white  mt-5 ">
+                                {(!isPublic && state_id === "") && (
+                                    <div className="space-y-6 my-4">
+                                        <Label htmlFor="state-select">Where are you filing from?</Label>
+                                        <GetState
+                                            value={selectedState}
+                                            onValueChange={(val: string) => setSelectedState(val)}
+                                            placeholder="Select your state"
+                                            onLoadingChange={(loading) => setLoading(loading)}
+                                        />
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                     <div>
                                         <InputField
