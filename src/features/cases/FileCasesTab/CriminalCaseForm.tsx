@@ -167,7 +167,6 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
       <CaseIntakeDialog
         open={open}
         onOpenChange={setOpen}
-        caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
       />
       <div className="mx-auto bg-white">
         {/* Header */}
@@ -236,21 +235,95 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
                     </div>
                   </div>
 
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                  <SelectField
-                    name="gender"
-                    label="Gender"
-                    placeholder="Select Gender"
-                    options={[
-                      { value: 'Male', label: 'Male' },
-                      { value: 'Female', label: 'Female' }
-                    ]}
-                    required
-                    value={formData.gender} // Add value prop
-                    onValueChange={(value) => handleSelectChange(value, 'gender')}
-                    error={!!errors.gender}
-                    errorMessage={errors.gender}
-                  />
+                    <InputField
+                      type="email"
+                      name="email"
+                      label=' Email Address (Optional)'
+                      placeholder="Enter Email Address"
+                      value={formData.email}
+                      onChange={(e) => updateField('email', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                    />
+
+
+                    <div>
+                      <InputField
+                        type="number"
+                        label='Age'
+                        name='age'
+                        required
+                        placeholder="Enter Age"
+                        value={formData.age}
+                        onChange={(e) => updateField('age', e.target.value)}
+                        className={` ${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
+                    </div>
+
+                    <div>
+                      <InputField
+                        type="tel"
+                        label='Phone Number'
+                        name="phone_number"
+                        required
+                        placeholder="0800XXXXXXX"
+                        value={formData.phone_number}
+                        onChange={(e) => updateField('phone_number', e.target.value)}
+                        className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <SelectField
+                      name="gender"
+                      label="Gender"
+                      placeholder="Select Gender"
+                      options={[
+                        { value: 'Male', label: 'Male' },
+                        { value: 'Female', label: 'Female' }
+                      ]}
+                      required
+                      value={formData.gender} // Add value prop
+                      onValueChange={(value) => handleSelectChange(value, 'gender')}
+                      error={!!errors.gender}
+                      errorMessage={errors.gender}
+                    />
+
+                    <SelectField
+                      name="marital_status"
+                      label="Marital Status"
+                      placeholder="Marital Status"
+                      options={[
+                        { value: 'Single', label: 'Single' },
+                        { value: 'Married', label: 'Married' },
+                        { value: 'Divorced', label: 'Divorced' },
+                        { value: 'Widowed', label: 'Widowed' }
+                      ]}
+                      required
+                      value={formData.marital_status} // Add value prop
+                      onValueChange={(value) => handleSelectChange(value, 'marital_status')}
+                      error={!!errors.marital_status}
+                      errorMessage={errors.marital_status}
+                    />
+
+                    <SelectField
+                      name="state_of_origin"
+                      label="State Of Origin"
+                      placeholder="State of Origin"
+                      options={stateOptions}
+                      required
+                      value={formData.state_of_origin} // Add value prop
+                      onValueChange={(value: string) => handleSelectChange(value, 'state_of_origin')}
+                      error={!!errors.state_of_origin}
+                      errorMessage={errors.state_of_origin}
+                    />
+
+                  </div>
+
 
                   <div className="mb-6">
                     <TextAreaField
@@ -263,100 +336,38 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
                       error={errors.permanent_address} // Fixed: was errors.offence
                     />
                   </div>
-                  <div>
-                    <InputField
-                      type="number"
-                      label='Age'
-                      name='age'
-                      required
-                      placeholder="Enter Age"
-                      value={formData.age}
-                      onChange={(e) => updateField('age', e.target.value)}
-                      className={` ${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <div className="mb-6">
+                      <InputField
+                        type="text"
+                        name="occupation"
+                        label='Occupation'
+                        required
+                        placeholder="Trader/Chef/Driver"
+                        value={formData.occupation}
+                        onChange={(e) => updateField('occupation', e.target.value)}
+                        className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
+                    </div>
+
+                    <SelectField
+                      name="disability_status"
+                      label="Disability (If any)"
+                      placeholder="If yes, upload picture proof)"
+                      options={[
+                        { value: 'yes', label: 'Yes' },
+                        { value: 'no', label: 'No' },
+                      ]}
+                      value={formData.disability_status}
+                      onValueChange={(value) => handleSelectChange(value, 'disability_status')}
+                      error={!!errors.disability_status}
+                      errorMessage={errors.disability_status}
                     />
-                    {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
                   </div>
 
-                  <div>
-                    <InputField
-                      type="tel"
-                      label='Phone Number'
-                      name="phone_number"
-                      required
-                      placeholder="0800XXXXXXX"
-                      value={formData.phone_number}
-                      onChange={(e) => updateField('phone_number', e.target.value)}
-                      className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                    />
-                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
-                  </div>
-
-                  <SelectField
-                    name="marital_status"
-                    label="Marital Status"
-                    placeholder="Marital Status"
-                    options={[
-                      { value: 'Single', label: 'Single' },
-                      { value: 'Married', label: 'Married' },
-                      { value: 'Divorced', label: 'Divorced' },
-                      { value: 'Widowed', label: 'Widowed' }
-                    ]}
-                    required
-                    value={formData.marital_status} // Add value prop
-                    onValueChange={(value) => handleSelectChange(value, 'marital_status')}
-                    error={!!errors.marital_status}
-                    errorMessage={errors.marital_status}
-                  />
-
-                  <InputField
-                    type="email"
-                    name="email"
-                    label=' Email Address (Optional)'
-                    placeholder="Enter Email Address"
-                    value={formData.email}
-                    onChange={(e) => updateField('email', e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  />
-
-                  <SelectField
-                    name="state_of_origin"
-                    label="State Of Origin"
-                    placeholder="State of Origin"
-                    options={stateOptions}
-                    required
-                    value={formData.state_of_origin} // Add value prop
-                    onValueChange={(value: string) => handleSelectChange(value, 'state_of_origin')}
-                    error={!!errors.state_of_origin}
-                    errorMessage={errors.state_of_origin}
-                  />
-
-                  <div className="mb-6">
-                    <InputField
-                      type="text"
-                      name="occupation"
-                      label='Occupation'
-                      required
-                      placeholder="Trader/Chef/Driver"
-                      value={formData.occupation}
-                      onChange={(e) => updateField('occupation', e.target.value)}
-                      className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                    />
-                    {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
-                  </div>
-
-                  <SelectField
-                    name="disability_status"
-                    label="Disability (If any)"
-                    placeholder="If yes, upload picture proof)"
-                    options={[
-                      { value: 'yes', label: 'Yes' },
-                      { value: 'no', label: 'No' },
-                    ]}
-                    value={formData.disability_status}
-                    onValueChange={(value) => handleSelectChange(value, 'disability_status')}
-                    error={!!errors.disability_status}
-                    errorMessage={errors.disability_status}
-                  />
                   <div className="mb-6">
                     <Label className="block  mb-2">
                       Disability (if any)
@@ -434,29 +445,34 @@ export default function CriminalCaseForm({ currentStep = 1, setCurrentStep = () 
                     error={errors?.legal_aid_reason}
                   />
 
-                  <InputField
-                    label="Case Status"
-                    type="text"
-                    value={formData.case_status}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
-                    className="border-gray-300"
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                  <InputField
-                    label="Court and/Case No (If this exist, add it)"
-                    type="text"
-                    value={formData.court_location}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_location', e.target.value)}
-                    className="border-gray-300"
-                  />
 
-                  <InputField
-                    label="Bail status, (If this exist, add it)"
-                    type="text"
-                    value={formData.bail_status}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bail_status', e.target.value)}
-                    className="border-gray-300"
-                  />
+                    <InputField
+                      label="Case Status"
+                      type="text"
+                      value={formData.case_status}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
+                      className="border-gray-300"
+                    />
+
+                    <InputField
+                      label="Court and/Case No (If this exist, add it)"
+                      type="text"
+                      value={formData.court_location}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_location', e.target.value)}
+                      className="border-gray-300"
+                    />
+
+                    <InputField
+                      label="Bail status, (If this exist, add it)"
+                      type="text"
+                      value={formData.bail_status}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bail_status', e.target.value)}
+                      className="border-gray-300"
+                    />
+                  </div>
+
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <InputField

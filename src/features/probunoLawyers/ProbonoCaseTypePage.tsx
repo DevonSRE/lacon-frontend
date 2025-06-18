@@ -27,9 +27,9 @@ export default function ProbonoCaseTypePage() {
             case 'criminal':
                 return <CriminalCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} />;
             case 'pdss-instation':
-                return <PDSSCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} />;
-            case 'PDSS-Organisation':
-                return <PDSSCaseForm />;
+                return <PDSSCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-instation" />;
+            case 'pdss-organisation':
+                return <PDSSCaseForm currentStep={currentStep} setCurrentStep={setCurrentStep} type="pdss-organisation" />;
             default:
                 return <div className="text-center text-gray-500">No data available for this tab.</div>;
         }

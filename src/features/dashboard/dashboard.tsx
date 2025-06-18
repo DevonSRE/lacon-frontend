@@ -22,8 +22,6 @@ export default function Dashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
-
-
     // Lawyers
     if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER) {
         return <>
@@ -36,25 +34,25 @@ export default function Dashboard() {
         || role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR || role === ROLES.CENTRE_COORDINATOR) {
         return (
             <div className="grid grid-cols-12 gap-4 md:gap-6">
-                <div className="col-span-12 space-y-6">
+                <div className="col-span-12 space-y-8">
                     <div className="flex justify-between items-center mb-8">
                         <Intro user="Admin" />
-                        <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
+                        {/* <Button onClick={() => setIsOpen(true)} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
                             <Plus size={20} />
                             New
-                        </Button>
+                        </Button> */}
+                        {/* <AddUserSheet /> */}
                     </div>
                     <DashboardStats />
                     <CaseAssignmentPage />
                     <CaseDistributionChart />
                 </div>
-                <AddUserSheet />
             </div>
         );
     }
 
-    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS || 
-        role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT || 
+    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS ||
+        role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT ||
         role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) {
         return (<CivilCriminalDashboard />);
     }

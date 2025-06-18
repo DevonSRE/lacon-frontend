@@ -10,7 +10,7 @@ import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
-import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
+import { submitDecongestionForm, submitPublicCaseForm } from '../../probunoLawyers/server/action';
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { Label } from '@/components/ui/label';
 import { GetState } from '@/components/get-state';
@@ -27,7 +27,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
     const [currentStep, setCurrentStep] = useState(1);
     const [selectedState, setSelectedState] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
+    const [state, formAction, isPending] = useActionState(submitDecongestionForm, undefined);
     useEffectAfterMount(() => {
         if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
             toast.error(

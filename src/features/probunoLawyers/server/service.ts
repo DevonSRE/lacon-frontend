@@ -15,12 +15,14 @@ const ProbunoService = {
     async casesPublicCase(payload: any) {
         return await publicAxiosInstance.post("/casefile/create-public-case", payload);
     },
+    async casesPDSSCase(payload: any) {
+        return await publicAxiosInstance.post("/casefile/create-pdss-case", payload);
+    },
+
     async casesDecongestionCase(payload: any) {
         return await axiosInstance.post("/casefile/create-decongestion-case", payload);
     },
-    async casesPDSSCase(payload: any) {
-        return await axiosInstance.post("/casefile/create-pdss-case", payload);
-    },
+
     async casesPerogativeCase(payload: any) {
         return await axiosInstance.post("/casefile/create-perogative-case", payload);
     },

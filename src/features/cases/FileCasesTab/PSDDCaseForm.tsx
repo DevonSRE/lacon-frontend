@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
-import { ChevronLeft, Upload } from 'lucide-react'
+import { Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
 import TextAreaField from '@/components/TextAreaField'
@@ -22,9 +22,10 @@ import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 interface CivilCaseFormProps {
     currentStep?: number;
     setCurrentStep?: Dispatch<SetStateAction<number>>;
+    type: string;
 }
 
-export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => { } }: CivilCaseFormProps) {
+export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => { }, type }: CivilCaseFormProps) {
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();
@@ -48,7 +49,6 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                             : undefined,
                 }
             );
-
         } else if (state && state.status === 200) {
             toast.success("Case Intake  Submitted successful");
             setOpen(true);
@@ -70,6 +70,7 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
         disability_proof: null,
         disability_status: '',
         offence: '',
+        organisation: '',
         client_location: '',
         days_in_detention: 0,
         counsel_paralegal: '',
@@ -99,7 +100,6 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
     const updateField = (field: keyof FormDataPDSSCase, value: string | File | null) => {
         setFormData(prev => ({ ...prev, [field]: value }));
         if (errors[field]) {
-            // toast.error(errors[field]);
             setErrors(prev => ({ ...prev, [field]: '' }));
         }
     };
@@ -158,7 +158,6 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
-                caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
             />
             <div className="min-h-screen px-4">
                 {/* Header */}
@@ -179,8 +178,12 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                     </div>
                 </div>
                 <form action={handleNext}>
-                    <input type="hidden" name="case_type" value="PDSS" />
-
+                    {(type === "pdss-instation") && (
+                        <input type="hidden" name="case_type" value="PDSSStation" />
+                    )}
+                    {(type === "pdss-organisation") && (
+                        <input type="hidden" name="case_type" value="PDSSOrganisation" />
+                    )}
                     {/* Form Content */}
                     <div className="space-y-6">
                         {/* Step 1: Personal Information */}
@@ -229,35 +232,30 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <SelectField
-                                            name="gender"
-                                            label="Gender"
-                                            placeholder="Select Gender"
-                                            options={[
-                                                { value: 'Male', label: 'Male' },
-                                                { value: 'Female', label: 'Female' }
-                                            ]}
-                                            required
-                                            value={formData.gender} // Add value prop
-                                            onValueChange={(value) => handleSelectChange(value, 'gender')}
-                                            error={!!errors.gender}
-                                            errorMessage={errors.gender}
-                                        />
-                                    </div>
-                                    <div>
-                                        <InputField
-                                            type="number"
-                                            label='Age'
-                                            name='age'
-                                            required
-                                            placeholder="Enter Age"
-                                            value={formData.age}
-                                            onChange={(e) => updateField('age', e.target.value)}
-                                            className={` ${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.age && <p className="text-red-500 text-xs mt-1">{errors.age}</p>}
-                                    </div>
+                                    <SelectField
+                                        name="gender"
+                                        label="Gender"
+                                        placeholder="Select Gender"
+                                        options={[
+                                            { value: 'Male', label: 'Male' },
+                                            { value: 'Female', label: 'Female' }
+                                        ]}
+                                        required
+                                        value={formData.gender} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'gender')}
+                                        error={!!errors.gender}
+                                        errorMessage={errors.gender}
+                                    />
+                                    <InputField
+                                        type="number"
+                                        label='Age'
+                                        name='age'
+                                        required
+                                        placeholder="Enter Age"
+                                        value={formData.age}
+                                        onChange={(e) => updateField('age', e.target.value)}
+                                        className={` ${errors.age ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                    />
                                 </div>
 
                                 <div className="mb-6">
@@ -273,41 +271,6 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <InputField
-                                            type="tel"
-                                            label='Phone Number'
-                                            name="phone_number"
-                                            required
-                                            placeholder="0800XXXXXXX"
-                                            value={formData.phone_number}
-                                            onChange={(e) => updateField('phone_number', e.target.value)}
-                                            className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
-                                    </div>
-
-                                    <div>
-                                        <SelectField
-                                            name="marital_status"
-                                            label="Marital Status"
-                                            placeholder="Marital Status"
-                                            options={[
-                                                { value: 'Single', label: 'Single' },
-                                                { value: 'Married', label: 'Married' },
-                                                { value: 'Divorced', label: 'Divorced' },
-                                                { value: 'Widowed', label: 'Widowed' }
-                                            ]}
-                                            required
-                                            value={formData.marital_status} // Add value prop
-                                            onValueChange={(value) => handleSelectChange(value, 'marital_status')}
-                                            error={!!errors.marital_status}
-                                            errorMessage={errors.marital_status}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                     <InputField
                                         type="email"
                                         name="email"
@@ -316,6 +279,35 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                         value={formData.email}
                                         onChange={(e) => updateField('email', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                                    />
+                                    <InputField
+                                        type="tel"
+                                        label='Phone Number'
+                                        name="phone_number"
+                                        required
+                                        placeholder="0800XXXXXXX"
+                                        value={formData.phone_number}
+                                        onChange={(e) => updateField('phone_number', e.target.value)}
+                                        className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <SelectField
+                                        name="marital_status"
+                                        label="Marital Status"
+                                        placeholder="Marital Status"
+                                        options={[
+                                            { value: 'Single', label: 'Single' },
+                                            { value: 'Married', label: 'Married' },
+                                            { value: 'Divorced', label: 'Divorced' },
+                                            { value: 'Widowed', label: 'Widowed' }
+                                        ]}
+                                        required
+                                        value={formData.marital_status} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'marital_status')}
+                                        error={!!errors.marital_status}
+                                        errorMessage={errors.marital_status}
                                     />
 
                                     <SelectField
@@ -331,7 +323,22 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                     />
                                 </div>
 
-                                <div className="mb-6">
+                                {type === "pdss-organisation" && (
+                                    <div className="mb-4">
+                                        <InputField
+                                            type="text"
+                                            name="organisation"
+                                            label='Organisation'
+                                            required
+                                            placeholder="Input the name of your organisation here"
+                                            value={formData.organisation}
+                                            onChange={(e) => updateField('organisation', e.target.value)}
+                                            className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputField
                                         type="text"
                                         name="occupation"
@@ -342,9 +349,6 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                         onChange={(e) => updateField('occupation', e.target.value)}
                                         className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                     />
-                                    {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
-                                </div>
-                                <div className="mb-6">
                                     <SelectField
                                         name="disability_status"
                                         label="Disability (If any)"
@@ -388,7 +392,7 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                         )}
 
                         {currentStep === 2 && (
-                            <>
+                            <div className='mt-4 space-y-6'>
                                 <TextAreaField
                                     name="offence"
                                     label="Offence"
@@ -429,26 +433,28 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                         className="border-gray-300"
                                     />
                                 </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Counsel Designation"
+                                        name="counsel_designation"
+                                        required
+                                        type="text"
+                                        placeholder="Type Designation Here"
+                                        value={formData.counsel_designation}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('counsel_designation', e.target.value)}
+                                        className={`${errors.counsel_designation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                    />
 
-                                <InputField
-                                    label="Counsel Designation"
-                                    name="counsel_designation"
-                                    required
-                                    type="text"
-                                    placeholder="Type Designation Here"
-                                    value={formData.counsel_designation}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('counsel_designation', e.target.value)}
-                                    className={`${errors.counsel_designation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                />
+                                    <InputField
+                                        label="Name of Counsel/Paralegal Office or Firm, Organisation ID"
+                                        name="name_of_counsel_or_firm_or_organisation_id"
+                                        type="text"
+                                        value={formData.name_of_counsel_or_firm_or_organisation_id}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('name_of_counsel_or_firm_or_organisation_id', e.target.value)}
+                                        className="border-gray-300"
+                                    />
+                                </div>
 
-                                <InputField
-                                    label="Name of Counsel/Paralegal Office or Firm, Organisation ID"
-                                    name="name_of_counsel_or_firm_or_organisation_id"
-                                    type="text"
-                                    value={formData.name_of_counsel_or_firm_or_organisation_id}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('name_of_counsel_or_firm_or_organisation_id', e.target.value)}
-                                    className="border-gray-300"
-                                />
 
                                 <TextAreaField
                                     name="nature_of_legal_service_provided"
@@ -497,7 +503,7 @@ export default function PDSSCaseForm({ currentStep = 1, setCurrentStep = () => {
                                         className="border-gray-300"
                                     />
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
 
