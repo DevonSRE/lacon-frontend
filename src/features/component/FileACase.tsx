@@ -88,8 +88,8 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                                 <>
                                     <SelectItem value="Civil">Civil</SelectItem>
                                     <SelectItem value="Criminal">Criminal</SelectItem>
-                                    <SelectItem value="PDSS1">PDSS(In Station)</SelectItem>
-                                    <SelectItem value="PDSS2">PDSS(In Organization)</SelectItem>
+                                    <SelectItem value="pdss-instation">PDSS(In Station)</SelectItem>
+                                    <SelectItem value="pdss-organisation">PDSS(In Organization)</SelectItem>
                                 </>
                             )}
                             {userRole === ROLES.DECONGESTION_UNIT_HEAD && (
@@ -99,7 +99,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                                 <SelectItem value="MercyApplication">Mercy Application</SelectItem>
                             )}
                             {userRole === ROLES.PDSS && (
-                                <SelectItem value="PDSS1">PDSS</SelectItem>
+                                <SelectItem value="pdss-instation">PDSS</SelectItem>
                             )}
                         </SelectContent>
                     </Select>
@@ -122,8 +122,8 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                     {selectedCaseForm === "Criminal" && (
                         <CriminalCaseForm />
                     )}
-                    {(selectedCaseForm === "PDSS1" || selectedCaseForm === "PDSS2") && (
-                        <PDSSCaseForm />
+                    {(selectedCaseForm === "pdss-instation" || selectedCaseForm === "pdss-organisation") && (
+                        <PDSSCaseForm type={selectedCaseForm}  />
                     )}
                     {selectedCaseForm === "Decongestion" && (
                         <DecongestionForm

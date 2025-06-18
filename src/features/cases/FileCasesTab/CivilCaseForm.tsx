@@ -163,7 +163,6 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
-                caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
             />
             <div className="min-h-screen">
                 {/* Header */}
@@ -276,41 +275,17 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <div>
-                                        <InputField
-                                            type="tel"
-                                            label='Phone Number'
-                                            name="phone_number"
-                                            required
-                                            placeholder="0800XXXXXXX"
-                                            value={formData.phone_number}
-                                            onChange={(e) => updateField('phone_number', e.target.value)}
-                                            className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                                        />
-                                        {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
-                                    </div>
-
-                                    <div>
-                                        <SelectField
-                                            name="marital_status"
-                                            label="Marital Status"
-                                            placeholder="Marital Status"
-                                            options={[
-                                                { value: 'Single', label: 'Single' },
-                                                { value: 'Married', label: 'Married' },
-                                                { value: 'Divorced', label: 'Divorced' },
-                                                { value: 'Widowed', label: 'Widowed' }
-                                            ]}
-                                            required
-                                            value={formData.marital_status} // Add value prop
-                                            onValueChange={(value) => handleSelectChange(value, 'marital_status')}
-                                            error={!!errors.marital_status}
-                                            errorMessage={errors.marital_status}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <InputField
+                                        type="tel"
+                                        label='Phone Number'
+                                        name="phone_number"
+                                        required
+                                        placeholder="0800XXXXXXX"
+                                        value={formData.phone_number}
+                                        onChange={(e) => updateField('phone_number', e.target.value)}
+                                        className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                    />
+                                    {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
                                     <InputField
                                         type="email"
                                         name="email"
@@ -320,7 +295,26 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                         onChange={(e) => updateField('email', e.target.value)}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                                     />
+                                </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+
+                                    <SelectField
+                                        name="marital_status"
+                                        label="Marital Status"
+                                        placeholder="Marital Status"
+                                        options={[
+                                            { value: 'Single', label: 'Single' },
+                                            { value: 'Married', label: 'Married' },
+                                            { value: 'Divorced', label: 'Divorced' },
+                                            { value: 'Widowed', label: 'Widowed' }
+                                        ]}
+                                        required
+                                        value={formData.marital_status} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'marital_status')}
+                                        error={!!errors.marital_status}
+                                        errorMessage={errors.marital_status}
+                                    />
                                     <SelectField
                                         name="state_of_origin"
                                         label="State Of Origin"
@@ -334,7 +328,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                     />
                                 </div>
 
-                                <div className="mb-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <InputField
                                         type="text"
                                         name="occupation"
@@ -345,9 +339,6 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                         onChange={(e) => updateField('occupation', e.target.value)}
                                         className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                     />
-                                    {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
-                                </div>
-                                <div className="mb-6">
                                     <SelectField
                                         name="disability_status"
                                         label="Disability (If any)"
@@ -362,6 +353,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                         errorMessage={errors.disability_status}
                                     />
                                 </div>
+
                                 <div className="mb-6">
                                     <Label className="block  mb-2">
                                         Disability (if any)
@@ -448,8 +440,8 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                                    <div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    {/* <div>
                                         <InputField
                                             type="text"
                                             required
@@ -461,7 +453,7 @@ export default function CivilCaseForm({ currentStep = 1, setCurrentStep = () => 
                                             className={` ${errors.registration_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                         />
                                         {errors.registration_number && <p className="text-red-500 text-xs mt-1">{errors.registration_number}</p>}
-                                    </div>
+                                    </div> */}
 
                                     <div>
                                         <InputField

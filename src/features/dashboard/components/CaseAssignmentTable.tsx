@@ -40,6 +40,9 @@ export default function CaseAssignmentPage() {
     return (
         <div className="flex flex-1 flex-col gap-4  pt-0">
             <div className=" flex-1 bg-white md:min-h-min" >
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
+                    Case Assignment OVerview
+                </h3>
                 <div className="flex flex-1 flex-col gap-4  pt-0">
                     <DataTable onRowClick={handleRowClick} columns={mainColumns} loading={loading} data={[]} />
                     {/* {data?.data?.data.length > 0 && (

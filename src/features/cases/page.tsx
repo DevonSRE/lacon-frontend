@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import SearchFilterSection from './_components/SearchFilterSection';
 import { AssignmentSheet } from './_components/AssignmentSheet';
-import { createCaseColumns, getCaseTypeBadgeColor, getStatusBadgeVariant, ICase } from './_components/table-columns';
+import { createCaseColumns, ICase } from './_components/table-columns';
 import { DataTable } from '@/components/data-table';
 import TablePagination from '@/components/TablePagination';
 import { useQuery } from '@tanstack/react-query';

@@ -10,13 +10,11 @@ import Link from "next/link"
 interface CaseIntakeDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
-    caseReference: string
 }
 
 export default function CaseIntakeDialog({
     open,
     onOpenChange,
-    caseReference,
 }: CaseIntakeDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -25,9 +23,7 @@ export default function CaseIntakeDialog({
                     <CardContent className="flex flex-col items-center space-y-6 p-0">
                         <CheckCircle className="text-green-600 w-12 h-12" />
                         <h2 className="text-xl font-semibold">Case Intake Submitted</h2>
-                        <div className="bg-gray-100 w-full py-2 rounded-md text-sm font-medium text-gray-700 text-center">
-                            Case Reference: {caseReference}
-                        </div>
+                     
                         <p className="text-sm text-gray-600 text-center">
                             The case intake form has been successfully<br />
                             recorded in our system.

@@ -40,15 +40,6 @@ export const createUserColumns = (
       },
     },
     {
-      accessorKey: "id", // previously was "user_id" but you’re rendering row.original.id
-      header: "User ID",
-      cell: ({ row }) => (
-        <span className="text-sm font-medium bg-gray-100 px-2 py-1 rounded-md">
-          #{row.original.id}
-        </span>
-      ),
-    },
-    {
       accessorKey: "user_type",
       header: "Role",
       cell: ({ row }) => {

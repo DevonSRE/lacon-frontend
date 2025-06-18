@@ -143,8 +143,9 @@ export const caseDetailsSchema = z.object({
   average_income: z.string({ invalid_type_error: 'Average income must be a number' }),
   legal_aid_reason: z.string().min(5, { message: 'Legal aid reason must be at least 5 characters' }),
   number_of_dependants: z.coerce.number({ invalid_type_error: 'Number of dependants must be a number' }),
-  registration_number: z.string().min(1, { message: 'Registration number is required' }),
-  case_number: z.string().min(1, { message: 'Case number is required' }),
+  registration_number: z.string().optional(),
+  case_number: z.string().optional(),
+  court_of_hearing: z.string().optional(),
   defendant_name: z.string().min(1, { message: 'Defendant name is required' }),
   defendant_address: z.string().min(1, { message: 'Defendant address is required' }),
   defendant_phone_number: z.string().min(1, { message: 'Defendant phone number is required' }),
@@ -188,9 +189,9 @@ export const pdssCaseSchema = z.object({
   counsel_paralegal: z.string().min(1, { message: "Counsel/Paralegal is required" }),
   counsel_designation: z.string().min(1, { message: "Counsel designation is required" }),
   name_of_counsel_or_firm_or_organisation_id: z
-    .string()
-    .min(1, { message: "Name of Counsel/Firm/Organisation ID is required" }),
+    .string().min(1, { message: "Name of Counsel/Firm/Organisation ID is required" }),
   nature_of_legal_service_provided: z.string().optional(),
+  organisation: z.string().optional(),
   case_status: z.string().optional(),
   bail_status: z.string().optional(),
   date_trial_ended: z.string().optional(),
@@ -241,8 +242,8 @@ export type FormDataCivilCase = {
   offence: string;
   average_income: string;
   number_of_dependants: string;
-  registration_number: string;
-  case_number: string;
+  registration_number?: string;
+  case_number?: string;
   court_of_hearing: string;
   defendant_name: string;
   client_location: string;
@@ -282,6 +283,7 @@ export type FormDataPDSSCase = {
   disability_status: string;
 
 
+  organisation: string;
   offence: string;
   client_location: string;
   days_in_detention: number;

@@ -110,7 +110,6 @@ export default function LawyersAnnualCasesReviewForm() {
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
-                caseReference={state?.data?.reference ?? "LCN-XXXX-XXXX"}
             />
             <div className="mx-auto p-6 pb-20 bg-white">
                 <div className="mb-6">

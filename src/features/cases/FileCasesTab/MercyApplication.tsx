@@ -4,7 +4,7 @@ import { GetState } from "@/components/get-state";
 import SelectField from "@/components/SelectField";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { submitPublicCaseForm } from "@/features/probunoLawyers/server/action";
+import { submitMercyApplicationForm, submitPublicCaseForm } from "@/features/probunoLawyers/server/action";
 import { FormDataMercyCase } from "@/features/probunoLawyers/server/probonoSchema";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { CLIENT_ERROR_STATUS } from "@/lib/constants";
@@ -24,7 +24,7 @@ export default function MercyApplication({ openFileACase, setOpen }: CustomeShee
 
     const [recommendationImage, setRecommendationImage] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
+    const [state, formAction, isPending] = useActionState(submitMercyApplicationForm, undefined);
     const [currentStep, setCurrentStep] = useState(1);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [selectedState, setSelectedState] = useState<string>("");

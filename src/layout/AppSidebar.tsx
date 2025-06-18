@@ -36,7 +36,13 @@ const navItems: NavItem[] = [
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PARALEGAL"],
+    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
+  },
+  {
+    icon: <Icons.casesIcon />,
+    name: "Filed Cases",
+    path: "/cases",
+    roles: ["PARALEGAL"],
   },
   {
     icon: <Icons.userRole />,
@@ -141,7 +147,7 @@ const AppSidebar: React.FC = () => {
                 }`}>
                 {nav.icon}
               </span>
-              {(isExpanded ) && (
+              {(isExpanded) && (
                 <span className={`menu-item-text font-medium`}>{nav.name}</span>
               )}
               {/* {(isExpanded || isHovered || isMobileOpen) && (
@@ -362,7 +368,7 @@ const AppSidebar: React.FC = () => {
           )}
         </Link>
       </div>
-      {isExpanded  && (
+      {isExpanded && (
         <div className="justify-center pb-2.5">
           <p className="text-center text-red-500 font-semibold ">{user?.role}</p>
         </div>

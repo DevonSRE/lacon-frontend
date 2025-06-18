@@ -179,19 +179,6 @@ export async function submitProBonoCaseUpdateForm(_prevState: unknown, formData:
 }
 
 
-function ensureArray(value: unknown): string[] {
-    if (Array.isArray(value)) return value;
-    if (typeof value === 'string') {
-        try {
-            return JSON.parse(value);
-        } catch {
-            console.warn('Failed to parse array string:', value);
-            return [];
-        }
-    }
-    return [];
-}
-
 export async function submitProBonoCaseForm(_prevState: unknown, formData: FormData) {
     // Safely extract raw data from form
     const rawData = Object.fromEntries(formData.entries());
@@ -361,30 +348,6 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
             result = PublicCivilCaseSchema.safeParse(data);
         } else if (data.case_type === "Criminal Case") {
             result = PublicCriminalCaseSchema.safeParse(data);
-        } else if (data.case_type === "Decongestion Case") {
-            result = DecongestionCaseFullSchema.safeParse(data);
-        } else if (data.case_type === "Mercy Application") {
-            const data = {
-                case_type: formData.get('case_type') as string,
-                state_id: formData.get('state_id') as string,
-                first_name: formData.get('first_name') as string,
-                middle_name: formData.get('middle_name') as string,
-                last_name: formData.get('last_name') as string,
-                gender: formData.get('gender') as string,
-                age: parseInt(formData.get('age') as string),
-                correctional_facility: formData.get('correctional_facility') as string,
-                offence: formData.get('offence') as string,
-                // Reconstruct the nested object from flat fields
-                perogative_of_mercy: {
-                    sentence_passed: formData.get('perogative_sentence_passed') as string || undefined,
-                    date_of_sentence: formData.get('perogative_date_of_sentence') as string || undefined,
-                    perogative_of_mercy: parseInt(formData.get('perogative_mercy_number') as string) || 0,
-                    reason_for_clemency: formData.get('perogative_reason_for_clemency') as string || undefined,
-                    health_condition: formData.get('perogative_health_condition') as string || undefined,
-                    recommendations: formData.get('perogative_recommendations') as string || undefined,
-                }
-            };
-            result = MercyApplicationCaseFullSchema.safeParse(data);
         } else {
             result = PDSSCaseFullSchema.safeParse(data);
         }
@@ -397,14 +360,9 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
         }
         console.log(result.data);
         let response;
-        if (data.case_type === "Decongestion Case") {
-            response = await ProbunoService.casesDecongestionCase(result.data);
-        }
-        else if (data.case_type === "PDSS") {
+
+        if (data.case_type === "PDSS") {
             response = await ProbunoService.casesPDSSCase(result.data);
-        }
-        else if (data.case_type === "Mercy Application") {
-            response = await ProbunoService.casesPerogativeCase(result.data);
         } else {
             response = await ProbunoService.casesPublicCase(result.data);
         }
@@ -433,6 +391,7 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
         }
     }
 }
+
 export async function submitDecongestionForm(prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData);
     console.log("Raw form data:", data);
@@ -448,7 +407,66 @@ export async function submitDecongestionForm(prevState: unknown, formData: FormD
             };
         }
         console.log(result.data);
-        const response = await ProbunoService.casesPublicCase(result.data);
+        const response = await ProbunoService.casesDecongestionCase(result.data);
+        console.log(JSON.stringify(response.data));
+        return {
+            status: 200,
+            message: response.data.message,
+            success: true,
+            data: response.data?.data,
+        };
+
+    } catch (err) {
+        if (err instanceof SyntaxError) {
+            console.log("JSON Parse error:", err);
+            return {
+                status: 400,
+                errors: { cases: ["Invalid cases data format"] },
+                message: "Invalid form data",
+            };
+        } else {
+            const error = err as ErrorResponse;
+            console.log("Error response:", error);
+            return handleApiError(error);
+        }
+    }
+}
+export async function submitMercyApplicationForm(prevState: unknown, formData: FormData) {
+    const data = Object.fromEntries(formData);
+    console.log("Raw form data:", data);
+
+    try {
+        const data = {
+            case_type: formData.get('case_type') as string,
+            state_id: formData.get('state_id') as string,
+            first_name: formData.get('first_name') as string,
+            middle_name: formData.get('middle_name') as string,
+            last_name: formData.get('last_name') as string,
+            gender: formData.get('gender') as string,
+            age: parseInt(formData.get('age') as string),
+            correctional_facility: formData.get('correctional_facility') as string,
+            offence: formData.get('offence') as string,
+            // Reconstruct the nested object from flat fields
+            perogative_of_mercy: {
+                sentence_passed: formData.get('perogative_sentence_passed') as string || undefined,
+                date_of_sentence: formData.get('perogative_date_of_sentence') as string || undefined,
+                perogative_of_mercy: parseInt(formData.get('perogative_mercy_number') as string) || 0,
+                reason_for_clemency: formData.get('perogative_reason_for_clemency') as string || undefined,
+                health_condition: formData.get('perogative_health_condition') as string || undefined,
+                recommendations: formData.get('perogative_recommendations') as string || undefined,
+            }
+        };
+        const result = MercyApplicationCaseFullSchema.safeParse(data);
+
+        if (!result.success) {
+            return {
+                status: 400,
+                errors: result.error.flatten().fieldErrors,
+                message: "Invalid field found",
+            };
+        }
+        console.log(result.data);
+        const response = await ProbunoService.casesPerogativeCase(result.data);
         console.log(JSON.stringify(response.data));
 
         return {
