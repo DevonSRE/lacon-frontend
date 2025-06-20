@@ -44,3 +44,21 @@ export async function GetReportDemography(filters: Ipage) {
         return handleApiError(error);
     }
 }
+export async function GetUnitheadReport(filters: Ipage) {
+    try {
+        const response = await reportServices.getunitheadReport(filters);
+        return { data: response?.data.data, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+export async function GetAdminReport(filters: Ipage) {
+    try {
+        const response = await reportServices.getAdminReport(filters);
+        return { data: response?.data.data, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

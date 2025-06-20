@@ -36,6 +36,7 @@ const userTypeOptions = [
     "ZONAL DIRECTOR",
     "STATE COORDINATOR",
     "CENTRE COORDINATOR",
+    "PARALEGAL",
     "LACON LAWYER",
     "PRO BONO LAWYER",
 ] as const;

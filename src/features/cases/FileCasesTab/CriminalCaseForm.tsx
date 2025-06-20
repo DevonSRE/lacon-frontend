@@ -61,7 +61,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
     } else if (state && state.status === 200) {
       setCurrentStep(1);
       // handleCloseCaseType(true);
-
       // toast.success("Case Intake  Submitted successful");
       setOpen(true);
     }

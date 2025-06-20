@@ -93,3 +93,27 @@ export interface ILawyerManagement {
   created_by?: string;
   updated_by?: string;
 }
+
+
+
+export interface CaseOverview {
+    id: string;
+    case_type: string;
+    first_name: string;
+    middle_name: string;
+    last_name: string;
+    gender: string;
+    permanent_address: string;
+    age: number;
+    phone_number: string;
+    marital_status: string;
+    email: string;
+    state_of_origin: string;
+    occupation: string;
+    disability_status: string;
+    disability_proof: string;
+    status: string;
+    criminal_case?: any;
+    civil_case?: any;
+    pdss?: any;
+}
