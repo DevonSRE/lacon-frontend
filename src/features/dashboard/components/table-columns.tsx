@@ -1,25 +1,11 @@
-import { ICaseAssignment } from "@/types/case";
-import { ColumnDef, flexRender, getCoreRowModel, useReactTable } from "@tanstack/react-table";
-import { useRouter } from "next/navigation";
+import { CaseOverview } from "@/types/case";
+import { ColumnDef } from "@tanstack/react-table";
 import React from "react";
 
-const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
-  const router = useRouter();
-  return (
-    <tr className="cursor-pointer hover:bg-gray-100" onClick={() => router.push(`/cases/view/${encodeURIComponent(row.original.caseId)}`)} style={{ cursor: "pointer" }}>
-      {row.getVisibleCells().map((cell: any) => (
-        <td key={cell.id} className="px-4 py-2 border">
-          {flexRender(cell.column.columnDef.cell, cell.getContext())}
-        </td>
-      ))}
-    </tr>
-  );
-};
-
-export const mainColumns: ColumnDef<ICaseAssignment>[] = [
+export const mainColumns: ColumnDef<CaseOverview>[] = [
   {
-    accessorKey: "case_id",
-    header: "Case ID",
+    accessorKey: "case_type",
+    header: "Case Type",
   },
   {
     accessorKey: "Department",
@@ -27,71 +13,43 @@ export const mainColumns: ColumnDef<ICaseAssignment>[] = [
   },
   {
     accessorKey: "priority",
-    header: "Piriority",
+    header: "Priority",
   },
   {
     accessorKey: "status",
     header: "Status",
-  },
-  // {
-  //   accessorKey: "created_at",
-  //   header: "Created At",
-  //   cell: ({ row }) => {
-  //     const createdAt = new Date(row.original.created_at);
-  //     return createdAt.toLocaleString(); // Format as readable date/time
-  //   },
-  // },
-
-  {
-    accessorKey: "action",
-    header: "Action",
     cell: ({ row }) => {
       const status = row.original.status || "Unknown";
       const statusColors: Record<string, string> = {
-        Active: "bg-green-50 text-green-700",
-        Pending: "bg-blue-50 text-blue-600",
-        Inactive: "bg-red-100 text-red-800",
-        Unknown: "bg-gray-100 text-gray-800",
+        Active: "bg-green-50 text-green-700 border border-green-200",
+        Pending: "bg-blue-50 text-blue-600 border border-blue-200",
+        Inactive: "bg-red-50 text-red-700 border border-red-200",
+        Unknown: "bg-gray-50 text-gray-700 border border-gray-200",
       };
-
       return (
-        <span className={`px-2 py-1 rounded-md text-sm font-medium ${statusColors[status]}`}>
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
           {status}
         </span>
       );
     },
   },
+  {
+    accessorKey: "action",
+    header: "Action",
+    cell: ({ row }) => {
+      return (
+        <div className="flex items-center gap-2">
+          <button
+            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border rounded-md transition-colors"
+            onClick={() => {
+              // Handle view action
+              // console.log("View case:", row.original.case_id);
+            }}>
+            Assign
+          </button>
+
+        </div>
+      );
+    },
+  },
 ];
-
-const CaseTable: React.FC<{ data: ICaseAssignment[] }> = ({ data }) => {
-  const table = useReactTable({
-    data,
-    columns: mainColumns,
-    getCoreRowModel: getCoreRowModel(),
-  });
-
-  return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse border border-gray-200">
-        <thead className="bg-gray-100">
-          {table.getHeaderGroups().map(headerGroup => (
-            <tr key={headerGroup.id}>
-              {headerGroup.headers.map(header => (
-                <th key={header.id} className="px-4 py-2 border">
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </th>
-              ))}
-            </tr>
-          ))}
-        </thead>
-        <tbody className="block w-full">
-          {table.getRowModel().rows.map(row => (
-            <ClickableRow key={row.id} row={row} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-
-export default CaseTable;

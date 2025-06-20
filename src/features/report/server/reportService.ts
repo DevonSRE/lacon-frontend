@@ -21,6 +21,16 @@ const reportServices = {
             params: filters,
         });
     },
+    async getAdminReport(filters: any) {
+        return await axiosInstance.get("analytics/admin", {
+            params: filters,
+        });
+    },
+    async getunitheadReport(filters: any) {
+        return await axiosInstance.get("analytics/department-report", {
+            params: filters,
+        });
+    },
 }
 
 export default reportServices;
