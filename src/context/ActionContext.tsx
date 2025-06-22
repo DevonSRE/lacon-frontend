@@ -1,8 +1,15 @@
 "use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, SetStateAction, Dispatch } from "react";
+
+type LoadingDialogType = {
+  open: boolean;
+  title: string;
+  details: string;
+};
 
 type ActionContextType = {
   isOpen: boolean;
+  openLoadingDialog: LoadingDialogType;
 
   selectedUnit: string;
   setSelectedUnit: (isHovered: string) => void;
@@ -19,7 +26,9 @@ type ActionContextType = {
   selectedCentreId: string;
   setselectedCentreId: (isHovered: string) => void;
 
-  setIsOpen: (isHovered: boolean) => void;
+  // setIsOpen: (isHovered: boolean) => void;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+  setLoadingDialog: Dispatch<SetStateAction<LoadingDialogType>>;
   toggleOpen: () => void;
 };
 
@@ -42,6 +51,11 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
   const [selectedDuration, setselectedDuration] = useState("");
   const [selectedCentreId, setselectedCentreId] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
+  const [openLoadingDialog, setLoadingDialog] = useState({
+    open: false,
+    title: "",
+    details: "",
+  });
 
   const toggleOpen = () => {
     setIsOpen((prev) => !prev);
@@ -63,8 +77,9 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
         selectedDuration,
         setselectedDuration,
         selectedCentreId,
-        setselectedCentreId
-
+        setselectedCentreId,
+        openLoadingDialog,
+        setLoadingDialog
       }}
     >
       {children}

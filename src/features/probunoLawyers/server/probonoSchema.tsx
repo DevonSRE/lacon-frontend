@@ -132,11 +132,13 @@ export const personalInfoSchema = z.object({
   last_name: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
   gender: z.string().min(1, { message: 'Gender is required' }),
   permanent_address: z.string().min(10, { message: 'Address must be at least 10 characters' }),
-  age: z.coerce.number({ invalid_type_error: 'Age must be a number' }),
+  age: z.coerce.number().min(1, { message: 'Age must be greater than 0' }),
   phone_number: z.string().min(10, { message: 'Phone number must be at least 10 digits' }),
   marital_status: z.string().min(1, { message: 'Marital status is required' }),
   state_of_origin: z.string().min(1, { message: 'State of origin is required' }),
   occupation: z.string().min(1, { message: 'Occupation is required' }).optional(),
+  disability_status: z.string().min(1, { message: 'Please Select one status' }),
+  disability_proof: z.any().optional(),
 });
 export const caseDetailsSchema = z.object({
   complaint: z.string().min(5, { message: 'Complaint must be at least 5 characters' }),
@@ -163,33 +165,13 @@ export const legalAidFormSchema = z.object({
   prosecuting_agency: z.string().min(1, { message: "Prosecuting agency is required" }),
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const pdssCaseSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
   client_location: z.string().min(1, { message: "Client location is required" }),
-
   days_in_detention: z.coerce.number({ invalid_type_error: "Days in detention must be a number" }).nonnegative({ message: "Days in detention cannot be negative" }),
-
+  counsel_designation: z.string().min(1, { message: "Counsel designation is required" }).optional(),
   counsel_paralegal: z.string().min(1, { message: "Counsel/Paralegal is required" }),
-  counsel_designation: z.string().min(1, { message: "Counsel designation is required" }),
-  name_of_counsel_or_firm_or_organisation_id: z
-    .string().min(1, { message: "Name of Counsel/Firm/Organisation ID is required" }),
+  name_of_counsel_or_firm_or_organisation_id: z.string().min(1, { message: "Name of Counsel/Firm/Organisation ID is required" }).optional(),
   nature_of_legal_service_provided: z.string().optional(),
   organisation: z.string().optional(),
   case_status: z.string().optional(),
@@ -197,7 +179,6 @@ export const pdssCaseSchema = z.object({
   date_trial_ended: z.string().optional(),
   case_outcome: z.string().optional()
 });
-
 
 
 export type PdssCaseSchema = z.infer<typeof pdssCaseSchema>;

@@ -29,7 +29,7 @@ export default function LawyersAnnualCasesReviewForm() {
                         : undefined,
             });
         } else if (state && state.status === 200) {
-            toast.success("Case Intake  Submitted successful");
+            // toast.success("Case Intake  Submitted successful");
             setOpen(true)
         }
     }, [state]);
@@ -132,26 +132,51 @@ export default function LawyersAnnualCasesReviewForm() {
                         </h2>
 
                         <div className="space-y-6">
-                            <InputField
-                                label="First Name"
-                                required
-                                type="text"
-                                name="first_name"
-                                value={formData.first_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
-                                placeholder="First Name"
-                                error={!!errors.first_name}
-                            />
-                            <InputField
-                                label="Last Name"
-                                required
-                                name='last_name'
-                                type="text"
-                                value={formData.last_name}
-                                onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
-                                placeholder="Last Name"
-                                error={!!errors.last_name}
-                            />
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField
+                                    label="First Name"
+                                    required
+                                    type="text"
+                                    name="first_name"
+                                    value={formData.first_name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, first_name: e.target.value }))}
+                                    placeholder="First Name"
+                                    error={!!errors.first_name}
+                                />
+                                <InputField
+                                    label="Last Name"
+                                    required
+                                    name='last_name'
+                                    type="text"
+                                    value={formData.last_name}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, last_name: e.target.value }))}
+                                    placeholder="Last Name"
+                                    error={!!errors.last_name}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField
+                                    label="Email"
+                                    required
+                                    name='email'
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                                    placeholder="Email Address"
+                                    error={!!errors.email}
+                                />
+                                <InputField
+                                    label="Contact Phone Number"
+                                    name='phone_number'
+                                    required
+                                    type="tel"
+                                    value={formData.phone_number}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
+                                    placeholder="Enter Phone Number"
+                                    error={!!errors.phone_number}
+                                />
+                            </div>
 
                             <InputField
                                 label="Contact Address"
@@ -164,27 +189,6 @@ export default function LawyersAnnualCasesReviewForm() {
                                 error={!!errors.contact_address}
                             />
 
-                            <InputField
-                                label="Email"
-                                required
-                                name='email'
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                placeholder="Email Address"
-                                error={!!errors.email}
-                            />
-
-                            <InputField
-                                label="Contact Phone Number"
-                                name='phone_number'
-                                required
-                                type="tel"
-                                value={formData.phone_number}
-                                onChange={(e) => setFormData(prev => ({ ...prev, phone_number: e.target.value }))}
-                                placeholder="Enter Phone Number"
-                                error={!!errors.phone_number}
-                            />
                         </div>
                     </div>
 

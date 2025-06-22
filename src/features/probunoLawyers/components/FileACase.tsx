@@ -66,36 +66,38 @@ export default function FileACase() {
                     <DialogTitle>File a Case</DialogTitle>
                 </DialogHeader>
 
-                <DialogDescription>
+                <DialogDescription asChild>
                     <div className="space-y-6 my-4">
-                        <Label htmlFor="state-select">Where are you filing from?</Label>
-                        <GetState
-                            value={selectedState}
-                            onValueChange={(val: string) => setSelectedState(val)}
-                            placeholder="Select your state"
-                            onLoadingChange={(loading) => setLoading(loading)}
-                        />
-                    </div>
+                        <div className="space-y-6">
+                            <Label htmlFor="state-select">Where are you filing from?</Label>
+                            <GetState
+                                value={selectedState}
+                                onValueChange={(val: string) => setSelectedState(val)}
+                                placeholder="Select your state"
+                                onLoadingChange={(loading) => setLoading(loading)}
+                            />
+                        </div>
 
-                    <div className="space-y-6 my-4">
-                        <Label htmlFor="case-type-select">What type of case are you filing?</Label>
-                        <Select
-                            value={caseType}
-                            onValueChange={(val) => setCaseType(val as any)}
-                        >
-                            <SelectTrigger className="w-full h-11">
-                                <SelectValue placeholder="Choose a case type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectGroup>
-                                    <SelectLabel>Case Type</SelectLabel>
-                                    <SelectItem value="Civil">Civil</SelectItem>
-                                    <SelectItem value="Criminal">Criminal</SelectItem>
-                                    <SelectItem value="PDSS-InStation">PDSS (In Station)</SelectItem>
-                                    <SelectItem value="PDSS-Organisation">PDSS (Organisation)</SelectItem>
-                                </SelectGroup>
-                            </SelectContent>
-                        </Select>
+                        <div className="space-y-6">
+                            <Label htmlFor="case-type-select">What type of case are you filing?</Label>
+                            <Select
+                                value={caseType}
+                                onValueChange={(val) => setCaseType(val as any)}
+                            >
+                                <SelectTrigger className="w-full h-11">
+                                    <SelectValue placeholder="Choose a case type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectGroup>
+                                        <SelectLabel>Case Type</SelectLabel>
+                                        <SelectItem value="Civil">Civil</SelectItem>
+                                        <SelectItem value="Criminal">Criminal</SelectItem>
+                                        <SelectItem value="PDSS-InStation">PDSS (In Station)</SelectItem>
+                                        <SelectItem value="PDSS-Organisation">PDSS (Organisation)</SelectItem>
+                                    </SelectGroup>
+                                </SelectContent>
+                            </Select>
+                        </div>
                     </div>
                 </DialogDescription>
 

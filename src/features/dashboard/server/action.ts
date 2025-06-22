@@ -6,6 +6,8 @@ import { createLawyerSchema, createUserSchema } from "./type";
 
 export async function InviteUser(_prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData);
+    console.log(data);
+    
     const result = createUserSchema.safeParse(data);
     if (!result.success) {
         return {
@@ -25,9 +27,6 @@ export async function InviteUser(_prevState: unknown, formData: FormData) {
             data: response.data,
         };
     } catch (err: unknown) {
-        // const error = err as ErrorResponse;
-        // console.log("Error response:", error);
-        // handleApiError(error);
         const error = err as ErrorResponse;
         console.log("Error response:", error);
         if (error?.response) {

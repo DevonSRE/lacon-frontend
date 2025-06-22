@@ -1,3 +1,4 @@
+'use client'
 import { Card, CardContent } from '@/components/ui/card'
 import {
     LineChart,
@@ -88,7 +89,6 @@ const transformBiAnnualChartData = (biAnnualReports: BiAnnualReport[]) => {
 export default function Overview() {
 
     const { selectedZoneId, setSelectedZoneId, selectedDuration, setselectedDuration, selectedStateId, setSeletedStateId, selectedCentreId, setselectedCentreId } = useAction();
-
     const { data, isLoading, error } = useQuery({
         queryKey: ["getAdminReportOverview", selectedZoneId, selectedStateId, selectedDuration, selectedCentreId],
         queryFn: async () => {

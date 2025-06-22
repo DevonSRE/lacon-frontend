@@ -98,7 +98,7 @@ export default function AdminDashboard() {
         });
         return Object.entries(states)
             .sort(([, a], [, b]) => b - a)
-            .slice(0, 5); // Top 5 states
+            .slice(0, 5);
     };
 
     const caseTypeBreakdown = getCaseTypeBreakdown();
@@ -151,7 +151,6 @@ export default function AdminDashboard() {
                         </div>
                     </div>
                 </div>
-
                 <CaseDistributionChart data={data?.data} isLoading={isLoading} />
             </div>
         </div>

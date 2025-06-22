@@ -72,8 +72,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
 
     return (
         <div className="text-sm gap-4 items-center">
-            <div className="flex flex-wrap items-center space-x-2 bg-white p-2">
-
+            <div className="flex flex-wrap items-center space-x-2 bg-white">
                 <Select value={selectedDuration} onValueChange={setselectedDuration}>
                     <SelectTrigger className="w-[180px] h-11">
                         <SelectValue placeholder="Select period" />

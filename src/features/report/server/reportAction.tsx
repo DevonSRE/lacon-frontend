@@ -62,3 +62,12 @@ export async function GetAdminReport(filters: Ipage) {
         return handleApiError(error);
     }
 }
+export async function GetAllUnit(filters: Ipage) {
+    try {
+        const response = await reportServices.getAllUnit(filters);
+        return { data: response, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
