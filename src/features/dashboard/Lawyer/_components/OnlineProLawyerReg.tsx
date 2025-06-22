@@ -11,11 +11,75 @@ import { SubmitButton } from '@/components/submit-button';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import SuccessDialog from '@/components/successDialog';
 
+interface FormData {
+  first_name: string;
+  last_name: string;
+  email: string;
+  phone_number: string;
+  alternate_number: string;
+  state_bar_membership: string;
+  name_of_law_firm_organization: string;
+  law_firm_organization_address: string;
+  most_contactable_call_no: string;
+  experience_in_criminal_law: string;
+  pro_bono_capacity: string;
+  criminal_courts_preference: string[];
+}
+
 export default function ProBonoForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedState, setSelectedState] = useState<string>("");
   const [state, formAction, isPending] = useActionState(submitProBonoForm, undefined);
   const [open, setOpen] = useState(false);
+  const [agreement, setAgreementChange] = useState(false);
+
+  // Form state management
+  const [formData, setFormData] = useState<FormData>({
+    first_name: '',
+    last_name: '',
+    email: '',
+    phone_number: '',
+    alternate_number: '',
+    state_bar_membership: '',
+    name_of_law_firm_organization: '',
+    law_firm_organization_address: '',
+    most_contactable_call_no: '',
+    experience_in_criminal_law: '',
+    pro_bono_capacity: '',
+    criminal_courts_preference: []
+  });
+
+  const handleInputChange = (name: string, value: string) => {
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCheckboxChange = (value: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      criminal_courts_preference: checked
+        ? [...prev.criminal_courts_preference, value]
+        : prev.criminal_courts_preference.filter(item => item !== value)
+    }));
+  };
+
+  const resetForm = () => {
+    setFormData({
+      first_name: '',
+      last_name: '',
+      email: '',
+      phone_number: '',
+      alternate_number: '',
+      state_bar_membership: '',
+      name_of_law_firm_organization: '',
+      law_firm_organization_address: '',
+      most_contactable_call_no: '',
+      experience_in_criminal_law: '',
+      pro_bono_capacity: '',
+      criminal_courts_preference: []
+    });
+    setSelectedState("");
+    setAgreementChange(false);
+  };
 
   useEffectAfterMount(() => {
     if (!state) return;
@@ -42,9 +106,12 @@ export default function ProBonoForm() {
       toast.error(state.message ?? "An error occurred", {
         description: errorMessage,
       });
+
+      // Don't reset form on error - keep user data
     } else if (state.status === 200 || state.status === 201) {
-      toast.success("Registeration Submitted successfully!");
+      // toast.success("Registration Submitted successfully!");
       setOpen(true);
+      resetForm(); // Only reset on success
     }
   }, [state]);
 
@@ -60,7 +127,7 @@ export default function ProBonoForm() {
     { label: 'Most Contactable Call No', name: 'most_contactable_call_no', type: 'input', required: true }
   ];
 
-  const experienceOptions = ['Below 2 years', '2-5f years', '5-10 years', 'Above 10 years'];
+  const experienceOptions = ['Below 2 years', '2-5 years', '5-10 years', 'Above 10 years'];
   const capacityOptions = ['1 case at a time', '2 cases at a time', '3-4 cases at a time', '5 or more cases at a time'];
   const courtOptions = ['Appellate Courts', 'High Courts', 'Magistrate Courts', 'Customary Court', 'Sharia Court', 'Area Court'];
 
@@ -70,7 +137,7 @@ export default function ProBonoForm() {
         open={open}
         onOpenChange={setOpen}
         title={"Success"}
-        details={"Registeration submitted successfully"}
+        details={"Registration submitted successfully"}
       />
       <div className='pb-32 space-y-10'>
         <div className="flex justify-center">
@@ -83,34 +150,39 @@ export default function ProBonoForm() {
           <section className="space-y-4">
             <h2 className="font-semibold text-lg">SECTION 1: Personal Details and Office Info</h2>
 
-            {personalFields.map(field => (
-              <div key={field.name}>
-                {field.type === 'input' ? (
-                  <InputField
-                    label={field.label}
-                    name={field.name}
-                    required={field.required}
-                  />
-                ) : (
-                  <TextAreaField
-                    label={field.label}
-                    name={field.name}
-                    required={field.required}
-                  />
-                )}
-              </div>
-            ))}
+            <div className="grid grid-cols-2 gap-4">
+              {personalFields.map(field => (
+                <div key={field.name}>
+                  {field.type === 'input' ? (
+                    <InputField
+                      label={field.label}
+                      name={field.name}
+                      required={field.required}
+                      value={formData[field.name as keyof FormData] as string}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    />
+                  ) : (
+                    <TextAreaField
+                      label={field.label}
+                      name={field.name}
+                      required={field.required}
+                      value={formData[field.name as keyof FormData] as string}
+                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                    />
+                  )}
+                </div>
+              ))}
 
-            <div className="space-y-6">
-              <Label htmlFor="state-select">State of Practice</Label>
-              <GetState
-                value={selectedState}
-                onValueChange={setSelectedState}
-                placeholder="Select state"
-              />
-              {/* Hidden input to submit state value */}
-              <input type="hidden" name="state_of_practice" value={selectedState} />
+              <div className="space-y-6">
+                <Label htmlFor="state-select">State of Practice</Label>
+                <GetState
+                  value={selectedState}
+                  onValueChange={setSelectedState}
+                  placeholder="Select state"
+                />
+              </div>
             </div>
+            <input type="hidden" name="state_of_practice" value={selectedState} />
           </section>
 
           {/* SECTION 2: Experience */}
@@ -124,6 +196,8 @@ export default function ProBonoForm() {
                     type="radio"
                     name="experience_in_criminal_law"
                     value={option}
+                    checked={formData.experience_in_criminal_law === option}
+                    onChange={(e) => handleInputChange('experience_in_criminal_law', e.target.value)}
                     className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">{option}</span>
@@ -143,6 +217,8 @@ export default function ProBonoForm() {
                     type="radio"
                     name="pro_bono_capacity"
                     value={option}
+                    checked={formData.pro_bono_capacity === option}
+                    onChange={(e) => handleInputChange('pro_bono_capacity', e.target.value)}
                     required
                     className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"
                   />
@@ -163,6 +239,8 @@ export default function ProBonoForm() {
                     type="checkbox"
                     name="criminal_courts_preference"
                     value={option}
+                    checked={formData.criminal_courts_preference.includes(option)}
+                    onChange={(e) => handleCheckboxChange(option, e.target.checked)}
                     className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
                   />
                   <span className="text-sm text-gray-700">{option}</span>
@@ -181,6 +259,8 @@ export default function ProBonoForm() {
               <input
                 type="checkbox"
                 name="agree"
+                checked={agreement}
+                onChange={e => setAgreementChange(e.target.checked)}
                 value="true"
                 className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mt-1"
               />
@@ -212,12 +292,12 @@ export default function ProBonoForm() {
           <SubmitButton
             value="Submit Form"
             loading={isPending}
+            disabled={!agreement}
             pendingValue="Processing..."
             className="w-2/3 h-12 bg-red-500 hover:bg-red-600 text-white font-xs py-3 rounded-none transition-colors duration-200 flex items-center justify-center"
           />
         </form>
       </div>
     </>
-
   );
 }

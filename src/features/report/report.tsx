@@ -1,43 +1,20 @@
-'use client';
-import React, { useState } from 'react';
-import { ChevronDown, Download, TrendingUp } from 'lucide-react';
-import VisualReport from './_components/visual_report';
+import {  Download } from 'lucide-react';
 import SheetReport from './_components/sheet_report';
-import { Icons } from '@/icons/icons';
 import { Button } from '@/components/ui/button';
 
-
-
 export default function Report() {
-
-
-
-
     return (
-        // <div className="max-w-7xl mx-auto">
-        <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-1 flex-col gap-6 pt-0 lg:mx-0">
+            <div className="flex justify-between items-center ">
                 <h1 className="text-2xl font-bold text-gray-900">Report</h1>
                 <div className="flex gap-3">
-                    {/* <Button variant="outline" onClick={() => setCurrentView(currentView === 'sheet' ? 'visual' : 'sheet')}
-                        className="flex items-center gap-2  border-0 font-medium text-gray-700 bg-gray-50">
-                        <Icons.trendingIcon className="w-4 h-4" />
-                        {currentView === 'sheet' ? 'Sheet Report' : 'Visual Report'}
-                    </Button> */}
                     <Button className="flex items-center gap-2 px-4 py-2 H-11 bg-red-600 text-white  text-sm font-medium hover:bg-red-700">
                         <Download className="w-4 h-4" />
                         Export Report
                     </Button>
                 </div>
             </div>
-
             <SheetReport />
-            {/* {currentView === 'sheet' ? ( 
-            // ) : (
-            //     <VisualReport stateData={stateData} lawyersData={lawyersData} />
-            // )}
-            */}
         </div>
     );
 };

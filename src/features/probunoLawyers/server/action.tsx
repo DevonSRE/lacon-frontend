@@ -6,6 +6,7 @@ import { caseUpdateSchema, DecongestionCaseFullSchema, MercyApplicationCaseFullS
 import { z } from 'zod';
 import ProbunoService from './service';
 import { handleApiError } from '@/lib/utils';
+import { NEXT_BASE_URL } from '@/lib/constants';
 
 // Define the structure of the form data
 export type LawyersFormData = {
@@ -250,11 +251,7 @@ export async function submitProBonoCaseForm(_prevState: unknown, formData: FormD
 
 export async function submitProBonoForm(_prevState: unknown, formData: FormData) {
     const data: Record<string, any> = {};
-
-    // Fields that can have multiple values (like checkboxes)
     const multiValueFields = ['criminal_courts_preference'];
-
-    // Process form data more safely
     try {
         for (const [key, value] of formData.entries()) {
             if (multiValueFields.includes(key)) {
@@ -266,20 +263,16 @@ export async function submitProBonoForm(_prevState: unknown, formData: FormData)
                 data[key] = value;
             }
         }
-
         console.log('Form data:', JSON.stringify(data, null, 2));
 
         const result = proBonoSchema.safeParse(data);
 
         if (!result.success) {
-            // Create a clean error object to prevent circular references
             const fieldErrors = result.error.flatten().fieldErrors;
             const safeErrors: Record<string, string[]> = {};
-
             for (const [key, messages] of Object.entries(fieldErrors)) {
                 safeErrors[key] = Array.isArray(messages) ? messages : [String(messages)];
             }
-
             return {
                 status: 400,
                 errors: safeErrors,
@@ -287,7 +280,7 @@ export async function submitProBonoForm(_prevState: unknown, formData: FormData)
                 success: false,
             };
         }
-
+        console.log("result.data => " + result.data);
         await ProbunoService.registration(result.data);
 
         return {
@@ -334,70 +327,6 @@ export async function submitProBonoForm(_prevState: unknown, formData: FormData)
             errors: "Unknown error occurred",
             success: false,
         };
-    }
-}
-
-
-export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
-    const data = Object.fromEntries(formData);
-    console.log("Raw form data:", data);
-
-    try {
-        let result;
-        if (data.case_type === "CIVIL CASE") {
-            result = PublicCivilCaseSchema.safeParse(data);
-        } else if (data.case_type === "CRIMINAL CASE") {
-            result = PublicCriminalCaseSchema.safeParse(data);
-        } else {
-            result = PDSSCaseFullSchema.safeParse(data);
-        }
-
-        if (!result.success) {
-            return {
-                status: 400,
-                errors: result.error.flatten().fieldErrors,
-                message: "Invalid field found",
-            };
-        }
-        console.log(result.data);
-        let response;
-
-        if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {
-            if (data.isPublic === "true") {
-                response = await ProbunoService.casesPublicCase(result.data);
-            } else {
-                response = await ProbunoService.casesCase(result.data);
-            }
-        } else {
-            if (data.isPublic === "true") {
-                response = await ProbunoService.casesPublicPDSSCase(result.data);
-            } else {
-                response = await ProbunoService.casesPDSSCase(result.data);
-            }
-        }
-
-        console.log(JSON.stringify(response.data));
-
-        return {
-            status: 200,
-            message: response.data.message,
-            success: true,
-            data: response.data?.data,
-        };
-
-    } catch (err) {
-        console.log("JSON Parse error:", err);
-        if (err instanceof SyntaxError) {
-            return {
-                status: 400,
-                errors: { cases: ["Invalid cases data format"] },
-                message: "Invalid form data",
-            };
-        } else {
-            const error = err as ErrorResponse;
-            console.log("Error response:", error);
-            return handleApiError(error);
-        }
     }
 }
 
@@ -488,6 +417,163 @@ export async function submitMercyApplicationForm(prevState: unknown, formData: F
     } catch (err) {
         if (err instanceof SyntaxError) {
             console.log("JSON Parse error:", err);
+            return {
+                status: 400,
+                errors: { cases: ["Invalid cases data format"] },
+                message: "Invalid form data",
+            };
+        } else {
+            const error = err as ErrorResponse;
+            console.log("Error response:", error);
+            return handleApiError(error);
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Public case submission functions
+
+export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
+    const data = Object.fromEntries(formData.entries());
+
+    console.log("Raw form data:", data);
+
+    try {
+        if (!data.case_type) {
+            return {
+                status: 400,
+                errors: { case_type: ["Case type is required"] },
+                message: "Case type missing",
+            };
+        }
+
+        let result;
+        if (data.case_type === "CIVIL CASE") {
+            result = PublicCivilCaseSchema.safeParse(data);
+        } else if (data.case_type === "CRIMINAL CASE") {
+            result = PublicCriminalCaseSchema.safeParse(data);
+        } else {
+            result = PDSSCaseFullSchema.safeParse(data);
+        }
+
+        if (!result.success) {
+            return {
+                status: 400,
+                errors: result.error.flatten().fieldErrors,
+                message: "Invalid field found",
+            };
+        }
+
+        // Handle disability proof upload
+        let disabilityProof;
+        const hasDisability = formData.get('disability_status') === "yes";
+        const file = formData.get('disability_proof');
+        console.log("about to loaid");
+        if (hasDisability && file instanceof Blob) {
+            const fileFormData = new FormData();
+            fileFormData.append('file', file);
+
+            const uploadFile = await fetch(`${NEXT_BASE_URL}/media?category=casefile`, {
+                method: "POST",
+                body: fileFormData,
+            });
+
+            if (!uploadFile.ok) {
+                let errorData;
+                try {
+                    errorData = await uploadFile.json();
+                } catch {
+                    errorData = { message: "Unknown error uploading file" };
+                }
+                console.error("Upload file error:", errorData);
+                throw {
+                    response: {
+                        status: uploadFile.status,
+                        data: errorData,
+                    },
+                };
+            }
+
+            const uploadResult = await uploadFile.json();
+            disabilityProof = uploadResult?.data;
+            console.log("File uploaded successfully:", disabilityProof);
+        }
+
+        // Prepare data for API call
+        let uploadData = { ...result.data };
+        if (disabilityProof != null) {
+            uploadData.disability_proof = disabilityProof;
+        }
+
+        let response;
+        const isPublic = data.isPublic === "true";
+
+        if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {
+            response = isPublic
+                ? await ProbunoService.casesPublicCase(uploadData)
+                : await ProbunoService.casesCase(uploadData);
+        } else {
+            response = isPublic
+                ? await ProbunoService.casesPublicPDSSCase(uploadData)
+                : await ProbunoService.casesPDSSCase(uploadData);
+        }
+
+        console.log("API response:", response.data);
+
+        return {
+            status: 200,
+            message: response.data.message,
+            success: true,
+            data: response.data?.data,
+        };
+
+    } catch (err) {
+        console.log("Error caught:", err);
+        if (err instanceof SyntaxError) {
             return {
                 status: 400,
                 errors: { cases: ["Invalid cases data format"] },

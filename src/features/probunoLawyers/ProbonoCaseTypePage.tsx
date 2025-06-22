@@ -3,8 +3,9 @@ import { useParams, useRouter } from "next/navigation";
 import CivilCaseForm from "../cases/FileCasesTab/CivilCaseForm";
 import CriminalCaseForm from "../cases/FileCasesTab/CriminalCaseForm";
 import PDSSCaseForm from "../cases/FileCasesTab/PSDDCaseForm";
-import { ChevronLeft } from "lucide-react";
+import { ArrowLeft, ChevronLeft } from "lucide-react";
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 
 export default function ProbonoCaseTypePage() {
     const router = useRouter();
@@ -37,9 +38,9 @@ export default function ProbonoCaseTypePage() {
 
     return (
         <div className="max-w-6xl  mx-auto p-10 space-y-8 mb-20 pb-10 ">
-            <button className="p-2 hover:bg-gray-100" onClick={handleBack}>
-                <ChevronLeft className="w-5 h-5" />
-            </button>
+            <Button variant={"ghost"} className="bg-white rounded-full " onClick={handleBack}>
+                <ArrowLeft className="h-5 text-black w-5" />
+            </Button>
             {renderTabContent()}
         </div>
     );

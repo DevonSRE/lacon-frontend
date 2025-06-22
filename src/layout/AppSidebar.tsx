@@ -150,7 +150,7 @@ const AppSidebar: React.FC = () => {
               {(isExpanded) && (
                 <span className={`menu-item-text font-medium`}>{nav.name}</span>
               )}
-              {/* {(isExpanded || isHovered || isMobileOpen) && (
+              {(isExpanded || isHovered || isMobileOpen) && (
                 <Icons.ChevronDownIcon
                   className={`ml-auto w-5 h-5 transition-transform duration-200  ${openSubmenu?.type === menuType &&
                     openSubmenu?.index === index
@@ -158,7 +158,7 @@ const AppSidebar: React.FC = () => {
                     : ""
                     }`}
                 />
-              )} */}
+              )}
             </button>
           ) : (
             nav.path && (
@@ -343,7 +343,7 @@ const AppSidebar: React.FC = () => {
   const filteredNavItems = getFilteredNavItems();
 
   return (
-    <aside className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
+    <aside className={`fixed  flex flex-col lg:mt-0 top-0 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
         ${isExpanded || isMobileOpen
         ? "w-[300px]"
         : isHovered
@@ -376,16 +376,16 @@ const AppSidebar: React.FC = () => {
       <hr />
       <div className="flex flex-col flex-grow overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6 mt-6">
-          <div className="flex flex-col gap-4">
-            <div>
+          <div className="flex flex-col px-5 gap-4">
               {renderMenuItems(filteredNavItems, "main")}
-            </div>
           </div>
         </nav>
       </div>
 
-      <div className="p-4 border-t mb-5 border-gray-200 dark:border-gray-800">
+      <div className="border-t  border-gray-200 dark:border-gray-800">
+        <div className="p-4">
         <LogoutModal />
+        </div>
       </div>
     </aside>
   );

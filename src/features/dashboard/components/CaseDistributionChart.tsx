@@ -38,10 +38,9 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
   const caseDistributions = data?.case_distributions || [];
 
   // Extract categories and data from API
-  const categories = caseDistributions.map(item => {
-    // Clean up the title for display
-    return item.title.replace(' HEAD', '').replace(' DEPT.', ' DEPT').replace(' UNIT', '');
-  });
+  const categories = caseDistributions.map(item =>
+    item.title.replace(" HEAD", "").replace(" DEPT.", " DEPT").replace(" UNIT", "")
+  );
 
   const seriesData = caseDistributions.map(item => item.count);
 
@@ -50,7 +49,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
   const chartMax = Math.ceil(maxValue * 1.2); // Add 20% padding
 
   const options: ApexOptions = {
-    colors: ["#E299A0"], // Light coral/pink color to match the original design
+    colors: ["#E299A0"],
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
@@ -58,6 +57,35 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
       toolbar: {
         show: false,
       },
+    },
+    annotations: {
+      yaxis: [
+        {
+          y: 130,
+          borderColor: "#FF4560",
+          label: {
+            borderColor: "#FF4560",
+            style: {
+              color: "#fff",
+              background: "#FF4560",
+            },
+            text: "Target: 130",
+          },
+        },
+      ],
+      xaxis: [
+        {
+          x: "Criminal Justice",
+          borderColor: "#008FFB",
+          label: {
+            style: {
+              color: "#fff",
+              background: "#008FFB",
+            },
+            text: "Criminal Justice",
+          },
+        },
+      ],
     },
     plotOptions: {
       bar: {
@@ -88,7 +116,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
           fontSize: "12px",
           fontWeight: "400",
         },
-        rotate: -45, // Rotate labels for better readability with longer names
+        rotate: -45,
         maxHeight: 80,
       },
     },
@@ -165,7 +193,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
       <div className="overflow-hidden pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-            Case Distribution  By Unit
+            Case Distribution By Unit
           </h3>
         </div>
         <div className="flex items-center justify-center h-64">
@@ -176,7 +204,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
   }
 
   return (
-    <div className="overflow-hidden px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
+    <div className="overflow-hidden dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Case Distribution By Unit
@@ -185,11 +213,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
           <button onClick={toggleDropdown} className="dropdown-toggle">
             <EllipsisVertical className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
           </button>
-          <Dropdown
-            isOpen={isOpen}
-            onClose={closeDropdown}
-            className="w-40 p-2"
-          >
+          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
             <DropdownItem
               onItemClick={closeDropdown}
               className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
@@ -206,30 +230,11 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
         </div>
       </div>
 
-      <div className="max-w-full overflow-x-auto custom-scrollbar">
+      <div className="max-w-full overflow-x-auto custom-scrollbar bg-gray-100">
         <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
-          <ReactApexChart
-            options={options}
-            series={series}
-            type="bar"
-            height={380}
-          />
+          <ReactApexChart options={options} series={series} type="bar" height={580} />
         </div>
       </div>
-
-      {/* Summary stats below chart */}
-      {/* <div className="mt-4 pt-4 border-t border-gray-100">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
-          {caseDistributions.map((item, index) => (
-            <div key={index} className="text-sm">
-              <div className="font-medium text-gray-900 dark:text-white">{item.count}</div>
-              <div className="text-xs text-gray-500 mt-1">
-                {item.title.replace(' HEAD', '').replace(' DEPT.', '').replace(' UNIT', '')}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div> */}
     </div>
   );
 }

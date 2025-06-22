@@ -1,3 +1,5 @@
+'use client';
+
 import FilterBar from './filter_bar';
 import { useState } from 'react';
 import Overview from './overview';
@@ -13,7 +15,6 @@ import DecongestionUnitReport from './DecongestionUnitReport';
 
 export default function SheetReport() {
     const [activeTab, setActiveTab] = useState('Overview');
-
 
     const renderTabContent = () => {
         switch (activeTab) {

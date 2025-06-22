@@ -28,7 +28,7 @@ export function CustomeSheet({ open, setOpen, children, className, backButton = 
                     <SheetTitle></SheetTitle>
                     <SheetDescription></SheetDescription>
                 </SheetHeader>
-                <div className="space-y-10 p-5">
+                <div className="space-y-10 px-8">
                     {backButton &&
                         <span><ArrowLeft onClick={() => setOpen(false)} /></span>
                     }

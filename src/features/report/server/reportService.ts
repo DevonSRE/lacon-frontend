@@ -31,6 +31,11 @@ const reportServices = {
             params: filters,
         });
     },
+    async getAllUnit(filters: any) {
+        return await axiosInstance.get("analytics/admin-unit", {
+            params: filters,
+        });
+    },
 }
 
 export default reportServices;

@@ -35,7 +35,10 @@ export const GetState = ({
         },
         placeholderData: keepPreviousData,
         staleTime: 50000,
+        retry: 3, // 👈 retry up to 3 times
+        retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 3000), // optional exponential backoff
     });
+
     // ✅ Only call onLoadingChange when loading value changes
     const prevLoadingRef = useRef<boolean | null>(null);
     useEffect(() => {
@@ -57,7 +60,7 @@ export const GetState = ({
         onValueChange?.(newValue); // 🔥 Call parent if provided
     };
     return (
-        <div className="w-full space-y-4">
+        // <div className="w-full space-y-4">
             <Select
                 onValueChange={handleDivisionChange}
                 value={selectedTitle ?? value} // 🔥 Fall back to parent value if local not picked
@@ -87,6 +90,6 @@ export const GetState = ({
                     )}
                 </SelectContent>
             </Select>
-        </div>
+        // </div>
     );
 };

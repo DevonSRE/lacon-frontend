@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
-import { ChevronLeft, Upload } from 'lucide-react'
+import { ChevronLeft, CloudUpload, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
 import TextAreaField from '@/components/TextAreaField'
@@ -22,7 +22,6 @@ interface CivilCaseFormProps {
   currentStep?: number;
   setCurrentStep?: Dispatch<SetStateAction<number>>;
   handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
-
   isPublic: boolean;
   state_id?: string;
 
@@ -36,15 +35,13 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   const { selectedStateId, setIsOpen } = useAction();
   const [selectedState, setSelectedState] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [fileError, setFileError] = useState("");
 
   useEffect(() => {
     if (selectedStateId === "") {
       setIsOpen(true);
     }
   }, [selectedStateId]);
-
-
   useEffectAfterMount(() => {
     if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
       toast.error(
@@ -60,8 +57,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
 
     } else if (state && state.status === 200) {
       setCurrentStep(1);
-      // handleCloseCaseType(true);
-      // toast.success("Case Intake  Submitted successful");
       setOpen(true);
     }
   }, [state]);
@@ -133,8 +128,30 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       setErrors({});
       return true;
     } catch (error: any) {
-      console.log('Validation error:', error); // Dsle.log(error);
-      setErrors(error.errors || {});
+      console.log('Validation error:', error);
+
+      if (error.name === 'ZodError') {
+        const formattedErrors: Record<string, string[]> = {};
+
+        error.errors.forEach((err: any) => {
+          const path = err.path.join('.');
+          if (!formattedErrors[path]) {
+            formattedErrors[path] = [];
+          }
+          formattedErrors[path].push(err.message);
+        });
+
+        // Convert string[] to string for each error
+        const singleStringErrors: Record<string, string> = {};
+        Object.entries(formattedErrors).forEach(([key, messages]) => {
+          singleStringErrors[key] = messages.join(', ');
+        });
+
+        setErrors(singleStringErrors);
+      } else {
+        setErrors({});
+      }
+
       return false;
     }
   };
@@ -142,6 +159,17 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   const handleNext = () => {
     if (validateStep(currentStep)) {
       if (currentStep < 2) {
+        if (currentStep === 1) {
+          console.log(formData.disability_status);
+          if (formData.disability_status === 'yes' && !formData.disability_proof) {
+            setErrors(prev => ({
+              ...prev,
+              disability_proof: 'Please upload proof of disability.'
+            }));
+            return;
+          }
+          setCurrentStep(currentStep + 1);
+        }
         setCurrentStep(currentStep + 1);
       } else {
         const fd = new FormData();
@@ -167,7 +195,29 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    updateField('disability_proof', file);
+
+    if (!file) {
+      setFileError("No file selected.");
+      updateField("disability_proof", null);
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Please upload a valid image file.");
+      updateField("disability_proof", null);
+      return;
+    }
+
+    const maxSizeInBytes = 5 * 1024 * 1024;
+    if (file.size > maxSizeInBytes) {
+      setFileError("File size exceeds 5MB limit.");
+      updateField("disability_proof", null);
+      return;
+    }
+
+    // ✅ All good
+    setFileError("");
+    updateField("disability_proof", file);
   };
 
   const handleBack = () => {
@@ -184,15 +234,11 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       <CaseIntakeDialog
         open={open}
         onOpenChange={setOpen}
-        isHome={false}
+        isHome={isPublic ? true : false}
       />
       <div className="mx-auto  bg-white">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            {/* <button onClick={handleBack} className="p-1">
-              <ChevronLeft className="w-5 h-5" />
-            </button> */}
             <h1 className="text-lg font-semibold">Filing A Criminal Case</h1>
           </div>
           <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
@@ -219,7 +265,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
               {currentStep === 1 && (
                 <>
                   {(!isPublic && state_id === "") && (
-                    <div className="space-y-6 my-4">
+                    <div className="space-y-6 my-4 mt-5">
                       <Label htmlFor="state-select">Where are you filing from?</Label>
                       <GetState
                         value={selectedState}
@@ -289,6 +335,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                         type="number"
                         label='Age'
                         name='age'
+                        min='0'
                         required
                         placeholder="Enter Age"
                         value={formData.age}
@@ -392,7 +439,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                     <SelectField
                       name="disability_status"
                       label="Disability (If any)"
-                      placeholder="If yes, upload picture proof)"
+                      placeholder="If yes, upload picture proof"
                       options={[
                         { value: 'yes', label: 'Yes' },
                         { value: 'no', label: 'No' },
@@ -404,31 +451,43 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                     />
                   </div>
 
-                  <div className="mb-6">
-                    <Label className="block  mb-2">
-                      Disability (if any)
-                    </Label>
-                    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-gray-500  text-sm mb-2">(If yes, upload picture proof)</p>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                        id="disability-upload"
-                      />
-                      <label
-                        htmlFor="disability-upload"
-                        className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                      >
-                        Choose File
-                      </label>
-                      {formData.disability_proof && (
-                        <p className="text-sm text-green-600 mt-2">{formData.disability_proof.name}</p>
+
+                  {formData.disability_status === "yes" && (
+                    <div className="mb-6">
+                      <Label className="block mb-2">Disability (if any)</Label>
+                      <div className={`rounded-lg p-6 text-center border-2 ${errors.disability_proof ? "border-red-500" : "border-gray-300"}`}>
+                        <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-500 text-sm mb-2">(If yes, upload picture proof)</p>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                          className="hidden"
+                          name="disability_proof"
+                          id="disability-upload"
+                        />
+                        <label
+                          htmlFor="disability-upload"
+                          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                        >
+                          Choose File
+                        </label>
+
+                        {formData.disability_proof && !fileError && (
+                          <p className="text-sm text-green-600 mt-2">{formData.disability_proof.name}</p>
+                        )}
+
+                        {fileError && (
+                          <p className="text-sm text-red-500 mt-2">{fileError}</p>
+                        )}
+                      </div>
+                      {errors.disability_proof && (
+                        <p className={`mt-1.5 text-xs ${errors.disability_proof ? "text-red-500" : errors.disability_proof ? "text-success-500" : "text-gray-500"}`}>
+                          Please Upload Picture Proof of Disability
+                        </p>
                       )}
                     </div>
-                  </div>
+                  )}
                 </>
               )}
               {currentStep === 2 && (
