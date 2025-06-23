@@ -12,7 +12,7 @@ export default function ProbonoRegisteratonPage() {
                 onClick={() => router.back()}>
                 <ArrowLeft className="h-5 text-black w-5" />
             </Button>
-            <ProBonoForm />
+            <ProBonoForm isPublic={true} />
         </div>
     );
 }

@@ -42,11 +42,14 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     const handleCaseTypeSelection = () => {
         if (selectedCaseForm) {
             setCaseType(true);
+            setOpenFileACase(false);
+            // handleCloseFileACase();
         }
     };
 
     const handleCloseFileACase = () => {
         setOpenFileACase(false);
+        setCurrentStep(1);
         setCaseForm(''); // Reset form selection when closing
     };
 
@@ -83,7 +86,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     return (
         <>
             <Button
-                onClick={() => setOpenFileACase(true)}
+                onClick={() => { setCurrentStep(1); setOpenFileACase(true) }}
                 className={buttonClassName}
             >
                 {showIcon && <PlusCircle className="w-4 h-4" />}
@@ -144,6 +147,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                         <DecongestionForm
                             openFileACase={setOpenFileACase}
                             setOpen={setCaseType}
+                            currentStep={currentStep} setCurrentStep={setCurrentStep}
                         />
                     )}
                     {selectedCaseForm === "MercyApplication" && (

@@ -151,8 +151,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
 
 
     const handleNext = () => {
-        console.log(validateStep(currentStep));
-        console.log("Current Step:", currentStep);
         if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {

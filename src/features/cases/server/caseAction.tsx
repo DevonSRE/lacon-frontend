@@ -15,8 +15,8 @@ const assigncase = z.object({
 
 export async function GetCaseAction(params: Ipage) {
     try {
+        console.log("params in get cases => " + JSON.stringify(params));
         const response = await casesServices.getCases(params);
-        console.log("response cases  =>" + JSON.stringify(response.data.data));
         return { data: response.data?.data, success: true };
 
     } catch (err: unknown) {
@@ -37,7 +37,6 @@ export async function AssignCaseAction(_prevState: unknown, formData: FormData) 
     }
     try {
         const response = await casesServices.AssignCases(result.data);
-        console.log("response cases  =>" + JSON.stringify(response.data.data));
         return { status: 200, data: response.data?.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;

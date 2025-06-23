@@ -28,11 +28,11 @@ export function CustomeSheet({ open, setOpen, children, className, backButton = 
                     <SheetTitle></SheetTitle>
                     <SheetDescription></SheetDescription>
                 </SheetHeader>
-                <div className="space-y-10 px-8">
+                <div className="px-8">
                     {backButton &&
-                        <span><ArrowLeft onClick={() => setOpen(false)} /></span>
+                        <Button variant={"outline"} className="border-none"><ArrowLeft onClick={() => setOpen(false)} /></Button>
                     }
-                    <div className="mt-4">{children}</div>
+                    <div className="mt-2">{children}</div>
                 </div>
             </SheetContent>
         </Sheet>

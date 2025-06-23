@@ -81,7 +81,7 @@ const navItems: NavItem[] = [
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ZONAL DIRECTOR", "OSCAR UNIT HEAD", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
+    roles: ["ZONAL DIRECTOR", "OSCAR UNIT HEAD", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PDSS"],
   },
   {
     icon: <Icons.report />,
@@ -377,14 +377,14 @@ const AppSidebar: React.FC = () => {
       <div className="flex flex-col flex-grow overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6 mt-6">
           <div className="flex flex-col px-5 gap-4">
-              {renderMenuItems(filteredNavItems, "main")}
+            {renderMenuItems(filteredNavItems, "main")}
           </div>
         </nav>
       </div>
 
       <div className="border-t  border-gray-200 dark:border-gray-800">
         <div className="p-4">
-        <LogoutModal />
+          <LogoutModal />
         </div>
       </div>
     </aside>

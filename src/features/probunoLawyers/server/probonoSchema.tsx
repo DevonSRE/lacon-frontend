@@ -3,9 +3,10 @@ import { z } from 'zod';
 export const proBonoSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().min(1),
-
   lawyers_count_in_firm: z.number().optional(),
+  name_of_law_firm_organization: z.string().min(1),
   law_firm_address: z.string().min(1).optional(),
+  law_firm_organization_address: z.string().min(1).optional(),
   email: z.string().email(),
   state_id: z.string().uuid(),
   phone_number: z.string(),
@@ -307,7 +308,7 @@ export interface FormDataDEcongestionCase {
   next_adjournment: string;
   bail_status: string;
   sex: string;
-  date_of_birth_age: string;
+  date_of_birth: string;
   name_of_relative: string;
   relative_phone_number: string;
   state_of_origin: string;
@@ -348,48 +349,47 @@ export interface FormDataDEcongestionCase {
 
 
 
-
 export const personalDecongestionInfoSchema = z.object({
-  first_name: z.string(),
-  middle_name: z.string(),
-  last_name: z.string(),
-  gender: z.string(),
-  age: z.coerce.number(),
-  last_address: z.string(),
-  marital_status: z.string(),
-  have_a_lawyer: z.string(),
-  need_legal_aid: z.string(),
-  custodial_visit: z.string(),
-  date_of_visit: z.string(),
+  first_name: z.string().min(1, "First name is required"),
+  middle_name: z.string().optional(),
+  last_name: z.string().min(1, "Last name is required"),
+  gender: z.string().min(1, "Gender is required"),
+  age: z.coerce.number().min(1, "Age must be greater than 0"),
+  last_address: z.string().min(1, "Last address is required"),
+  marital_status: z.string().min(1, "Marital status is required"),
+  have_a_lawyer: z.string().min(1, "Have a lawyer is required"),
+  need_legal_aid: z.string().min(1, "Need legal aid is required"),
+  custodial_visit: z.string().optional(),
+  date_of_visit: z.string().optional(),
 });
 
 
 export const decongestionCaseDetails = z.object({
-  case_name: z.string(),
+  case_name: z.string().min(1, "Case name is required"),
   case_type: z.string().optional(),
   state_id: z.string().optional(),
-  name_of_defendant: z.string(),
-  offence_charged_description: z.string(),
-  offence_charged: z.string(),
-  charge_number: z.string(),
-  court_of_trial: z.string(),
-  arrest_date: z.string(),
-  arraignment_date: z.string(),
-  remand_date: z.string(),
-  last_court_date: z.string(),
-  next_adjournment: z.string(),
-  bail_status: z.string(),
-  sex: z.string(),
-  date_of_birth_age: z.string(),
-  name_of_relative: z.string(),
-  relative_phone_number: z.string(),
-  state_of_origin: z.string(),
-  religion: z.string(),
-  average_monthly_income: z.string(),
-  stage_of_case: z.string(),
-  need_interpreter: z.string(),
-  disability_ailment: z.string(),
-  confessional_statement: z.string(),
+  name_of_defendant: z.string().min(1, "Name of defendant is required"),
+  offence_charged_description: z.string().min(1, "Offence charged description is required"),
+  offence_charged: z.string().min(1, "Offence charged is required"),
+  charge_number: z.string().min(1, "Charge number is required"),
+  court_of_trial: z.string().min(1, "Court of trial is required"),
+  arrest_date: z.string().min(1, "Arrest date is required"),
+  arraignment_date: z.string().min(1, "Arraignment date is required"),
+  remand_date: z.string().min(1, "Remand date is required"),
+  last_court_date: z.string().optional(),
+  next_adjournment: z.string().min(1, "Next adjournment is required"),
+  bail_status: z.string().min(1, "Bail status is required"),
+  sex: z.string().min(1, "Sex is required"),
+  date_of_birth: z.string().min(1, "Date of birth is required"),
+  name_of_relative: z.string().min(1, "Name of relative is required"),
+  relative_phone_number: z.string().min(1, "Relative phone number is required"),
+  state_of_origin: z.string().min(1, "State of origin is required"),
+  religion: z.string().min(1, "Religion is required"),
+  average_monthly_income: z.string().min(1, "Average monthly income is required"),
+  stage_of_case: z.string().min(1, "Stage of case is required"),
+  need_interpreter: z.string().min(1, "Need interpreter is required"),
+  disability_ailment: z.string().min(1, "Disability ailment is required"),
+  confessional_statement: z.string().min(1, "Confessional statement is required"),
 });
 
 

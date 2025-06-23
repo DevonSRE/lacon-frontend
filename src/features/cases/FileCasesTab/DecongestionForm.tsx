@@ -17,14 +17,16 @@ import { GetState } from '@/components/get-state';
 import CaseCreated from '../_components/CaseCreated';
 
 type CustomeSheetProps = {
+    currentStep?: number;
+    setCurrentStep?: Dispatch<SetStateAction<number>>;
     openFileACase: Dispatch<SetStateAction<boolean>>;
     setOpen: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function DecongestionForm({ openFileACase, setOpen }: CustomeSheetProps) {
+export default function DecongestionForm({ currentStep = 1, openFileACase, setOpen, setCurrentStep = () => { }, }: CustomeSheetProps) {
     const router = useRouter();
     const [errors, setErrors] = useState<Record<string, string>>({});
-    const [currentStep, setCurrentStep] = useState(1);
+    // const [currentStep, setCurrentStep] = useState(1);
     const [selectedState, setSelectedState] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [state, formAction, isPending] = useActionState(submitDecongestionForm, undefined);
@@ -51,7 +53,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
         middle_name: '',
         last_name: '',
         gender: '',
-        age: 35,
+        age: 0,
         last_address: '',
         marital_status: '',
         have_a_lawyer: '',
@@ -75,7 +77,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
 
         // Defendant Personal Info
         sex: '',
-        date_of_birth_age: '',
+        date_of_birth: '',
         name_of_relative: '',
         relative_phone_number: '',
         state_of_origin: '',
@@ -117,17 +119,37 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
             setErrors({});
             return true;
         } catch (error: any) {
-            console.log('Validation error:', error);
-            setErrors(error.errors || {});
+            if (error.name === 'ZodError') {
+                const formattedErrors: Record<string, string[]> = {};
+                error.errors.forEach((err: any) => {
+                    const path = err.path.join('.');
+                    if (!formattedErrors[path]) {
+                        formattedErrors[path] = [];
+                    }
+                    formattedErrors[path].push(err.message);
+                });
+                // Convert string[] to string for each error
+                const singleStringErrors: Record<string, string> = {};
+                Object.entries(formattedErrors).forEach(([key, messages]) => {
+                    singleStringErrors[key] = messages.join(', ');
+                });
+                console.log(singleStringErrors);
+                setErrors(singleStringErrors);
+            } else {
+                setErrors({});
+            }
+
             return false;
         }
     };
 
     const handleNext = () => {
-        if (validateStep(currentStep ?? "")) {
+        console.log(validateStep(currentStep ?? 1));
+        if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
-                setCurrentStep(currentStep + 1);
-                console.log(currentStep);
+                if (currentStep === 1) {
+                    setCurrentStep(currentStep + 1);
+                }
             } else {
                 const fd = new FormData();
                 fd.append("case_type", "DECONGESTION");
@@ -143,7 +165,6 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                 formAction(fd);
             }
         }
-
     };
 
     const handleBack = () => {
@@ -153,15 +174,12 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
             router.back();
         }
     }
-
     return (
         <>
-
             <div className="min-h-screen p-2">
                 {/* Header */}
                 {currentStep < 3 && (
                     <>
-
                         <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                             <div className="flex items-center mb-4 sm:mb-0">
 
@@ -252,6 +270,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                                     type="number"
                                                     label='Age'
                                                     name='age'
+                                                    min='0'
                                                     required
                                                     placeholder="Input Current Age"
                                                     value={formData.age}
@@ -360,7 +379,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                 {/* Step 2: Case Details */}
                                 {currentStep === 2 && (
                                     <div className="bg-white flex flex-col mt-5">
-                                        <div className="space-y-6 my-4">
+                                        <div className="space-y-6 ">
                                             <Label htmlFor="state-select">Where are you filing from?</Label>
                                             <GetState
                                                 value={selectedState}
@@ -541,43 +560,40 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                             />
                                             {errors.bail_status && <p className="text-red-500 text-xs mt-1">{errors.bail_status}</p>}
                                         </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                        {/* Sex */}
-                                        <div className="mb-6">
-                                            <SelectField name="sex"
-                                                label="Sex" placeholder=""
-                                                options={[
-                                                    { value: 'Male', label: 'Male' },
-                                                    { value: 'Female', label: 'Female' }
-                                                ]} required
-                                                value={formData.sex}
-                                                onValueChange={(value) => handleSelectChange(value, 'sex')}
-                                                error={!!errors.sex}
-                                                errorMessage={errors.sex}
-                                            />
+                                            {/* Sex */}
+                                            <div className="mb-6">
+                                                <SelectField name="sex"
+                                                    label="Sex" placeholder="Select Gender"
+                                                    options={[
+                                                        { value: 'Male', label: 'Male' },
+                                                        { value: 'Female', label: 'Female' }
+                                                    ]} required
+                                                    value={formData.sex}
+                                                    onValueChange={(value) => handleSelectChange(value, 'sex')}
+                                                    error={!!errors.sex}
+                                                    errorMessage={errors.sex}
+                                                />
+                                            </div>
+
+                                            {/* Date of Birth/Age */}
+
+                                            <div className="mb-6">
+                                                <InputField
+                                                    label="Date of Birth/Age"
+                                                    required
+                                                    name="date_of_birth"
+                                                    type="date"
+                                                    placeholder="Date of Birth/Age"
+                                                    value={formData.date_of_birth}
+                                                    onChange={(e) => updateField('date_of_birth', e.target.value)}
+                                                    className={`${errors.date_of_birth ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                                />
+                                                {errors.date_of_birth && <p className="text-red-500 text-xs mt-1">{errors.date_of_birth}</p>}
+                                            </div>
                                         </div>
 
-                                        {/* Date of Birth/Age */}
-                                        <div className="mb-6">
-                                            <SelectField
-                                                name="date_of_birth_age"
-                                                label="Date of Birth/Age"
-                                                placeholder="Date of Birth/Age"
-                                                options={[
-                                                    { value: '18-25', label: '18-25' },
-                                                    { value: '26-35', label: '26-35' },
-                                                    { value: '36-45', label: '36-45' },
-                                                    { value: '46-55', label: '46-55' },
-                                                    { value: '56-65', label: '56-65' },
-                                                    { value: '65+', label: '65+' }
-                                                ]}
-                                                required
-                                                value={formData.date_of_birth_age}
-                                                onValueChange={(value) => handleSelectChange(value, 'date_of_birth_age')}
-                                                error={!!errors.date_of_birth_age}
-                                                errorMessage={errors.date_of_birth_age}
-                                            />
-                                        </div>
 
                                         {/* Marital status */}
                                         <div className="mb-6">
@@ -600,43 +616,33 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                         </div>
 
                                         {/* Name of Relative */}
+
                                         <div className="mb-6">
-                                            <SelectField
-                                                name="name_of_relative"
+                                            <InputField
                                                 label="Name of Relative"
-                                                placeholder=""
-                                                options={[
-                                                    { value: 'father', label: 'Father' },
-                                                    { value: 'mother', label: 'Mother' },
-                                                    { value: 'spouse', label: 'Spouse' },
-                                                    { value: 'sibling', label: 'Sibling' },
-                                                    { value: 'child', label: 'Child' },
-                                                    { value: 'other', label: 'Other' }
-                                                ]}
                                                 required
+                                                name="name_of_relative"
+                                                type="text"
+                                                placeholder="Name of Relative"
                                                 value={formData.name_of_relative}
-                                                onValueChange={(value) => handleSelectChange(value, 'name_of_relative')}
-                                                error={!!errors.name_of_relative}
-                                                errorMessage={errors.name_of_relative}
+                                                onChange={(e) => updateField('name_of_relative', e.target.value)}
+                                                className={`${errors.name_of_relative ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                             />
+                                            {errors.name_of_relative && <p className="text-red-500 text-xs mt-1">{errors.name_of_relative}</p>}
                                         </div>
 
-                                        {/* Relative's Phone number */}
                                         <div className="mb-6">
-                                            <SelectField
-                                                name="relative_phone_number"
+                                            <InputField
                                                 label="Relative's Phone number"
-                                                placeholder=""
-                                                options={[
-                                                    { value: 'available', label: 'Available' },
-                                                    { value: 'not_available', label: 'Not Available' }
-                                                ]}
                                                 required
+                                                name="relative_phone_number"
+                                                type="tel"
+                                                placeholder="Relative's Phone number"
                                                 value={formData.relative_phone_number}
-                                                onValueChange={(value) => handleSelectChange(value, 'relative_phone_number')}
-                                                error={!!errors.relative_phone_number}
-                                                errorMessage={errors.relative_phone_number}
+                                                onChange={(e) => updateField('relative_phone_number', e.target.value)}
+                                                className={`${errors.relative_phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                             />
+                                            {errors.relative_phone_number && <p className="text-red-500 text-xs mt-1">{errors.relative_phone_number}</p>}
                                         </div>
 
                                         {/* State of Origin */}
@@ -644,7 +650,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                             <SelectField
                                                 name="state_of_origin"
                                                 label="State of Origin"
-                                                placeholder=""
+                                                placeholder="Select State of origin"
                                                 options={stateOptions}
                                                 required
                                                 value={formData.state_of_origin}
@@ -654,45 +660,48 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                             />
                                         </div>
 
-                                        {/* Religion */}
-                                        <div className="mb-6">
-                                            <SelectField
-                                                name="religion"
-                                                label="Religion"
-                                                placeholder=""
-                                                options={[
-                                                    { value: 'Christianity', label: 'Christianity' },
-                                                    { value: 'Islam', label: 'Islam' },
-                                                    { value: 'Traditional', label: 'Traditional' },
-                                                    { value: 'Other', label: 'Other' }
-                                                ]}
-                                                required
-                                                value={formData.religion}
-                                                onValueChange={(value) => handleSelectChange(value, 'religion')}
-                                                error={!!errors.religion}
-                                                errorMessage={errors.religion}
-                                            />
-                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-                                        {/* Average monthly Income */}
-                                        <div className="mb-6">
-                                            <SelectField
-                                                name="average_monthly_income"
-                                                label="Average monthly Income"
-                                                placeholder="Average monthly Income"
-                                                options={[
-                                                    { value: 'below_18000', label: 'Below ₦18,000' },
-                                                    { value: '18000_50000', label: '₦18,000 - ₦50,000' },
-                                                    { value: '50000_100000', label: '₦50,000 - ₦100,000' },
-                                                    { value: '100000_200000', label: '₦100,000 - ₦200,000' },
-                                                    { value: 'above_200000', label: 'Above ₦200,000' }
-                                                ]}
-                                                required
-                                                value={formData.average_monthly_income}
-                                                onValueChange={(value) => handleSelectChange(value, 'average_monthly_income')}
-                                                error={!!errors.average_monthly_income}
-                                                errorMessage={errors.average_monthly_income}
-                                            />
+                                            {/* Religion */}
+                                            <div className="mb-6">
+                                                <SelectField
+                                                    name="religion"
+                                                    label="Religion"
+                                                    placeholder="Select Religion"
+                                                    options={[
+                                                        { value: 'Christianity', label: 'Christianity' },
+                                                        { value: 'Islam', label: 'Islam' },
+                                                        { value: 'Traditional', label: 'Traditional' },
+                                                        { value: 'Other', label: 'Other' }
+                                                    ]}
+                                                    required
+                                                    value={formData.religion}
+                                                    onValueChange={(value) => handleSelectChange(value, 'religion')}
+                                                    error={!!errors.religion}
+                                                    errorMessage={errors.religion}
+                                                />
+                                            </div>
+
+                                            {/* Average monthly Income */}
+                                            <div className="mb-6">
+                                                <SelectField
+                                                    name="average_monthly_income"
+                                                    label="Average monthly Income"
+                                                    placeholder="Average monthly Income"
+                                                    options={[
+                                                        { value: 'below_18000', label: 'Below ₦18,000' },
+                                                        { value: '18000_50000', label: '₦18,000 - ₦50,000' },
+                                                        { value: '50000_100000', label: '₦50,000 - ₦100,000' },
+                                                        { value: '100000_200000', label: '₦100,000 - ₦200,000' },
+                                                        { value: 'above_200000', label: 'Above ₦200,000' }
+                                                    ]}
+                                                    required
+                                                    value={formData.average_monthly_income}
+                                                    onValueChange={(value) => handleSelectChange(value, 'average_monthly_income')}
+                                                    error={!!errors.average_monthly_income}
+                                                    errorMessage={errors.average_monthly_income}
+                                                />
+                                            </div>
                                         </div>
 
                                         {/* Stage of case */}
@@ -721,10 +730,9 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                         <div className="mb-6">
                                             <InputField
                                                 label="Need for Interpreter(If Yes, Which language?)"
-                                                required
                                                 name="need_interpreter"
                                                 type="text"
-                                                placeholder=""
+                                                placeholder="Need for Interpreter(If Yes, Which language?)"
                                                 value={formData.need_interpreter}
                                                 onChange={(e) => updateField('need_interpreter', e.target.value)}
                                                 className={`${errors.need_interpreter ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
@@ -738,7 +746,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                                 label="Any Disability or Underlying ailment?"
                                                 name="disability_ailment"
                                                 type="text"
-                                                placeholder=""
+                                                placeholder="Any Disability or Underlying ailment"
                                                 value={formData.disability_ailment}
                                                 onChange={(e) => updateField('disability_ailment', e.target.value)}
                                                 className={`${errors.disability_ailment ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
@@ -751,7 +759,7 @@ export default function DecongestionForm({ openFileACase, setOpen }: CustomeShee
                                                 label="Any Confessional statement(How Obtained/Circumstances Thereof)"
                                                 name="confessional_statement"
                                                 type="text"
-                                                placeholder=""
+                                                placeholder="Any Confessional statement"
                                                 value={formData.confessional_statement}
                                                 onChange={(e) => updateField('confessional_statement', e.target.value)}
                                                 className={`${errors.confessional_statement ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}

@@ -1,7 +1,7 @@
 import { CustomeSheet } from "@/components/CustomSheet";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { ArrowRight, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import UploadCaseDocument from "./sheet/uploadCaseDocument";
 import CaseProgressUpdate from "./sheet/caseProgressUpdate";
@@ -21,12 +21,11 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                 const assignDateRaw = item.assignment?.assign_date ?? "";
                 const assignDateOnly = assignDateRaw.split(" ")[0] || "N/A";
                 return (
-                    <div key={idx} className="p-4 w-full bg-gray-100">
+                    <div key={idx} className="p-4 w-full bg-gray-100 hover:border-2 hover:border-black  rounded-sm">
                         <div className="flex justify-between">
                             <span className="text-xs h-auto text-red-500 bg-red-100 p-2">
                                 {item.status}
                             </span>
-
                             <DropdownMenu >
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="h-8 w-8 p-0">
@@ -49,7 +48,6 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                         </div>
 
                         <div className="space-y-4">
-
                             <div className="text-xs mt-4 text-gray-400">{item?.id}</div>
                             <h4 className="font-semibold leading-tight text-base">
                                 {item.case_title ?? "-"}
@@ -64,9 +62,22 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                                 </Badge>
                             </div>
 
-                            <Button onClick={() => setOpenCaseDocumentUpload(true)} className="w-full rounded-0 bg-black text-white hover:bg-gray-900 flex justify-start">
+                            {/* <Button onClick={() => setOpenCaseDocumentUpload(true)} className="w-full h-11 rounded-none bg-black text-white hover:bg-gray-900 flex justify-start">
                                 <span>Upload</span>
+                                <span className="ml-auto text-xs  bg-gray-800 p- w-2/4 justify-items-end">
+                                    <ArrowRight size={16} className="inline" />
+                                </span>
+                            </Button> */}
+
+                            <Button onClick={() => setOpenCaseDocumentUpload(true)} className="w-full h-11 rounded-none bg-black text-white hover:bg-gray-900 flex justify-start group">
+                                <span>Upload</span>
+                                <span className="ml-auto text-xs hidden group-hover:inline-block bg-gray-800 p-1 w-2/4 justify-end text-white">
+                                    <span className="justify-end flex items-center">
+                                        <ArrowRight size={16} className="inline text-white" />
+                                    </span>
+                                </span>
                             </Button>
+
                         </div>
                     </div>
                 );

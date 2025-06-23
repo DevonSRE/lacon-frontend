@@ -73,11 +73,11 @@ export function AddLawyerSheet() {
     const serverErrors = isFieldErrorObject(state?.errors) ? state.errors : {};
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
-            <SheetContent>
+            <SheetContent side="right" className="p-4 w-full sm:max-w-[450px]">
                 <div className="space-y-10 p-4 mt-4">
                     <span><ArrowLeft onClick={() => setIsOpen(false)} /></span>
                     <ScrollArea className="h-screen mt-4">
-                        <form className="space-y-4" action={dispatch}>
+                        <form className="space-y-4 p-1" action={dispatch}>
                             <h2 className="text-xl font-semibold">Add New Lawyer</h2>
 
                             <div className="space-y-1">
@@ -86,8 +86,7 @@ export function AddLawyerSheet() {
                                     key={formData.user_type + state?.status}
                                     name="user_type"
                                     value={formData.user_type}
-                                    onValueChange={(val) => handleChange("user_type", val)}
-                                >
+                                    onValueChange={(val) => handleChange("user_type", val)}>
                                     <SelectTrigger className={`w-full h-11 ${serverErrors.user_type ? 'border-red-500' : ''}`}>
                                         <SelectValue placeholder="Select Role" />
                                     </SelectTrigger>
