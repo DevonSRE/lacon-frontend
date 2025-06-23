@@ -9,6 +9,7 @@ import Link from "next/link"
 
 interface SuccessDialogProps {
     open: boolean
+    isPublic?: boolean
     onOpenChange: (open: boolean) => void
     details: string
     title: string
@@ -19,6 +20,7 @@ export default function SuccessDialog({
     onOpenChange,
     details,
     title,
+    isPublic = false,
 }: SuccessDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -31,11 +33,17 @@ export default function SuccessDialog({
                         <p className="text-sm text-gray-600 text-center">
                             {details}
                         </p>
-                        <Button className="w-full h-11 bg-black text-white hover:bg-gray-800">
-                            <Link href="/">
-                                Back to Home
-                            </Link>
-                        </Button>
+                        {isPublic ? (
+                            <Button className="w-full h-11 bg-black text-white hover:bg-gray-800">
+                                <Link href="/">
+                                    Back to Home
+                                </Link>
+                            </Button>
+                        ) : (
+                            <Button onClick={() => onOpenChange(false)} className="w-full h-11 bg-black text-white hover:bg-gray-800">
+                                Close
+                            </Button>
+                        )}
                     </CardContent>
                 </Card>
             </DialogContent>

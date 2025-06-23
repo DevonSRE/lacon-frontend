@@ -335,17 +335,56 @@ export async function submitDecongestionForm(prevState: unknown, formData: FormD
     console.log("Raw form data:", data);
 
     try {
-        const result = DecongestionCaseFullSchema.safeParse(data);
-
-        if (!result.success) {
-            return {
-                status: 400,
-                errors: result.error.flatten().fieldErrors,
-                message: "Invalid field found",
-            };
-        }
-        console.log(result.data);
-        const response = await ProbunoService.casesDecongestionCase(result.data);
+        // const result = DecongestionCaseFullSchema.safeParse(data);
+        // if (!result.success) {
+        //     return {
+        //         status: 400,
+        //         errors: result.error.flatten().fieldErrors,
+        //         message: "Invalid field found",
+        //     };
+        // }
+        const data = {
+            case_type: formData.get('case_type') as string,
+            state_id: formData.get('state_id') as string,
+            first_name: formData.get('first_name') as string,
+            middle_name: formData.get('middle_name') as string,
+            last_name: formData.get('last_name') as string,
+            gender: formData.get('gender') as string,
+            age: parseInt(formData.get('age') as string),
+            correctional_facility: formData.get('correctional_facility') as string,
+            offence: formData.get('offence') as string,
+            decongestion_unit: {
+                have_a_lawyer: formData.get('have_a_lawyer') === "yes" ? true : false,
+                need_legal_aid: formData.get('need_legal_aid') === "yes" ? true : false,
+                custodial_visit: formData.get('custodial_visit') as string || undefined,
+                date_of_visit: formData.get('date_of_visit') as string || undefined,
+                case_name: formData.get('case_name') as string,
+                state_id: formData.get('state_id') as string,
+                name_of_defendant: formData.get('name_of_defendant') as string,
+                offence_charged_description: formData.get('offence_charged_description') as string,
+                offence_charged: formData.get('offence_charged') as string,
+                charge_number: formData.get('charge_number') as string,
+                court_of_trial: formData.get('court_of_trial') as string,
+                arrest_date: formData.get('arrest_date') as string,
+                arraignment_date: formData.get('arraignment_date') as string,
+                remand_date: formData.get('remand_date') as string,
+                last_court_date: formData.get('last_court_date') as string || undefined,
+                next_adjournment: formData.get('next_adjournment') as string,
+                bail_status: formData.get('bail_status') as string,
+                sex: formData.get('sex') as string,
+                date_of_birth: formData.get('date_of_birth') as string,
+                name_of_relative: formData.get('name_of_relative') as string,
+                relative_phone_number: formData.get('relative_phone_number') as string,
+                state_of_origin: formData.get('state_of_origin') as string,
+                religion: formData.get('religion') as string,
+                average_monthly_income: formData.get('average_monthly_income') as string,
+                stage_of_case: formData.get('stage_of_case') as string,
+                need_interpreter: formData.get('need_interpreter') === "yes" ? true : false,
+                disability_ailment: formData.get('disability_ailment') === "yes" ? true : false,
+                confessional_statement: formData.get('confessional_statement') as string || undefined,
+            }
+        };
+        const response = await ProbunoService.casesDecongestionCase(data);
         console.log(JSON.stringify(response.data));
         return {
             status: 200,

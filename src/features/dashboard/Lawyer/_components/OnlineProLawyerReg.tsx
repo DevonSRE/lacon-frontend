@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef, useActionState, useEffect } from 'react';
+import { useState, useRef, useActionState, useEffect, SetStateAction, Dispatch } from 'react';
 import { Label } from '@/components/ui/label';
 import { submitProBonoForm } from '@/features/probunoLawyers/server/action';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
@@ -25,12 +25,16 @@ interface FormData {
   pro_bono_capacity: string;
   criminal_courts_preference: string[];
 }
+type ProBonoFormProps = {
+  isPublic?: boolean;
+  setDialogOpen?: Dispatch<SetStateAction<boolean>>;
+};
 
-export default function ProBonoForm() {
+export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { } }: ProBonoFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
   const [selectedState, setSelectedState] = useState<string>("");
   const [state, formAction, isPending] = useActionState(submitProBonoForm, undefined);
-  const [open, setOpen] = useState(false);
+  const [openSuccess, setOpenSuccess] = useState(false);
   const [agreement, setAgreementChange] = useState(false);
 
   // Form state management
@@ -109,9 +113,11 @@ export default function ProBonoForm() {
 
       // Don't reset form on error - keep user data
     } else if (state.status === 200 || state.status === 201) {
-      // toast.success("Registration Submitted successfully!");
-      setOpen(true);
-      resetForm(); // Only reset on success
+      setOpenSuccess(true);
+      setTimeout(() => {
+        setDialogOpen(false);
+      }, 3000);
+      resetForm();
     }
   }, [state]);
 
@@ -134,8 +140,9 @@ export default function ProBonoForm() {
   return (
     <>
       <SuccessDialog
-        open={open}
-        onOpenChange={setOpen}
+        open={openSuccess}
+        isPublic={isPublic}
+        onOpenChange={setOpenSuccess}
         title={"Success"}
         details={"Registration submitted successfully"}
       />
@@ -147,6 +154,7 @@ export default function ProBonoForm() {
 
         <form ref={formRef} action={formAction} className='pb-32 space-y-12'>
           {/* SECTION 1: Personal Details */}
+          <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
           <section className="space-y-4">
             <h2 className="font-semibold text-lg">SECTION 1: Personal Details and Office Info</h2>
 
@@ -196,6 +204,7 @@ export default function ProBonoForm() {
                     type="radio"
                     name="experience_in_criminal_law"
                     value={option}
+                    required
                     checked={formData.experience_in_criminal_law === option}
                     onChange={(e) => handleInputChange('experience_in_criminal_law', e.target.value)}
                     className="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500"

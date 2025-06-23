@@ -121,15 +121,7 @@ export const createCaseColumns = (
       enableSorting: false,
       enableHiding: false,
     },
-    {
-      accessorKey: "id",
-      header: "Case ID",
-      cell: ({ row }) => (
-        <span className="text-sm font-medium text-gray-900">
-          {row.original.id}
-        </span>
-      ),
-    },
+
     {
       accessorKey: "first_name",
       header: "Client Name",

@@ -5,7 +5,7 @@ const CaseProgressUpdate: NextPage = () => {
   const [status, setStatus] = useState('In Progress');
 
   return (
-    <div className="max-w-md mx-auto mt-10 ">
+    <div className="max-w-md mx-auto">
       <h1 className="text-xl font-semibold mb-4">Submit Case Progress Update</h1>
 
       <div className="mb-4">

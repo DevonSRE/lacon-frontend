@@ -1,7 +1,7 @@
 // components/AssignedCases.tsx
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Grid3X3, List } from "lucide-react";
+import { Grid3X3, LayoutGrid, List, ListCollapse } from "lucide-react";
 import LawyersReportGrid from "../LawyerReportGrid";
 import LawyersReportTable from "../LawyerReportTable";
 import { useAppSelector } from "@/hooks/redux";
@@ -13,18 +13,13 @@ import CaseManagementDemo from "./components/skeletonLoader";
 
 
 export default function AssignedCases() {
-
-    const [stateFilter, setStateFilter] = useState('');
-    const [caseTypeFilter, setCaseTypeFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [type, setType] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
     const [viewCase, setViewCase] = useState(false);
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
-
     const [activeTab, setActiveTab] = useState(0);
-    // const [view, setView] = useState<"grid" | "list">("grid");
     const [view, setView] = useState("grid");
 
     const toggleView = () => {
@@ -32,35 +27,31 @@ export default function AssignedCases() {
     };
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter],
+        queryKey: ["getCases", currentPage, statusFilter],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
-                case_type: (caseTypeFilter) ? caseTypeFilter : "",
-                state: (stateFilter === "all") ? "" : stateFilter,
-                status: (statusFilter === "all") ? "" : statusFilter,
+                status: (statusFilter === "ALL CASES") ? "" : statusFilter,
             };
             return await GetCaseAction(filters);
         },
         staleTime: 100000,
     });
 
-    const upcomingEvents = [
-        { date: "May 22, 2025", type: "Hearing", title: "State Vs Ahmed Musa" },
-        { date: "June 15, 2025", type: "Trial", title: "State Vs Lisa Tran" },
-        { date: "July 30, 2025", type: "Sentencing", title: "State Vs John Doe" },
-    ];
-
     const tabs = ["All Cases", "Active", "In Progress", "Closed"];
     return (
-        <div>
+        <div className="space-y-4 ">
             <div className="flex justify-between">
                 <div className="flex items-center text-sm space-x-2 bg-white p-2">
                     {tabs.map((tab, idx) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(idx)}
+                            onClick={() => {
+                                setActiveTab(idx);
+                                setStatusFilter(tab.toUpperCase());
+                                setCurrentPage(1);
+                            }}
                             className={`px-4 py-2 rounded ${activeTab === idx
                                 ? "bg-black text-white"
                                 : "bg-gray-100 text-gray-800"
@@ -70,10 +61,13 @@ export default function AssignedCases() {
                         </button>
                     ))}
                 </div>
-                <div className="flex justify-end mb-4 space-x-2">
-                    <Button size="icon" onClick={toggleView}>
-                        {view === "list" ? <Grid3X3 /> : <List />}
+                <div className="flex justify-end items-center mb-4 space-x-2">
+                    <Button variant={"outline"} size="icon" onClick={toggleView}>
+                        {view === "list" ? <LayoutGrid /> : <ListCollapse />}
                     </Button>
+                    <div className="text-center">
+                        {view === "list" ? "List View" : "Grid View"}
+                    </div>
                 </div>
             </div>
             {isLoading ? (
