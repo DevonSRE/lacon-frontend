@@ -12,6 +12,7 @@ import OscarUnitsReport from './OscarUnitsReport';
 import PerogativeMercyReport from './PerogativeMercyReport';
 import DIOReport from './DIOReport';
 import DecongestionUnitReport from './DecongestionUnitReport';
+import PDSSReport from './PDSSReport';
 
 export default function SheetReport() {
     const [activeTab, setActiveTab] = useState('Overview');
@@ -31,7 +32,7 @@ export default function SheetReport() {
             case 'All Units':
                 return <AllUnitsReport />;
             case 'PDSS':
-                return <AllUnitsReport />;
+                return <PDSSReport />;
             case 'Oscar unit':
                 return <OscarUnitsReport />;
             case 'perogative of mercy':

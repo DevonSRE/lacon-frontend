@@ -10,7 +10,7 @@ import { Filter, ListFilter, Plus, Search } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
 import { GetLawyerRequestAction } from "./userRoleAction";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
+import { CLIENT_ERROR_STATUS, DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/icons/icons";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from "@/components/ui/dropdown-menu"
@@ -24,6 +24,8 @@ import { ApproveRejectLawyerRequest } from "../dashboard/server/action";
 import TextAreaField from "@/components/TextAreaField";
 import { Card, CardContent } from "@/components/ui/card";
 import { set } from "zod";
+import useEffectAfterMount from "@/hooks/use-effect-after-mount";
+import { toast } from "sonner";
 
 
 
@@ -44,6 +46,23 @@ export default function LawyersRequest() {
     const [sheetType, setSheetType] = useState<"details" | "approve" | "reject" | null>(null);
     const [state, dispatch, isPending] = useActionState(ApproveRejectLawyerRequest, undefined);
 
+    useEffectAfterMount(() => {
+        if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+            toast.error(
+                typeof state?.message === "string" ? state.message : "Something went wrong",
+                {
+                    description: typeof state?.errors === "string"
+                        ? state.errors
+                        : state?.errors
+                            ? Object.values(state.errors).flat().join(", ")
+                            : undefined,
+                }
+            );
+        } else if (state && state.status === 200) {
+            toast.success("successfully");
+        }
+    }, [state]);
+
     const handleOpenSheet = (user: ILawyerRequest, type: "details" | "approve" | "reject") => {
         setSelectedUser(user);
         setSheetType(type);
@@ -53,7 +72,7 @@ export default function LawyersRequest() {
     };
     const handleOpenDetailsSheet = (user: ILawyerRequest) => {
         setSelectedUser(user);
-        setDetailsDailog(true);
+        // setDetailsDailog(true);
     };
     const columns = useMemo(
         () =>
@@ -157,16 +176,24 @@ export default function LawyersRequest() {
                         />
                     </div>
                 )}
-                <CustomDialog open={openDetails} setOpen={setDetailsDailog} className="w-lg">
+                <CustomDialog open={openDetails} setOpen={setDetailsDailog} className="w-xl">
                     <div className="mt-4">
                         <h2 className="text-xl font-semibold mb-4">Request Details</h2>
                         <div className="space-y-4">
-                            <DetailItem label="Request Type:" value="Creation" />
-                            <DetailItem label="Lawyer Name:" value="Olumide Bakare" />
-                            <DetailItem label="Requested By:" value="Zonal Directors" />
-                            <DetailItem label="Date:" value="2025-06-06" />
-                            <DetailItem label="Status:" value="Pending" />
-                            <DetailItem label="Reason:" value="New staff recruitment" />
+                            <DetailItem label="Request Type:" value={selectedUser?.Action ?? ""} />
+                            <DetailItem label="Lawyer Name:" value={selectedUser?.LawyerName ?? ""} />
+                            <DetailItem label="Requested By:" value={selectedUser?.RequestedName ?? ""} />
+                            {/* <DetailItem label="Date:" value={selectedUser?.CreatedAt ?? ""} /> */}
+                            <DetailItem label="Date:" value={
+                                selectedUser?.CreatedAt
+                                    ? new Date(selectedUser.CreatedAt).toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                    }) : ''} />
+
+                            <DetailItem label="Status:" value={selectedUser?.Status ?? ""} />
+                            <DetailItem label="Reason:" value={selectedUser?.Reason ?? ""} />
                             <div>
                                 <span className="font-medium">Details:</span>
                                 <Card className="mt-2 bg-gray-100">
@@ -237,6 +264,6 @@ export default function LawyersRequest() {
 const DetailItem = ({ label, value, }: { label: string; value: string; }) => (
     <div className="flex justify-between">
         <span className="text-gray-600">{label}</span>
-        <span className={`text-right font-semibold`}>{value}</span>
+        <span className={`text-right font-semibold capitalize`}>{value}</span>
     </div>
 );

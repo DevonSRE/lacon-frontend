@@ -229,7 +229,8 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
-                isHome= {isPublic ? true : false}
+                handleCloseCaseType={handleCloseCaseType}
+                isHome={isPublic ? true : false}
             />
             <div className="min-h-screen">
                 {/* Header */}

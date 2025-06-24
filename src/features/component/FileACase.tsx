@@ -20,11 +20,9 @@ interface FileACaseComponentProps {
 }
 
 export default function FileACaseComponent({ userRole, buttonText, buttonClassName, showIcon, onCaseSubmitted }: FileACaseComponentProps) {
-
     const [selectedCaseForm, setCaseForm] = useState('');
     const [openFileACase, setOpenFileACase] = useState(false);
     const [openCaseType, setCaseType] = useState(false);
-
     const [currentStep, setCurrentStep] = useState(1);
 
     const handleBack = () => {

@@ -6,6 +6,7 @@ import { DataTable } from '@/components/data-table';
 import { demographicsTable } from './table_Column';
 import { GetReportDemography } from '../server/reportAction'; // Assuming this is your API function
 import { useAction } from '@/context/ActionContext';
+import LawyerSkeleton from '@/components/skeleton/LawyerSkeleton';
 
 // Type definitions for the API response
 interface DemographicBreakdown {
@@ -102,11 +103,7 @@ export default function Demographics() {
 
     // Handle loading state
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg text-gray-600">Loading demographics...</div>
-            </div>
-        );
+        return <LawyerSkeleton />;
     }
 
     // Handle error state
