@@ -430,7 +430,6 @@ export default function MercyApplication({ openFileACase, setOpen }: CustomeShee
                                 <div className="bg-gray-100 p-2 rounded mt-1 text-gray-700">Mercy Application</div>
                             </div>
                             {renderStep1()}
-
                             {state?.errors && typeof state.errors === 'object' && (
                                 <div className="text-red-500 bg-red-50 p-4 rounded">
                                     <h3 className="font-semibold mb-2">Please fix the following errors:</h3>

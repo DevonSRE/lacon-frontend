@@ -207,7 +207,7 @@ export default function UserRoles() {
 
             <CustomDialog open={sheetOpen} setOpen={setSheetOpen} className="w-xl h-[400px]">
                 <div className="mt-4 space-y-8 ">
-                    {/* <div className="flex justify-between bg-[#BD2B12] text-white rounded-xl text-center mb-10 shadow ">
+                    <div className="flex justify-between bg-[#BD2B12] text-white rounded-xl text-center mb-10 shadow ">
                         <Icons.smallLeftFlowwer />
                         <div className="justify-center items-center text-center flex flex-col space-y-2">
                             <Button className="bg-white rounded-full"
@@ -216,7 +216,7 @@ export default function UserRoles() {
                             </Button>
                         </div>
                         <Icons.smallRightFlowwer />
-                    </div> */}
+                    </div>
                     <div className="space-y-4">
                         <div className="flex text-xl font-semibold justify-center text-center">Suspend User</div>
                         <div className="justify-center text-center">Are You Sure You Want To Suspend This User</div>

@@ -7,20 +7,26 @@ import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Suspense } from "react";
 import NextTopLoader from "nextjs-toploader";
-import { SidebarProvider } from '@/context/SidebarContext';
-import { ActionProvider } from '@/context/ActionContext';
-import { ThemeProvider } from '@/context/ThemeContext';
+import { SidebarProvider } from "@/context/SidebarContext";
+import { ActionProvider } from "@/context/ActionContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 // Configure Space Grotesk font
 const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-space-grotesk',
-  weight: ['300', '400', '500', '600', '700'],
+  subsets: ["latin"],
+  variable: "--font-space-grotesk",
+  weight: ["300", "400", "500", "600", "700"],
 });
 
+// Add viewport metadata for responsive design
 export const metadata: Metadata = {
   title: "LACON",
   description: "LACON",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+  },
 };
 
 export default function RootLayout({
@@ -31,7 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${spaceGrotesk.variable} font-sans antialiased`}
+        className={`${spaceGrotesk.variable} font-sans antialiased min-h-screen bg-white`}
       >
         <AppProvider>
           <Suspense fallback={<SuspenseLoader />}>
@@ -40,7 +46,7 @@ export default function RootLayout({
               <ThemeProvider>
                 <SidebarProvider>
                   <ActionProvider>
-                    {children}
+                      {children}
                   </ActionProvider>
                 </SidebarProvider>
               </ThemeProvider>

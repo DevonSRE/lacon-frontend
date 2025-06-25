@@ -33,7 +33,7 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone_number: data.phone_number,
-        state_id: data.state_id,
+        state_id: (data.state_id != "00000000-0000-0000-0000-000000000000") ? data.state_id : "",
         state_name: data.state_name,
         zone_id: data.zone_id,
         zone_name: data.zone_name,

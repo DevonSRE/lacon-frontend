@@ -23,12 +23,10 @@ import { GetState } from '@/components/get-state'
 interface CivilCaseFormProps {
     currentStep?: number;
     setCurrentStep?: Dispatch<SetStateAction<number>>;
-    handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
-
+    handleCloseCaseType?: (open: boolean) => void
     type: string;
     isPublic: boolean;
     state_id?: string;
-
 }
 
 export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), type }: CivilCaseFormProps) {
@@ -63,9 +61,8 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             );
         } else if (state && state.status === 200) {
             setCurrentStep(1);
-            // handleCloseCaseType(false);
-            // toast.success("Case Intake  Submitted successful");
             setOpen(true);
+           
         }
     }, [state]);
 
@@ -235,8 +232,8 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
+                handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
-
             />
             <div className="min-h-screen px-4">
                 {/* Header */}

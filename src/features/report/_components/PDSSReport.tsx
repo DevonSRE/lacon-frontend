@@ -1,5 +1,3 @@
-
-
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { GetAllUnit } from '../server/reportAction';
@@ -74,13 +72,13 @@ function transformMonthlyOverviewData(data: any[]): ChartData {
     };
 }
 
-export default function DecongestionUnitReport() {
-    const { selectedZoneId, setSelectedZoneId, selectedDuration,
-        setselectedDuration, selectedStateId, setSeletedStateId,
+export default function PDSSReport() {
+    const { selectedZoneId, setSelectedZoneId, selectedDuration, 
+        setselectedDuration, selectedStateId, setSeletedStateId, 
         selectedCentreId, setselectedCentreId } = useAction();
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["getPDSSREportOverview"],
+        queryKey: ["getPDSSREportOverview", selectedZoneId, selectedStateId, selectedDuration, selectedCentreId],
         queryFn: async () => {
             const filters = {
                 unit: "pdss unit",

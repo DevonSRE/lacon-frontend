@@ -18,7 +18,7 @@ export async function GetReportOverView(filters: Ipage) {
 export async function GetReportCaseType(filters: Ipage) {
     try {
         const response = await reportServices.getReportCaseType(filters);
-        return { data: response?.data, success: true };
+        return { data: response?.data.data, success: true };
 
     } catch (err: unknown) {
         const error = err as ErrorResponse;
@@ -65,7 +65,8 @@ export async function GetAdminReport(filters: Ipage) {
 export async function GetAllUnit(filters: Ipage) {
     try {
         const response = await reportServices.getAllUnit(filters);
-        return { data: response, success: true };
+        console.log(response);
+        return { data: response?.data.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);

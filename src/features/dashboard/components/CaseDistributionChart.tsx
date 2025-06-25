@@ -210,7 +210,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
           Case Distribution By Unit
         </h3>
         <div className="relative inline-block">
-          <button onClick={toggleDropdown} className="dropdown-toggle">
+          {/* <button onClick={toggleDropdown} className="dropdown-toggle">
             <EllipsisVertical className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
           </button>
           <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
@@ -226,12 +226,12 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
             >
               Export Data
             </DropdownItem>
-          </Dropdown>
+          </Dropdown> */}
         </div>
       </div>
 
       <div className="max-w-full overflow-x-auto custom-scrollbar bg-gray-100">
-        <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
+        <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2 p-4">
           <ReactApexChart options={options} series={series} type="bar" height={580} />
         </div>
       </div>

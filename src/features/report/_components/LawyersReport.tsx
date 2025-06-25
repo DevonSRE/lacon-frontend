@@ -5,6 +5,7 @@ import Chart from "../charts/Chart";
 import { Icons } from "@/icons/icons";
 import { laconLawyerColumns, ProbunoLawyerColumns } from "./table_Column"; // Assuming these are imported from your columns file
 import { useAction } from "@/context/ActionContext";
+import LawyerSkeleton from "@/components/skeleton/LawyerSkeleton";
 
 // Type definitions for the API response
 interface MonthlyBreakdown {
@@ -80,11 +81,7 @@ export default function LawyersReport() {
 
     // Handle loading state
     if (isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg text-gray-600">Loading...</div>
-            </div>
-        );
+        return <LawyerSkeleton />;
     }
 
     // Handle error state

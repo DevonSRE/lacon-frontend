@@ -6,6 +6,7 @@ import { BiAnnualStatistic, offenceComplain } from "./table_Column";
 import { useQuery } from "@tanstack/react-query";
 import { GetReportCaseType } from "../server/reportAction";
 import { useAction } from "@/context/ActionContext";
+import CaseTypeSkeleton from "@/components/skeleton/CaseType";
 
 // Type definitions for the API response
 interface DepartmentCaseBreakdown {
@@ -111,13 +112,12 @@ export default function CaseTypeReports() {
     const chartData = data?.data?.civil_vs_criminal
         ? transformCivilVsCriminalData(data.data.civil_vs_criminal)
         : null;
-
     const departmentChartData = data?.data?.department_case_breakdown
         ? transformDepartmentData(data.data.department_case_breakdown)
         : null;
 
     if (isLoading) {
-        return <div className="text-center text-gray-500">Loading...</div>;
+        return <CaseTypeSkeleton />;
     }
 
     if (error) {

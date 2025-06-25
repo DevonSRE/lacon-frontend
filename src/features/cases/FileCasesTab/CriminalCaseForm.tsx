@@ -234,6 +234,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       <CaseIntakeDialog
         open={open}
         onOpenChange={setOpen}
+        handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
       />
       <div className="mx-auto  bg-white">
@@ -552,7 +553,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                     />
 
                     <InputField
-                      label="Court and/Case No (If this exist, add it)"
+                      label="Court /Case No (If this exist, add it)"
                       type="text"
                       value={formData.court_location}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_location', e.target.value)}
@@ -567,7 +568,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       className="border-gray-300"
                     />
                   </div>
-
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <InputField

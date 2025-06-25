@@ -10,12 +10,14 @@ import Link from "next/link"
 interface CaseIntakeDialogProps {
     open: boolean
     onOpenChange: (open: boolean) => void
+    handleCloseCaseType?: (open: boolean) => void
     isHome?: boolean
 }
 
 export default function CaseIntakeDialog({
     open,
     onOpenChange,
+    handleCloseCaseType,
     isHome
 }: CaseIntakeDialogProps) {
     return (
@@ -31,7 +33,7 @@ export default function CaseIntakeDialog({
                             recorded in our system.
                         </p>
                         {!isHome ? (
-                            <Button onClick={() => onOpenChange(false)} className="w-full h-11 bg-black text-white hover:bg-gray-800">
+                            <Button onClick={() => { handleCloseCaseType?.(false); onOpenChange(false) }} className="w-full h-11 bg-black text-white hover:bg-gray-800">
                                 Close
                             </Button>
                         ) :

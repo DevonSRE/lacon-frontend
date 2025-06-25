@@ -100,10 +100,10 @@ export default function SigninForm() {
               <div className="border-t w-1/4" />
             </div>
 
-            <Button variant="outline" className="w-full flex items-center gap-4 justify-center border py-2 rounded-md font-semibold " >
+            {/* <Button variant="outline" className="w-full flex items-center gap-4 justify-center border py-2 rounded-md font-semibold " >
               <Icons.GogleIcon />
               Sign in with Google
-            </Button>
+            </Button> */}
 
             <div className="text-center text-sm mt-4">
               Request An Account Creation?{' '}

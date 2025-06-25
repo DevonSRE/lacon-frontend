@@ -57,15 +57,14 @@ export const offenceComplain: ColumnDef<StateData>[] = [
             <div className="text-left">{row.getValue("department")}</div>
         ),
     },
-    { accessorKey: "total_cases", ...centerCell("total cases") },
-    { accessorKey: "completed_cases", ...centerCell("completed cases") },
+    { accessorKey: "total_cases", ...centerCell("Total Number cases") },
+    { accessorKey: "completed_cases", ...centerCell("Cases Completed") },
     { accessorKey: "resolution_rate", ...centerCell("resolution rate") },
 ];
 
 export const demographicsTable: ColumnDef<StateData>[] = [
     { accessorKey: "sex", ...centerCell("Sex") },
-    { accessorKey: "marital_status", ...centerCell("Marital Status") },
-    { accessorKey: "count", ...centerCell("Count") },
+    { accessorKey: "sex", ...centerCell("Sex") },
 ];
 export const laconLawyerColumns: ColumnDef<StateData>[] = [
     {
@@ -92,3 +91,23 @@ export const ProbunoLawyerColumns: ColumnDef<StateData>[] = [
     { accessorKey: "success_rate", ...centerCell("Success Rate") },
 ];
 
+
+
+export const CorrectionalVisitsTable: ColumnDef<StateData>[] = [
+    { accessorKey: "center", ...centerCell("Center") },
+    { accessorKey: "visits", ...centerCell("Visits") },
+    { accessorKey: "inmate_assisted", ...centerCell("InMate Assited") },
+    { accessorKey: "legal_rep_provided", ...centerCell("Legal Rep. Provided") },
+];
+
+export const AllUnitTable: ColumnDef<StateData>[] = [
+    { accessorKey: "station", ...centerCell("Station") },
+    { accessorKey: "release_individuals", ...centerCell("Releases Individuals") },
+    { accessorKey: "gender", ...centerCell("Gender") },
+    { accessorKey: "offence", ...centerCell("Offenses") },
+];
+export const PDSSBailTable: ColumnDef<StateData>[] = [
+    { accessorKey: "station", ...centerCell("Station") },
+    { accessorKey: "release_individuals", ...centerCell("Releases Individuals") },
+    { accessorKey: "gender", ...centerCell("Gender") },
+];
