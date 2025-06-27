@@ -108,11 +108,7 @@ export default function CasesPage() {
             />
 
             {/* Cases Table */}
-            <DataTable
-                columns={columns}
-                loading={isLoading}
-                data={data?.data.data}
-            />
+            <DataTable columns={columns} loading={isLoading} data={data?.data.data}/>
             {data?.data?.data?.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
