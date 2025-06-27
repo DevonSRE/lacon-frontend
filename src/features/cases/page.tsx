@@ -108,11 +108,7 @@ export default function CasesPage() {
             />
 
             {/* Cases Table */}
-            <DataTable
-                columns={columns}
-                loading={isLoading}
-                data={data?.data.data}
-            />
+            <DataTable columns={columns} loading={isLoading} data={data?.data.data}/>
             {data?.data?.data?.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
@@ -125,7 +121,7 @@ export default function CasesPage() {
             )}
 
             <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
-                <ViewCase details={caseDetails} />
+                <ViewCase details={caseDetails}  />
             </CustomeSheet>
 
             <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>

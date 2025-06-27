@@ -30,7 +30,7 @@ export function CustomeSheet({ open, setOpen, children, className, backButton = 
                 </SheetHeader>
                 <div className="px-8">
                     {backButton &&
-                        <Button variant={"outline"} className="border-none"><ArrowLeft onClick={() => setOpen(false)} /></Button>
+                        <button className="border-none"><ArrowLeft onClick={() => setOpen(false)} /></button>
                     }
                     <div className="mt-2">{children}</div>
                 </div>

@@ -181,7 +181,6 @@ export const createCaseColumns = (
     header: "",
     cell: ({ row }) => {
       const user = row.original;
-
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -190,22 +189,28 @@ export const createCaseColumns = (
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="p-1 space-y-2 border-[1px] border-black bg-gray-50">
-
-            <DropdownMenuItem onClick={() => onAssign(user)}>
-              Assign
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReAssign(user)}>
-              Re Assign
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onReview(user)}>
-              Review
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewDetails(user)}>
               View Case Details
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => onSuspend(user)}>
-              Suspend Case
-            </DropdownMenuItem>
+            {(userRole !== ROLES.PARALEGAL) && (
+              <>
+                <DropdownMenuItem onClick={() => onAssign(user)}>
+                  Assign
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onReAssign(user)}>
+                  Re Assign
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onReview(user)}>
+                  Review
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onSuspend(user)}>
+                  Suspend Case
+                </DropdownMenuItem>
+              </>
+            )}
+
+
+
           </DropdownMenuContent>
         </DropdownMenu>
       );

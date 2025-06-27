@@ -16,12 +16,10 @@ export const createUserColumns = (
     {
       accessorKey: "name",
       header: "Name",
-
       cell: ({ row }) => {
         const { first_name, last_name, email, avatar } = row.original;
         const fullName = `${first_name} ${last_name}`;
         const initials = `${first_name?.[0] ?? ""}${last_name?.[0] ?? ""}`;
-
         return (
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8">

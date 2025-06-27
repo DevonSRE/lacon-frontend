@@ -2,10 +2,12 @@ import React from 'react';
 import { ICase } from './table-columns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
+import { useAppSelector } from '@/hooks/redux';
 
 
-export default function ViewCase(details: { details: ICase | null }) {
-
+export default function ViewCase(details: { details: ICase | null },) {
+    const { data: user } = useAppSelector((state) => state.profile);
+    const role = user?.role;
     return (
         <div className="h-screen w-full">
             {/* Header Section */}
@@ -225,11 +227,12 @@ export default function ViewCase(details: { details: ICase | null }) {
                         </div>
                     </div>
                 </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-10 justify-between">
-                    <Button className='h-11 w-full'>Assign Case</Button>
-                    <Button variant={"outline"} className='h-11 w-full'>Transfer to Department</Button>
-                </div>
+                {(role != "PARALEGAL") && (
+                    <div className="grid grid-cols-2 gap-4 mt-10 justify-between">
+                        <Button className='h-11 w-full'>Assign Case</Button>
+                        <Button variant={"outline"} className='h-11 w-full'>Transfer to Department</Button>
+                    </div>
+                )}
             </ScrollArea>
         </div>
     );
