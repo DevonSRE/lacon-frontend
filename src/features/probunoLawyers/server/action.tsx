@@ -362,7 +362,7 @@ export async function submitDecongestionForm(prevState: unknown, formData: FormD
                 state_id: formData.get('state_id') as string,
                 name_of_defendant: formData.get('name_of_defendant') as string,
                 offence_charged_description: formData.get('offence_charged_description') as string,
-                offence_charged: formData.get('offence_charged') as string,
+                // offence_charged: formData.get('offence_charged') as string,
                 charge_number: formData.get('charge_number') as string,
                 court_of_trial: formData.get('court_of_trial') as string,
                 arrest_date: formData.get('arrest_date') as string,
@@ -511,11 +511,7 @@ export async function submitMercyApplicationForm(prevState: unknown, formData: F
 
 
 
-
-
-
 // Public case submission functions
-
 export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData.entries());
     console.log("Raw form data:", data);
@@ -588,7 +584,7 @@ export async function submitPublicCaseForm(prevState: unknown, formData: FormDat
 
         let response;
         const isPublic = data.isPublic === "true";
-
+        console.log(isPublic);
         if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {
             response = isPublic
                 ? await ProbunoService.casesPublicCase(uploadData)

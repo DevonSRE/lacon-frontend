@@ -62,7 +62,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         } else if (state && state.status === 200) {
             setCurrentStep(1);
             setOpen(true);
-           
+
         }
     }, [state]);
 
@@ -181,6 +181,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                         fd.append("state_id", selectedState!);
                     }
                 }
+                fd.append("isPublic", isPublic ? "true" : "false");
                 Object.entries(formData).forEach(([key, value]) => {
                     if (value !== null && value !== undefined) {
                         fd.append(key, value instanceof File ? value : String(value));
@@ -534,6 +535,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         label="Counsel/Paralegal"
                                         name="counsel_paralegal"
                                         type="text"
+                                        required
                                         value={formData.counsel_paralegal}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('counsel_paralegal', e.target.value)}
                                         className={`${errors.counsel_paralegal ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
@@ -555,6 +557,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         label="Name of Counsel/Paralegal Office or Firm, Organisation ID"
                                         name="name_of_counsel_or_firm_or_organisation_id"
                                         type="text"
+                                        required
                                         value={formData.name_of_counsel_or_firm_or_organisation_id}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('name_of_counsel_or_firm_or_organisation_id', e.target.value)}
                                         className={`${errors.name_of_counsel_or_firm_or_organisation_id ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
@@ -566,6 +569,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     name="nature_of_legal_service_provided"
                                     label="Nature of legal service provided"
                                     placeholder="Describe the legal service provided"
+
                                     value={formData.nature_of_legal_service_provided ?? ""}
                                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('nature_of_legal_service_provided', e.target.value)}
                                     error={errors.nature_of_legal_service_provided}

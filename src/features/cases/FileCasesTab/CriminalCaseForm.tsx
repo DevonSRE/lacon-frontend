@@ -183,6 +183,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
             fd.append("state_id", selectedState!);
           }
         }
+        fd.append("isPublic", isPublic ? "true" : "false");
         Object.entries(formData).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
             fd.append(key, value instanceof File ? value : String(value));

@@ -431,7 +431,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         </div>
 
                                         {/* Offence charged - Second one (input) */}
-                                        <div className="mb-6">
+                                        {/* <div className="mb-6">
                                             <InputField
                                                 label="Offence charged"
                                                 required
@@ -443,7 +443,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                                 className={`${errors.offence_charged ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                             />
                                             {errors.offence_charged && <p className="text-red-500 text-xs mt-1">{errors.offence_charged}</p>}
-                                        </div>
+                                        </div> */}
 
                                         {/* Charge Number and Court of Trial */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

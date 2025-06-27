@@ -176,6 +176,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                         fd.append("state_id", selectedState!);
                     }
                 }
+                fd.append("isPublic", isPublic ? "true" : "false");
                 Object.entries(formData).forEach(([key, value]) => {
                     if (value !== null && value !== undefined) {
                         fd.append(key, value instanceof File ? value : String(value));
@@ -226,12 +227,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
 
     return (
         <>
-            <CaseIntakeDialog
-                open={open}
-                onOpenChange={setOpen}
-                handleCloseCaseType={handleCloseCaseType}
-                isHome={isPublic ? true : false}
-            />
+            <CaseIntakeDialog open={open} onOpenChange={setOpen} handleCloseCaseType={handleCloseCaseType} isHome={isPublic ? true : false} />
             <div className="min-h-screen">
                 {/* Header */}
                 <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
@@ -255,7 +251,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                     <input type="hidden" name="case_type" value="CIVIL CASE" />
                     <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
                     {(!isPublic && state_id != "") ? (
-                        <input type="hidden" name="state_id" value={state_id} />
+                        <input type="t" name="state_id" value={state_id} />
                     ) :
                         <input type="hidden" name="state_id" value={selectedState} />
                     }
