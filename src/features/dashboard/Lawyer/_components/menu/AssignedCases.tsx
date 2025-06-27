@@ -8,7 +8,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { ICase } from "@/features/cases/_components/table-columns";
 import { useQuery } from "@tanstack/react-query";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
-import { GetCaseAction } from "@/features/cases/server/caseAction";
+import { GetCaseAction, GetEventsAction } from "@/features/cases/server/caseAction";
 import CaseManagementDemo from "./components/skeletonLoader";
 
 
@@ -18,7 +18,7 @@ export default function AssignedCases() {
     const [currentPage, setCurrentPage] = useState(1);
     const [viewCase, setViewCase] = useState(false);
     const { data: user } = useAppSelector((state) => state.profile);
-    const role = user?.role;
+    const UserID = user?.id;
     const [activeTab, setActiveTab] = useState(0);
     const [view, setView] = useState("grid");
 
@@ -35,6 +35,19 @@ export default function AssignedCases() {
                 status: (statusFilter === "ALL CASES") ? "" : statusFilter,
             };
             return await GetCaseAction(filters);
+        },
+        staleTime: 100000,
+    });
+    const { data: eventData, isLoading: eventLoading } = useQuery({
+        queryKey: ["getEvents", currentPage, statusFilter],
+        queryFn: async () => {
+            const filters = {
+                page: currentPage,
+                size: DEFAULT_PAGE_SIZE,
+            };
+            console.log(UserID);
+
+            return await GetEventsAction(filters, UserID as string);
         },
         staleTime: 100000,
     });
@@ -72,30 +85,39 @@ export default function AssignedCases() {
             </div>
             {isLoading ? (
                 <CaseManagementDemo />
+            ) : data?.data?.data?.length === 0 ? (
+                <div className="text-center py-10 text-gray-500">
+                    No cases found.
+                </div>
+            ) : view === "grid" ? (
+                <LawyersReportGrid caseData={data?.data?.data} />
             ) : (
-                view === "grid" ? (
-                    <LawyersReportGrid caseData={data?.data?.data} />
-                ) : (
-                    <LawyersReportTable tableData={data?.data?.data} />
-                )
+                <LawyersReportTable tableData={data?.data?.data} />
             )}
+
             <div className="mt-10">
                 <h3 className="text-lg font-semibold mb-2">Upcoming Events</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    No events yet
-                    {/* {upcomingEvents.map((event, idx) => (
-                        <div
-                            key={idx}
-                            className="flex items-center space-x-2 border p-3 rounded-lg shadow-sm"
-                        >
-                            <input type="checkbox" />
-                            <p className="text-sm">
-                                {event.date} <span className="mx-1">•</span> {event.type}
-                                <span className="mx-1">•</span> {event.title}
-                            </p>
-                        </div>
-                    ))} */}
-                </div>
+                {eventLoading ? (
+                    <div className="text-center py-10 text-gray-500">
+                        Loading events...
+                    </div>
+                ) : eventData?.data?.length === 0 ? (
+                    <div className="text-center py-10 text-gray-500">
+                        No upcoming events found.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {eventData?.data?.map((event: any, idx: number) => (
+                            <div key={idx} className="flex items-center space-x-2 border p-3 rounded-lg shadow-sm">
+                                <input type="checkbox" />
+                                <p className="text-sm">
+                                    {event.event_date} <span className="mx-1">•</span> {event.event_type}
+                                    <span className="mx-1">•</span> {event.case_title}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

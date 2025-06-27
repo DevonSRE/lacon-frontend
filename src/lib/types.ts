@@ -63,7 +63,7 @@ export const ROLES = [
 export type UserType = typeof ROLES[number];
 
 
-export type TUser = Pick< TFullUser, "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image">;
+export type TUser = Pick<TFullUser, "id" | "first_name" | "last_name" | "email" | "user_type" | "profile_image">;
 
 
 export type Designation = 'Head Office' | 'State Office' | 'Zonal Office' | 'Centre lawyer' | 'State Lawyer' | 'Head Quarters';
@@ -73,7 +73,7 @@ export type Zone = 'North West' | 'North East' | 'North Central' | 'South West' 
 export const states = [
   'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa',
   'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Edo',
-  'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa', 'Kaduna',
+  'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo', 'Jigawa', 'Kaduna',
   'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos',
   'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo',
   'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara'

@@ -3,9 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MoreVertical } from "lucide-react";
 import { useState } from "react";
-import UploadCaseDocument from "./sheet/uploadCaseDocument";
-import CaseProgressUpdate from "./sheet/caseProgressUpdate";
-import UpdateCaseDetails from "./sheet/updateCase";
+import UploadCaseDocument from "../../../cases/sheet/uploadCaseDocument";
+import CaseProgressUpdate from "../../../cases/sheet/caseProgressUpdate";
+import UpdateCaseDetails from "../../../cases/sheet/updateCase";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ICase } from "./types";
 
@@ -69,7 +69,7 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                                 </span>
                             </Button> */}
 
-                            <Button onClick={() => setOpenCaseDocumentUpload(true)} className="w-full h-11 rounded-none bg-black text-white hover:bg-gray-900 flex justify-start group">
+                            <Button onClick={() => { setCaseDetails(item); setOpenCaseDocumentUpload(true) }} className="w-full h-11 rounded-none bg-black text-white hover:bg-gray-900 flex justify-start group">
                                 <span>Upload</span>
                                 <span className="ml-auto text-xs hidden group-hover:inline-block bg-gray-800 p-1 w-2/4 justify-end text-white">
                                     <span className="justify-end flex items-center">
@@ -83,10 +83,10 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                 );
             })}
             <CustomeSheet open={openCaseDocumentUpload} setOpen={setOpenCaseDocumentUpload}>
-                <UploadCaseDocument />
+                <UploadCaseDocument caseDetails={caseDetails} setIsOpen={setOpenCaseDocumentUpload} />
             </CustomeSheet>
             <CustomeSheet open={openCaseProgressUpdate} setOpen={setOpenCaseProgressUpdate}>
-                <CaseProgressUpdate />
+                <CaseProgressUpdate caseDetails={caseDetails} setIsOpen={setOpenCaseProgressUpdate} />
             </CustomeSheet>
             <CustomeSheet open={openUpdateCaseDetails} setOpen={setOpenUpdateCaseDetails}>
                 <UpdateCaseDetails caseDetails={caseDetails} />

@@ -55,3 +55,13 @@ export async function GetUserByTypes(params: Ipage) {
         return handleApiError(error);
     }
 }
+
+export async function GetDocumentHistory(params: Ipage, id: string) {
+    try {
+        const response = await usersServices.GetDocumentHistory(params, id);
+        return { data: response?.data?.data, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

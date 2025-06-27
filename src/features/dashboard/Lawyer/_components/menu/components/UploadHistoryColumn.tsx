@@ -15,12 +15,16 @@ export type UploadItem = {
 
 export const uploadHistoryColumns: ColumnDef<UploadItem>[] = [
   {
-    accessorKey: "caseId",
+    accessorKey: "casefile_id",
     header: "Case ID",
   },
   {
-    accessorKey: "uploadType",
+    accessorKey: "update_type",
     header: "Upload Type",
+  },
+  {
+    accessorKey: "document_title",
+    header: "Document Title",
   },
   {
     accessorKey: "uploadedOn",

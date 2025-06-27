@@ -10,6 +10,7 @@ interface LawyerDetailsProps {
 
 export default function SuspensionForm({ lawyer : lawyerInfo, setOpen: OpenSheet, sheetType }: LawyerDetailsProps) {
 
+    
 
     // const SuspensionForm: React.FC = () => {
     const [reason, setReason] = useState<string>('');

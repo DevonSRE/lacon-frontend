@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/_api/axios-config";
+import { GetDocumentHistory } from "./userRoleAction";
 
 const usersServices = {
     async getUsers(param: any) {
@@ -25,6 +26,9 @@ const usersServices = {
         return await axiosInstance.get("/users/get-user-by-type", {
             params: param,
         });
+    },
+    async GetDocumentHistory(param: any, id: string) {
+        return await axiosInstance.get(`/casefile/${id}/document-history`);
     },
 }
 
