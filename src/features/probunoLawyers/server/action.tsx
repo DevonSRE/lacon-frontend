@@ -518,9 +518,7 @@ export async function submitMercyApplicationForm(prevState: unknown, formData: F
 
 export async function submitPublicCaseForm(prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData.entries());
-
     console.log("Raw form data:", data);
-
     try {
         if (!data.case_type) {
             return {

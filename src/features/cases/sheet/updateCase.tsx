@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ICase } from "../types";
+import { ICase } from "../../dashboard/Lawyer/_components/types";
 
 
 interface DEtails {

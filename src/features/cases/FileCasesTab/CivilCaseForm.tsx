@@ -599,6 +599,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                             type="tel"
                                             name="defendant_phone_number"
                                             label=" Defendant's Phone number"
+                                            required
                                             placeholder="080 0000 000"
                                             value={formData.defendant_phone_number}
                                             onChange={(e) => updateField('defendant_phone_number', e.target.value)}
