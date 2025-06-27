@@ -33,14 +33,14 @@ export interface ICase {
   status: string;
   filed_by: string;
   state: string;
-  case_type: string; // e.g., "PDSS ORGANIZATION" or "CIVIL CASE"
-  case_title: string; // e.g., "PDSS ORGANIZATION" or "CIVIL CASE"
-  location: string; // General location
+  case_type: string;
+  case_title: string;
+  location: string;
   name: string;
   sex: string;
   age: number;
   marital_status: string;
-  disability: string; // From disability_status
+  disability: string;
   phone_number: string;
   email: string;
   occupation: string;

@@ -586,7 +586,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                             name="defendant_address"
                                             label="Defendant's Address"
                                             required
-                                            placeholder="Enter Address"
+                                            placeholder="Enter Email Address"
                                             value={formData.defendant_address}
                                             onChange={(e) => updateField('defendant_address', e.target.value)}
                                             className={` ${errors.defendant_address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}

@@ -88,7 +88,7 @@ export const createLawyerSchema = z.object({
     id: z.string().optional(),
     user_type: z.string().min(1, "User type is required"),
     status: z.string().optional(),
-    max_load: z.coerce.number({ invalid_type_error: 'Max Load must be a number' }),
+    max_load: z.string().min(1, 'Please Enter a valid maximum load'),
     first_name: z.string().min(1, "First name is required").max(50, "First name is too long"),
     last_name: z.string().min(1, "Last name is required").max(50, "Last name is too long"),
     email: z.string().min(1, "Email is required").email("Please enter a valid email address"),
