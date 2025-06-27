@@ -125,7 +125,7 @@ export default function CasesPage() {
             )}
 
             <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
-                <ViewCase details={caseDetails} />
+                <ViewCase details={caseDetails}  />
             </CustomeSheet>
 
             <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
