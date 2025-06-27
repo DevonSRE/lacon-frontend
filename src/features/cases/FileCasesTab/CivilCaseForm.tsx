@@ -584,7 +584,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         <InputField
                                             type="email"
                                             name="defendant_address"
-                                            label="Defendant's Address"
+                                            label="Defendant's Email Address"
                                             required
                                             placeholder="Enter Email Address"
                                             value={formData.defendant_address}
