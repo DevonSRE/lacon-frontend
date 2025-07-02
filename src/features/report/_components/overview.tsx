@@ -50,12 +50,6 @@ interface BiAnnualReport {
     completed: number;
 }
 
-interface ApiResponse {
-    case_reports: CaseReport[];
-    case_distributions: CaseDistribution[];
-    case_breakdowns: CaseBreakdown[];
-    bi_annual_reports: BiAnnualReport[];
-}
 
 // Chart data transformation function
 const transformChartData = (caseDistributions: CaseDistribution[]) => {
@@ -88,7 +82,7 @@ const transformBiAnnualChartData = (biAnnualReports: BiAnnualReport[]) => {
 
 export default function Overview() {
 
-    const { selectedZoneId, setSelectedZoneId, selectedDuration, setselectedDuration, selectedStateId, setSeletedStateId, selectedCentreId, setselectedCentreId } = useAction();
+    const { selectedState, selectedZone, selectedZoneId, setSelectedZoneId, selectedDuration, setselectedDuration, selectedStateId, setSeletedStateId, selectedCentreId, setselectedCentreId } = useAction();
     const { data, isLoading, error } = useQuery({
         queryKey: ["getAdminReportOverview", selectedZoneId, selectedStateId, selectedDuration, selectedCentreId],
         queryFn: async () => {
@@ -142,7 +136,11 @@ export default function Overview() {
                     <Card key={idx} className="bg-[#F4F4F4] rounded-sm border-2 border-[#D9D9D9]">
                         <CardContent className="px-4">
                             <div className="text-sm bg-white rounded-sm p-2 text-center text-green-600 font-medium mb-2">
-                                National Data
+                                {
+                                    selectedState ? selectedState :
+                                        (selectedZone != "") ? selectedZone : "National Data"
+
+                                }
                             </div>
                             <div className="font-semibold text-gray-600 mt-6">{stat.title}</div>
                             <div className="text-3xl font-bold text-gray-900 mb-1">

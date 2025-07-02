@@ -10,8 +10,6 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from "react";
 
 export default function FilterBar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
-
-    const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
     const tabs = ["Overview", "Case Types", "Lawyers", "Demographics"];
 
     const { data, isLoading: loading } = useQuery({
@@ -32,16 +30,18 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
         selectedDuration, setselectedDuration,
         selectedStateId, setSeletedStateId,
         selectedCentreId, setselectedCentreId,
-        selectedUnit, setSelectedUnit
+        selectedUnit, setSelectedUnit,
+        setSelectedZone,
+        setSelectesState
     } = useAction();
 
     // Get the selected zone's states
     const selectedZoneStates = useMemo(() => {
-        if (!selectedTitle || !data?.data?.data) return [];
+        if (!selectedZoneId || !data?.data?.data) return [];
 
-        const selectedZone = data.data.data.find((zone: any) => zone.id === selectedTitle);
+        const selectedZone = data.data.data.find((zone: any) => zone.id === selectedZoneId);
         return selectedZone?.states || [];
-    }, [selectedTitle, data]);
+    }, [selectedZoneId, data]);
 
     const clearFilters = () => {
         setSelectedZoneId('');
@@ -49,25 +49,36 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
         setselectedDuration('');
         setselectedCentreId('All Center');
         setSelectedUnit('');
-        setSelectedTitle(null);
+        setSelectedZone('');
+        setSelectesState('');
     };
 
     const handleDivisionChange = (newValue: string) => {
+        console.log("Selected Zone ID:", newValue);
         if (newValue === "all") {
-            setSelectedTitle("all");
             setSelectedZoneId?.("all");
-            // Clear state selection when zone changes
             setSeletedStateId?.('');
             return;
         }
-        setSelectedTitle(newValue);
         setSelectedZoneId?.(newValue);
-        // Clear state selection when zone changes
         setSeletedStateId?.('');
+
+        // ✅ Find and store the selected zone title
+        const selectedZone = data?.data?.data?.find((zone: any) => zone.id === newValue);
+        if (selectedZone) {
+            console.log("Selected Zone Title:", selectedZone.title);
+            setSelectedZone?.(selectedZone.title); // <- use a state setter for the title
+        }
     };
 
     const handleStateChange = (stateId: string) => {
         setSeletedStateId?.(stateId);
+
+        const selectedState = selectedZoneStates?.find((zone: any) => zone.id === stateId);
+        if (selectedState) {
+            console.log("Selected Zone Title:", selectedState.title);
+            setSelectesState?.(selectedState.title); // <- use a state setter for the title
+        }
     };
 
     return (
@@ -90,7 +101,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                 <div className="w-[180px]">
                     <Select
                         onValueChange={handleDivisionChange}
-                        value={selectedTitle ?? ""}
+                        value={selectedZoneId ?? ""}
                         name="zone_id">
                         <SelectTrigger
                             className="h-11 flex justify-between items-center"
@@ -121,7 +132,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                 </div>
 
                 {/* State Selection - Only show when a zone is selected */}
-                {selectedTitle && selectedTitle !== "all" && (
+                {selectedZoneId && selectedZoneId !== "all" && (
                     <div className="w-[180px]">
                         <Select
                             value={selectedStateId || ""}
@@ -153,7 +164,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                 )}
 
                 {/* Clear filters button */}
-                {(selectedTitle || selectedStateId || selectedDuration) && (
+                {(selectedZoneId || selectedStateId || selectedDuration) && (
                     <button
                         onClick={clearFilters}
                         className="ml-auto bg-red-500 hover:bg-red-500 text-white px-4 h-9 rounded">

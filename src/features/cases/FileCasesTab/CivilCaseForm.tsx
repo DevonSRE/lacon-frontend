@@ -50,7 +50,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                             : undefined,
                 }
             );
-
         } else if (state && state.status === 200) {
             setCurrentStep(1);
             setOpen(true);

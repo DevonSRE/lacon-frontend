@@ -17,16 +17,14 @@ export default function PdssDashboard() {
     return (
         <div className="bg-white px-6 space-y-10   flex flex-col py-8">
             {/* Header */}
-
             <div className="flex justify-between items-start mb-6">
                 <div>
-                    <h1 className="text-3xl font-semibold">Welcome Amaka</h1>
+                    <h1 className="text-3xl font-semibold">Welcome</h1>
                     <p className="text-gray-600 ">Today, {today}</p>
                 </div>
                 <Button
                     onClick={() => setOpen(true)}
-                    className="bg-[#C5402D] text-white px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-[#a93823]"
-                >
+                    className="bg-[#C5402D] text-white px-4 py-2 rounded-md flex items-center space-x-2 hover:bg-[#a93823]">
                     <PlusCircle className="w-4 h-4" />
                     <span>File a Case</span>
                 </Button>

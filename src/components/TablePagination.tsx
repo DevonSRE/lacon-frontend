@@ -21,17 +21,14 @@ function getVisiblePages(current: number, total: number): (number | "...")[] {
 
   const pages = new Set<number | "...">();
 
-  // Add first pages
   firstPages.forEach((p) => {
     if (p <= total) pages.add(p);
   });
 
-  // Add last pages
   lastPages.forEach((p) => {
     if (p > 3 && p <= total) pages.add(p);
   });
 
-  // Add current page and neighbors
   if (current > 3 && current < total - 2) {
     pages.add("...");
     pages.add(current - 1);
@@ -46,12 +43,8 @@ function getVisiblePages(current: number, total: number): (number | "...")[] {
 
   const deduped: (number | "...")[] = [];
   for (let i = 0; i < sorted.length; i++) {
-    if (
-      i > 0 &&
-      sorted[i] === "..." &&
-      sorted[i - 1] === "..."
-    ) {
-      continue; // skip repeated ellipses
+    if (i > 0 && sorted[i] === "..." && sorted[i - 1] === "...") {
+      continue;
     }
     deduped.push(sorted[i]);
   }
@@ -66,60 +59,77 @@ export default function TablePagination({
   onPageChange,
 }: TablePaginationProps) {
   const totalPages = Math.ceil(totalCount / pageSize);
-
   if (totalPages <= 1) return null;
 
   const visiblePages = getVisiblePages(currentPage, totalPages);
 
   return (
-    <div className="flex justify-center pt-4">
-      <Pagination>
-        <PaginationContent className="gap-2">
-          {/* Previous */}
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={() => {
-                if (currentPage > 1) onPageChange(currentPage - 1);
-              }}
-              className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-            />
-          </PaginationItem>
+    <div className="flex justify-between items-center pt-4 w-full">
+      {/* Previous button on the left */}
+      <div className="flex">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => {
+                  if (currentPage > 1) onPageChange(currentPage - 1);
+                }}
+                className={
+                  currentPage === 1 ? "pointer-events-none opacity-50" : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
 
-          {/* Numbered Buttons with Ellipses */}
-          {visiblePages.map((page, idx) =>
-            page === "..." ? (
-              <PaginationItem key={`ellipsis-${idx}`}>
-                <span className="px-3 py-1 text-gray-500 select-none">...</span>
-              </PaginationItem>
-            ) : (
-              <PaginationItem key={page}>
-                <button
-                  onClick={() => onPageChange(page)}
-                  className={`px-3 py-1 rounded-md border transition-colors ${
-                    page === currentPage
-                      ? "bg-black text-white"
-                      : "hover:bg-muted"
-                  }`}
-                >
-                  {page}
-                </button>
-              </PaginationItem>
-            )
-          )}
+      {/* Numbered pages in the center */}
+      <div className="flex justify-center">
+        <Pagination>
+          <PaginationContent className="gap-2">
+            {visiblePages.map((page, idx) =>
+              page === "..." ? (
+                <PaginationItem key={`ellipsis-${idx}`}>
+                  <span className="px-3 py-1 text-gray-500 select-none">...</span>
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={page}>
+                  <button
+                    onClick={() => onPageChange(page)}
+                    className={`px-3 py-1 rounded-md border transition-colors ${
+                      page === currentPage
+                        ? "bg-black text-white"
+                        : "hover:bg-muted"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                </PaginationItem>
+              )
+            )}
+          </PaginationContent>
+        </Pagination>
+      </div>
 
-          {/* Next */}
-          <PaginationItem>
-            <PaginationNext
-              onClick={() => {
-                if (currentPage < totalPages) onPageChange(currentPage + 1);
-              }}
-              className={
-                currentPage === totalPages ? "pointer-events-none opacity-50" : ""
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
+      {/* Next button on the right */}
+      <div className="flex">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => {
+                  if (currentPage < totalPages) onPageChange(currentPage + 1);
+                }}
+                className={
+                  currentPage === totalPages
+                    ? "pointer-events-none opacity-50"
+                    : ""
+                }
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
   );
 }

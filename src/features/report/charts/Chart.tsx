@@ -2,25 +2,19 @@ import React from "react";
 import dynamic from "next/dynamic";
 import { ApexOptions } from "apexcharts";
 
-
-// Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
     ssr: false,
 });
-
-
 type SeriesData = {
     name: string;
     data: number[];
 };
-
 type ChartProps = {
     categories: string[];
     series: SeriesData[];
     colors?: string[];
     columnWidth?: string;
 };
-
 const Chart: React.FC<ChartProps> = ({ categories, series, colors, columnWidth = "70%" }) => {
     const options: ApexOptions = {
         chart: {
@@ -39,14 +33,13 @@ const Chart: React.FC<ChartProps> = ({ categories, series, colors, columnWidth =
         xaxis: {
             categories: categories,
             labels: {
-                rotate: -90,
+                rotate: 0, // Force vertical (upright) labels
+                style: {
+                    fontSize: '12px',
+                },
             },
         },
-        // yaxis: {
-        //     title: {
-        //         text: "Number of Cases",
-        //     },
-        // },
+
         legend: {
             position: "top",
             markers: {

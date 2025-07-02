@@ -17,11 +17,17 @@ type ActionContextType = {
   selectedZoneId: string;
   setSelectedZoneId: (isHovered: string) => void;
 
+  selectedZone: string;
+  setSelectedZone: (isHovered: string) => void;
+
   selectedDuration: string;
   setselectedDuration: (isHovered: string) => void;
 
   selectedStateId: string;
   setSeletedStateId: (isHovered: string) => void;
+
+  selectedState: string;
+  setSelectesState: (isHovered: string) => void;
 
   selectedCentreId: string;
   setselectedCentreId: (isHovered: string) => void;
@@ -47,7 +53,9 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedStateId, setSeletedStateId] = useState("");
+  const [selectedState, setSelectesState] = useState("");
   const [selectedZoneId, setSelectedZoneId] = useState("");
+  const [selectedZone, setSelectedZone] = useState("");
   const [selectedDuration, setselectedDuration] = useState("");
   const [selectedCentreId, setselectedCentreId] = useState("");
   const [selectedUnit, setSelectedUnit] = useState("");
@@ -79,7 +87,11 @@ export const ActionProvider: React.FC<{ children: React.ReactNode }> = ({
         selectedCentreId,
         setselectedCentreId,
         openLoadingDialog,
-        setLoadingDialog
+        setLoadingDialog,
+        selectedZone,
+        setSelectedZone,
+        selectedState,
+        setSelectesState,
       }}
     >
       {children}
