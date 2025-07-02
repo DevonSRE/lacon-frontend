@@ -36,9 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${spaceGrotesk.variable} font-sans antialiased min-h-screen bg-white`}
-      >
+      <body className={`${spaceGrotesk.variable} font-sans antialiased min-h-screen bg-white`}>
         <AppProvider>
           <Suspense fallback={<SuspenseLoader />}>
             <Toaster richColors expand={true} position="top-center" />
@@ -46,7 +44,7 @@ export default function RootLayout({
               <ThemeProvider>
                 <SidebarProvider>
                   <ActionProvider>
-                      {children}
+                    {children}
                   </ActionProvider>
                 </SidebarProvider>
               </ThemeProvider>

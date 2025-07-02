@@ -126,20 +126,19 @@ export default function CaseTypeReports() {
 
     return (
         <div className="text-center text-gray-500">
-            {/* <OffenceCasesChart /> */}
-            <div className="mt-6">
-                <h1 className="text-left font-semibold text-xl text-black">
-                    Case Across Departments
-                </h1>
-                {departmentChartData && (
+            {departmentChartData && (
+                <div className="mt-6">
+                    <h1 className="text-left font-semibold text-xl text-black">
+                        Case Across Departments
+                    </h1>
                     <Chart
                         categories={departmentChartData.categories}
                         series={departmentChartData.series}
                         colors={["#6D7E9C", "#1D2B39"]}
                         columnWidth="40%"
                     />
-                )}
-            </div>
+                </div>
+            )}
 
             <div className="overflow-x-auto">
                 {/* Case Analysis Table */}
@@ -157,19 +156,20 @@ export default function CaseTypeReports() {
             </div>
 
             {/* Civil vs Criminal Cases Chart */}
-            <div className="mt-6">
-                <h1 className="text-left font-semibold text-xl text-black">
-                    Civil Vs. Criminal Cases By Zone
-                </h1>
-                {chartData && (
+
+            {chartData && (
+                <div className="mt-6">
+                    <h1 className="text-left font-semibold text-xl text-black">
+                        Civil Vs. Criminal Cases By Zone
+                    </h1>
                     <Chart
                         categories={chartData.categories}
                         series={chartData.series}
                         colors={["#BD2B12", "#2C3E50"]}
                         columnWidth="40%"
                     />
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

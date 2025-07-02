@@ -1,16 +1,16 @@
 "use client";
-
-import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
-import AppSidebar from "@/layout/AppSidebar";
-import Backdrop from "@/layout/Backdrop";
 import { setProfile } from "@/redux/slices/profile-slice";
 import { getSession } from "@/server/getSession";
 import React, { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { SidebarInset, SidebarProvider, SidebarTrigger, useSidebar, } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/layout/AppSidebar";
+// import { AppSidebar } from "@/components/sidebar/app-sidebar";
+// import AppSidebar from "@/layout/AppSidebar";
 
 export default function AdminLayout({ children, }: { children: React.ReactNode; }) {
-  const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+  // const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const dispatch = useDispatch();
   useEffect(() => {
     getSession().then((userData) => {
@@ -20,21 +20,17 @@ export default function AdminLayout({ children, }: { children: React.ReactNode; 
     });
   }, []);
 
-  // Dynamic class for main content margin based on sidebar state
-  const mainContentMargin = isMobileOpen
-    ? "ml-0"
-    : isExpanded || isHovered
-      ? "lg:ml-[290px]"
-      : "lg:ml-[90px]";
-
   return (
-    <div className="min-h-screen xl:flex">
+    <SidebarProvider>
       <AppSidebar />
-      <Backdrop />
-      <div className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}>
+      <SidebarInset>
+        {/* <Backdrop /> */}
         <AppHeader />
-        <div className="p-6 mt-4 mx-auto max-w-(--breakpoint-2xl)">{children}</div>
-      </div>
-    </div>
+        <div className="flex flex-1 flex-col gap-4 p-8 ">
+          {children}
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
+
   );
 }

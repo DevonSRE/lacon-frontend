@@ -9,7 +9,7 @@ const AdminDashboard: React.FC = () => {
         {/* Header Section */}
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Admin</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome</h1>
             <p className="text-gray-600">Today, Monday, 28th April, 2025</p>
           </div>
           <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">

@@ -65,7 +65,7 @@ export default function SigninForm() {
         <div className="flex flex-col w-full lg:w-1/2 lg:m-8 justify-center gap-8">
           <h2 className="text-2xl font-semibold mb-2">Welcome</h2>
           <p className="text-gray-600 mb-6 text-md">
-            Enter your credentials to access the admin dashboard.
+            Enter your credentials to access your dashboard.
           </p>
           {/* <form className="space-y-4"> */}
           <form action={dispatch} className="w-full space-y-6">
