@@ -33,23 +33,23 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
       );
     },
   },
-  {
-    accessorKey: "action",
-    header: "Action",
-    cell: ({ row }) => {
-      return (
-        <div className="flex items-center gap-2">
-          <button
-            className="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border rounded-md transition-colors"
-            onClick={() => {
-              // Handle view action
-              // console.log("View case:", row.original.case_id);
-            }}>
-            Assign
-          </button>
+  // {
+  //   accessorKey: "action",
+  //   header: "Action",
+  //   cell: ({ row }) => {
+  //     return (
+  //       <div className="flex items-center gap-2">
+  //         <button
+  //           className="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border rounded-md transition-colors"
+  //           onClick={() => {
+  //             // Handle view action
+  //             // console.log("View case:", row.original.case_id);
+  //           }}>
+  //           Assign
+  //         </button>
 
-        </div>
-      );
-    },
-  },
+  //       </div>
+  //     );
+  //   },
+  // },
 ];
