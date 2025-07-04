@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import AdminDashboardSkeleton from "@/components/skeleton/dashboard";
 import LawyerDashboard from "./Lawyer/LaywerDashboard";
-import { ROLES } from "@/types/auth"; // assuming this enum is available
+import { ROLES } from "@/types/auth";
 import { useAppSelector } from "@/hooks/redux";
 
 import UnitHeadDashboard from "./UnitHeadDashboard";

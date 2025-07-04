@@ -27,7 +27,7 @@ export default function USERROLS() {
   };
 
   return (
-    <div className=" mx-auto space-y-8 mb-20 pb-10 ">
+    <div className="space-y-8 mb-20 pb-10 ">
       {renderTabContent()}
     </div>
   );

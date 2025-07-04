@@ -192,7 +192,7 @@ export const createCaseColumns = (
             <DropdownMenuItem onClick={() => onViewDetails(user)}>
               View Case Details
             </DropdownMenuItem>
-            {(userRole !== ROLES.PARALEGAL) && (
+            {(userRole !== ROLES.PARALEGAL && userRole !== ROLES.ADMIN && userRole !== ROLES.PLATFORM_ADMIN) && (
               <>
                 <DropdownMenuItem onClick={() => onAssign(user)}>
                   Assign
@@ -208,9 +208,6 @@ export const createCaseColumns = (
                 </DropdownMenuItem>
               </>
             )}
-
-
-
           </DropdownMenuContent>
         </DropdownMenu>
       );
