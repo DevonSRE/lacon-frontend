@@ -53,7 +53,7 @@ export default function LoadingPage() {
 
         {/* Spinner & Text */}
         <div className="flex flex-col items-center">
-          <Image src="/loading.gif" alt={""} width={150} height={40} />
+          <Image src="/loading.gif" alt={""} width={100} height={100} />
           <p className="text-gray-600 text-md font-medium flex flex-wrap  mt-4 gap-1">
             {words.map((word, index) => (
               <span

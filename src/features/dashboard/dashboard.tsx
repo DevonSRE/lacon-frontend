@@ -18,18 +18,18 @@ export default function Dashboard() {
     // Platform Admin / Director roles
     if (role === ROLES.ADMIN || role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL
         || role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR || role === ROLES.CENTRE_COORDINATOR) {
-        return <AdminDashboard />;
+        return <AdminDashboard role={role} />;
     }
 
     if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS ||
         role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT ||
         role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) {
-        return (<UnitHeadDashboard />);
+        return (<UnitHeadDashboard role={role} />);
     }
 
     // Lawyers
     if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER) {
-        return <LawyerDashboard user={user?.first_name ?? "LAWYER"} />;
+        return <LawyerDashboard role={role} />;
     }
 
     // Default fallback

@@ -17,6 +17,7 @@ import { GetReportOverView } from '../server/reportAction'
 import { useQuery } from '@tanstack/react-query'
 import { useAction } from '@/context/ActionContext'
 import ReportOverview from '@/components/skeleton/ReportOverview'
+import Link from 'next/link'
 
 // Type definitions for the API response
 interface CaseReport {
@@ -138,7 +139,7 @@ export default function Overview() {
                             <div className="text-sm bg-white rounded-sm p-2 text-center text-green-600 font-medium mb-2">
                                 {
                                     selectedState ? selectedState :
-                                        (selectedZone != "") ? selectedZone : "National Data"
+                                        (selectedZone != "") ? selectedZone : "National LACON Data"
 
                                 }
                             </div>
@@ -200,9 +201,14 @@ export default function Overview() {
                         loading={false}
                         data={data?.data?.case_breakdowns}
                     />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
+                    {/* <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
                         view all
-                    </div>
+                    </div> */}
+                    <Link href="reports/case-break-down-by-state">
+                        <div className="bg-black text-white text-end text-sm  pr-6  hover:bg-gray-800">
+                            view all
+                        </div>
+                    </Link>
                 </div>
             </div>
 

@@ -45,7 +45,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, titleColor 
     );
 };
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ role }: { role: string }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
@@ -108,7 +108,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-12 gap-4 md:gap-6">
             <div className="col-span-12 space-y-10">
                 <div className="flex justify-between items-center mb-8">
-                    <Intro user="Admin" />
+                    <Intro user={role} />
                 </div>
 
                 {/* Main Stats Cards using actual API data */}

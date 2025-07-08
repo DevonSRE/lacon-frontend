@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import ProBonoForm from "./_components/OnlineProLawyerReg";
 
 
-const LawyerDashboard = ({ user }: { user: string }) => {
+const LawyerDashboard = ({ role }: { role: string }) => {
   const menu = ["Assigned Cases", "Case Intake", "Upload History"];
   const [menuTab, setMenuTab] = useState("Assigned Cases");
   const [open, setDialogOpen] = useState(false);
@@ -17,7 +17,7 @@ const LawyerDashboard = ({ user }: { user: string }) => {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between items-center mb-4">
-        <Intro user={user} />
+        <Intro user={role} />
         <Button variant="outline" onClick={() => setDialogOpen(true)}>+ New Intake</Button>
       </div>
       <hr />

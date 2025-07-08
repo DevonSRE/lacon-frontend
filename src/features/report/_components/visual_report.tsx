@@ -1,13 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { Router, TrendingUp } from "lucide-react";
 import { Icons } from "@/icons/icons";
 import { lawyerColumns, stateColumns } from "./table_Column";
 import { VisualReportProps } from "./report_types";
 import { DataTable } from "@/components/data-table";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 
 
 export default function VisualReport({ stateData, lawyersData }: VisualReportProps) {
+    const router = useRouter();
 
     const StatCard = ({ title, value, subtitle, isHighlighted, }: {
         title: string;
@@ -42,11 +45,12 @@ export default function VisualReport({ stateData, lawyersData }: VisualReportPro
                     <Icons.trendingIcon className="w-5 h-5 text-gray-400" />
                 </div>
                 <DataTable columns={stateColumns} loading={false} data={stateData} />
-                <div className="bg-black text-white text-end text-sm  pr-6 cursor-pointer hover:bg-gray-800">
-                    view all
-                </div>
+                <Link href="reports/case-break-down-by-state">
+                    <div className="bg-black text-white text-end text-sm  pr-6  hover:bg-gray-800">
+                        view all
+                    </div>
+                </Link>
             </div>
-
 
             {/* Lawyers Table */}
             <div className="">
