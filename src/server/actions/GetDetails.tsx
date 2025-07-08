@@ -20,10 +20,8 @@ export async function GetZones(params: Ipage) {
         const response = await detailsServices.getZone(params);
         console.log("response inveontory  =>" + JSON.stringify(response.data?.data));
         return { data: response.data?.data, success: true };
-
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);
     }
 }
-

@@ -6,6 +6,7 @@ import { CorrectionalVisitsTable, AllUnitTable } from './table_Column';
 import { Icons } from '@/icons/icons';
 import LawyerSkeleton from '@/components/skeleton/LawyerSkeleton';
 import { useAction } from '@/context/ActionContext';
+import Link from 'next/link';
 
 const getStatValue = (
     adminSummary: { title: string; count: number }[] | undefined,
@@ -128,13 +129,18 @@ export default function AllUnitsReport() {
                         loading={isLoading}
                         data={pdssBail || []}
                     />
-                    <div className="bg-black text-white text-end text-sm  pr-6 cursor-pointer hover:bg-gray-800">
-                        view all
-                    </div>
+                    <Link href="reports/PDSS-bail-at-police-stations">
+                        <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
+                            view all
+                        </div>
+                    </Link>
                 </div>
             </div>
-
         </div>
     );
 }
+
+//TODO check slack
+//TODO implement bem ui
+// TODO follow up with GOdiwin
 

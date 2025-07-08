@@ -1,10 +1,6 @@
 "use client";
-import { Dropdown } from "@/components/ui/dropdown/Dropdown";
-import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
 import { ApexOptions } from "apexcharts";
-import { EllipsisVertical } from "lucide-react";
 import dynamic from "next/dynamic";
-import { useState } from "react";
 
 // Dynamically import the ReactApexChart component
 const ReactApexChart = dynamic(() => import("react-apexcharts"), {
@@ -24,16 +20,6 @@ interface CaseDistributionChartProps {
 }
 
 export default function CaseDistributionChart({ data, isLoading }: CaseDistributionChartProps) {
-  const [isOpen, setIsOpen] = useState(false);
-
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
-
-  function closeDropdown() {
-    setIsOpen(false);
-  }
-
   // Process the API data
   const caseDistributions = data?.case_distributions || [];
 
@@ -43,7 +29,6 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
   );
 
   const seriesData = caseDistributions.map(item => item.count);
-
   // Calculate max value for better chart scaling
   const maxValue = Math.max(...seriesData, 0);
   const chartMax = Math.ceil(maxValue * 1.2); // Add 20% padding
@@ -53,7 +38,7 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
     chart: {
       fontFamily: "Outfit, sans-serif",
       type: "bar",
-      height: 280,
+      height: 200,
       toolbar: {
         show: false,
       },
@@ -202,37 +187,16 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
       </div>
     );
   }
-
   return (
     <div className="overflow-hidden dark:border-gray-800 dark:bg-white/[0.03]">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
           Case Distribution By Unit
         </h3>
-        <div className="relative inline-block">
-          {/* <button onClick={toggleDropdown} className="dropdown-toggle">
-            <EllipsisVertical className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
-          </button>
-          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              View More
-            </DropdownItem>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
-            >
-              Export Data
-            </DropdownItem>
-          </Dropdown> */}
-        </div>
       </div>
-
-      <div className="max-w-full overflow-x-auto custom-scrollbar bg-gray-100">
-        <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2 p-4">
-          <ReactApexChart options={options} series={series} type="bar" height={580} />
+      <div className="overflow-x-auto custom-scrollbar bg-gray-100 max-w-5xl">
+        <div className="pl-2 p-4">
+          <ReactApexChart options={options} series={series} type="bar" height={400} />
         </div>
       </div>
     </div>

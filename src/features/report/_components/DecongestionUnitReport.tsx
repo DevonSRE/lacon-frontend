@@ -157,7 +157,6 @@ export default function DecongestionUnitReport() {
                 )}
             </div>
 
-
             {/* PDSS Bail Section */}
             <div className="overflow-x-auto">
                 <div className="">

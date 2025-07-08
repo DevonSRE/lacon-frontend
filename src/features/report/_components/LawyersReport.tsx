@@ -6,6 +6,7 @@ import { Icons } from "@/icons/icons";
 import { laconLawyerColumns, ProbunoLawyerColumns } from "./table_Column"; // Assuming these are imported from your columns file
 import { useAction } from "@/context/ActionContext";
 import LawyerSkeleton from "@/components/skeleton/LawyerSkeleton";
+import Link from "next/link";
 
 // Type definitions for the API response
 interface MonthlyBreakdown {
@@ -122,9 +123,12 @@ export default function LawyersReport() {
                         loading={isLoading}
                         data={data?.data?.lacon_lawyer_performance || []}
                     />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
-                        view all
-                    </div>
+                    <Link href="reports/lacon-lawyers-performance">
+                        <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
+                            view all
+                        </div>
+                    </Link>
+
                 </div>
             </div>
 
@@ -140,9 +144,11 @@ export default function LawyersReport() {
                         loading={isLoading}
                         data={data?.data?.probono_lawyer_performance || []}
                     />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
-                        view all
-                    </div>
+                    <Link href="reports/pro-buno-lawyers">
+                        <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
+                            view all
+                        </div>
+                    </Link>
                 </div>
             </div>
         </>

@@ -22,7 +22,7 @@ export default function LoadingDialog({
                 <Card className="border-none shadow-none">
                     <CardContent className="flex flex-col items-center space-y-6 p-0">
                         {(title.toLowerCase() === "loading") && (
-                            <Image src="/loading.gif" alt={""} width={100} height={20} className="h-30 w-30" />
+                            <Image src="/loading.gif" alt={""} width={100} height={100} className="h-30 w-30" />
                         )}
                         {(title === "done") && (
                             <CheckCircle className="text-green-600 w-24 h-24" />
