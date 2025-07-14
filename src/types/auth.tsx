@@ -15,7 +15,8 @@ export enum ROLES {
   PLATFORM_ADMIN = "PLATFORM ADMIN",
   DIO = "DIO",
   LACON_LAWYER = "LACON LAWYER",
-  USER = "USER"
+  USER = "USER",
+  EXTERNAL_PARALEGAL = "EXTERNAL PARALEGAL"
 }
 
 export type TSessionData = {

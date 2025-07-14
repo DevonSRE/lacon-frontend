@@ -1,7 +1,7 @@
 import { DataTable } from "@/components/data-table";
 import { Icons } from "@/icons/icons";
 import { laconLawyerColumns, stateColumns } from "../table_Column";
-import { GetReportAdminLawyer, GetReportOverView } from "../../server/reportAction";
+import { GetLACONLAWYER } from "../../server/reportAction";
 import { useQuery } from "@tanstack/react-query";
 import TablePagination from "@/components/TablePagination";
 import { useState } from "react";
@@ -10,13 +10,13 @@ export default function LaconLawyerTable() {
     const [currentPage, setCurrentPage] = useState(1);
 
     const { data, isLoading, error } = useQuery({
-        queryKey: ["getAdminLawyersOverview", currentPage],
+        queryKey: ["getLACONLawyersOverview", currentPage],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
             };
-            return await GetReportAdminLawyer(filters);
+            return await GetLACONLAWYER(filters);
         },
         staleTime: 100000,
     });
@@ -40,9 +40,9 @@ export default function LaconLawyerTable() {
                 <DataTable
                     columns={laconLawyerColumns}
                     loading={isLoading}
-                    data={data?.data?.lacon_lawyer_performance || []}
+                    data={data?.data?.data || []}
                 />
-                {/* {data?.data?.data?.length > 0 && (
+                {data?.data?.data?.length > 0 && (
                     <div className="flex justify-end pt-4">
                         <TablePagination
                             currentPage={currentPage}
@@ -51,16 +51,16 @@ export default function LaconLawyerTable() {
                             onPageChange={(page) => setCurrentPage(page)}
                         />
                     </div>
-                )} */}
+                )}
 
-                <div className="flex justify-end pt-4">
+                {/* <div className="flex justify-end pt-4">
                     <TablePagination
                         currentPage={1}
                         totalCount={data?.data?.lacon_lawyer_performance.length}
                         pageSize={DEFAULT_PAGE_SIZE}
                         onPageChange={(page) => setCurrentPage(page)}
                     />
-                </div>
+                </div> */}
             </div>
         </div>
     );
