@@ -13,12 +13,8 @@ type CaseType = {
 
 export const caseIntakColumns: ColumnDef<CaseType>[] = [
   {
-    header: "Case ID",
-    accessorKey: "case_id",
-  },
-  {
     header: "Client Name",
-    accessorKey: "client_name",
+    accessorKey: "principal_name",
   },
   {
     header: "Contact",

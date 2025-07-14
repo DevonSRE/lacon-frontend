@@ -36,6 +36,11 @@ const reportServices = {
             params: filters,
         });
     },
+    async getLaconLAwyer(filters: any) {
+        return await axiosInstance.get("users/lacon-lawyers", {
+            params: filters,
+        });
+    },
 }
 
 export default reportServices;

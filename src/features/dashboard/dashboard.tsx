@@ -28,7 +28,7 @@ export default function Dashboard() {
     }
 
     // Lawyers
-    if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER) {
+    if (role === ROLES.PRO_BONO_LAWYER || role === ROLES.LACON_LAWYER || role === ROLES.EXTERNAL_PARALEGAL) {
         return <LawyerDashboard role={role} />;
     }
 

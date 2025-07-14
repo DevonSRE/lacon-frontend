@@ -72,3 +72,13 @@ export async function GetAllUnit(filters: Ipage) {
         return handleApiError(error);
     }
 }
+export async function GetLACONLAWYER(filters: Ipage) {
+    try {
+        const response = await reportServices.getLaconLAwyer(filters);
+        console.log(response);
+        return { data: response?.data.data, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

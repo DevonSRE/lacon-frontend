@@ -1,5 +1,5 @@
+'use client';
 import { DataTable } from "@/components/data-table";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search } from "lucide-react";
@@ -9,7 +9,7 @@ import TablePagination from "@/components/TablePagination";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { useQuery } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
-import { GetUserAction } from "@/features/usersRole/userRoleAction";
+import { GetCaseInTake } from "../../server/caseIntak";
 
 export default function CaseIntake() {
     const tabs = ["All Cases", "Pending Review", "Rejected"];
@@ -27,10 +27,8 @@ export default function CaseIntake() {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 query: debouncedSearchTerm,
-                tab: tabs,
-                status: statusFilter,
             };
-            return await GetUserAction(filters);
+            return await GetCaseInTake(filters);
         },
         staleTime: 100000,
     });
