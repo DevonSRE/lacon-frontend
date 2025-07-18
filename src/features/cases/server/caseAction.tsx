@@ -31,9 +31,7 @@ const uploadDocument = z.object({
 
 export async function GetCaseAction(params: Ipage) {
     try {
-        console.log("params in get cases => " + JSON.stringify(params));
         const response = await casesServices.getCases(params);
-        console.log("response in get cases => " + response.data.data);
         return { data: response.data?.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;

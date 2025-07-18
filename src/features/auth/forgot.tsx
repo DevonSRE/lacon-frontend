@@ -59,7 +59,7 @@ const FORGOT = () => {
                             value="SEND EMAIL"
                             loading={isPending}
                             pendingValue="Processing..."
-                            className="w-full  bg-red-500 hover:bg-red-600 text-white py-2 rounded mt-2"
+                            className="w-full   bg-red-500 hover:bg-red-600  text-white py-2 rounded mt-2"
                         />
                     </form>
                 </div>

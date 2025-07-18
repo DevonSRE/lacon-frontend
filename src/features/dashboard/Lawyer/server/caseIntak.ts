@@ -9,8 +9,8 @@ import { caseIntakeSchema } from "./caseIntakeSchema";
 export async function GetCaseInTake(params: Ipage) {
     try {
         const response = await CaseIntakeServices.getCaseIntake(params);
+        console.log(response);
         return { data: response.data?.data, success: true };
-
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);
@@ -29,9 +29,7 @@ export async function submitCaseIntake(_prevState: unknown, formData: FormData) 
             }
         }
         console.log('Form data:', JSON.stringify(data, null, 2));
-
         const result = caseIntakeSchema.safeParse(data);
-
         if (!result.success) {
             const fieldErrors = result.error.flatten().fieldErrors;
             const safeErrors: Record<string, string[]> = {};

@@ -2,7 +2,7 @@ export enum ROLES {
   DIRECTOR_GENERAL = "DIRECTOR GENERAL",
   CIVIL_JUSTICE_DEPT = "CIVIL JUSTICE DEPT. HEAD",
   CRIMINAL_JUSTICE_DEPT = "CRIMINAL JUSTICE DEPT. HEAD",
-  PARALEGAL = "PARALEGAL",
+  INTERNAL_PARALEGAL = "INTERNAL PARALEGAL",
   PRO_BONO_LAWYER = "PRO BONO LAWYER",
   CENTRE_COORDINATOR = "CENTRE COORDINATOR",
   ZONAL_DIRECTOR = "ZONAL DIRECTOR",
@@ -31,6 +31,7 @@ export type TUser = {
   first_name: string;
   last_name: string;
   phone_number: string;
+  id_image: string;
   email: string;
   state_id: string;
   state_name: string;

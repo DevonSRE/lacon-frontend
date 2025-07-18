@@ -79,7 +79,7 @@ export default function CasesPage() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
                 <div className="flex gap-4">
-                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
+                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                         <>
                             <BulkCaseUploadDialog />
                             <FileACaseComponent

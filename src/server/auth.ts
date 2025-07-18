@@ -16,6 +16,7 @@ export interface LoginResponseData {
   first_name: string;
   last_name: string;
   phone_number: string;
+  id_image: string;
   court_type: string;
   court_division_id: string;
   court_divison: string;

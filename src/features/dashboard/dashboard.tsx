@@ -21,7 +21,7 @@ export default function Dashboard() {
         return <AdminDashboard role={role} />;
     }
 
-    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PARALEGAL || role === ROLES.PDSS ||
+    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.PDSS ||
         role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT ||
         role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) {
         return (<UnitHeadDashboard role={role} />);

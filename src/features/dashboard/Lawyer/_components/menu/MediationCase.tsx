@@ -31,19 +31,38 @@ export default function MediationCase() {
                 size: DEFAULT_PAGE_SIZE,
                 status: (statusFilter === "ALL CASES") ? "" : statusFilter,
             };
-            // TODO Update this to the right Action
             return await GetCaseAction(filters);
         },
         staleTime: 100000,
     });
- 
+
+    const tabs = ["All Cases", "Active", "In Progress", "Closed"];
 
     return (
         <div className="space-y-4 ">
+            <div className="flex items-center text-xl font-semibold space-x-2 bg-white p-2">
+                Assigned Cases
+            </div>
             <div className="flex justify-between">
                 <div className="flex items-center text-sm space-x-2 bg-white p-2">
-                    Filed Cases
+                    {tabs.map((tab, idx) => (
+                        <button
+                            key={tab}
+                            onClick={() => {
+                                setActiveTab(idx);
+                                setStatusFilter(tab.toUpperCase());
+                                setCurrentPage(1);
+                            }}
+                            className={`px-4 py-2 rounded ${activeTab === idx
+                                ? "bg-black text-white"
+                                : "bg-gray-100 text-gray-800"
+                                }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
+
                 <div className="flex justify-end items-center mb-4 space-x-2">
                     <Button variant={"outline"} size="icon" onClick={toggleView}>
                         {view === "list" ? <LayoutGrid /> : <ListCollapse />}
@@ -60,7 +79,8 @@ export default function MediationCase() {
                     No cases found.
                 </div>
             ) : view === "grid" ? (
-                <LawyersReportGrid caseData={data?.data?.data} />
+                // <LawyersReportGrid caseData={data?.data?.data} />
+                <LawyersReportTable tableData={data?.data?.data} />
             ) : (
                 <LawyersReportTable tableData={data?.data?.data} />
             )}
