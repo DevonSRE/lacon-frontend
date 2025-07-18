@@ -25,3 +25,14 @@ export async function GetZones(params: Ipage) {
         return handleApiError(error);
     }
 }
+
+export async function GetActiveUsers(params: Ipage) {
+    try {
+        const response = await detailsServices.getActiveUser(params);
+        return { data: response.data?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

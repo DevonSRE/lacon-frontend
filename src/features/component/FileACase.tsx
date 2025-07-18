@@ -71,7 +71,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     // Check if user has permission to file cases
     const canFileCase = [
         ROLES.OSCAR_UNIT_HEAD,
-        ROLES.PARALEGAL,
+        ROLES.INTERNAL_PARALEGAL,
         ROLES.DECONGESTION_UNIT_HEAD,
         ROLES.PDSS,
         ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD
@@ -100,7 +100,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                             <SelectValue placeholder="Case Type" />
                         </SelectTrigger>
                         <SelectContent>
-                            {(userRole === ROLES.OSCAR_UNIT_HEAD || userRole === ROLES.PARALEGAL) && (
+                            {(userRole === ROLES.OSCAR_UNIT_HEAD || userRole === ROLES.INTERNAL_PARALEGAL) && (
                                 <>
                                     <SelectItem value="Civil">Civil</SelectItem>
                                     <SelectItem value="Criminal">Criminal</SelectItem>

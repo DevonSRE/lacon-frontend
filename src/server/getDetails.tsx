@@ -12,6 +12,12 @@ const detailsServices = {
         });
     },
 
+      async getActiveUser(param: any) {
+        return await axiosInstance.get("public/user-types/active", {
+            params: param,
+        });
+    },
+
 }
 
 export default detailsServices;

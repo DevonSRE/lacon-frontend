@@ -26,6 +26,7 @@ export interface IUser {
 
 export interface ILawyerRequest {
   ID: string;
+  LawyerID:string;
   FirstName: string;
   MiddleName: string;
   LastName: string;
