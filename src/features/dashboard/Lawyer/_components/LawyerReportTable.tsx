@@ -15,7 +15,7 @@ export default function LawyersReportTable({ tableData }: { tableData: any[] }) 
                     <TableHead>
                         <input type="checkbox" />
                     </TableHead>
-                    <TableHead>Case ID</TableHead>
+                    {/* <TableHead>Case ID</TableHead> */}
                     <TableHead>Client Title</TableHead>
                     <TableHead>Client Name</TableHead>
                     <TableHead>Case type</TableHead>
@@ -31,7 +31,7 @@ export default function LawyersReportTable({ tableData }: { tableData: any[] }) 
                         <TableCell>
                             <input type="checkbox" />
                         </TableCell>
-                        <TableCell>{row.id}</TableCell>
+                        {/* <TableCell>{row.id}</TableCell> */}
                         <TableCell>{row.case_title ?? "-"}</TableCell>
                         <TableCell>{row.first_name}</TableCell>
                         <TableCell>{row.case_type}</TableCell>

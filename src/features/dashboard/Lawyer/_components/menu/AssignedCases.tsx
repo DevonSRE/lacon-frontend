@@ -52,6 +52,7 @@ export default function AssignedCases() {
         staleTime: 100000,
     });
 
+
     const tabs = ["All Cases", "Active", "In Progress", "Closed"];
     return (
         <div className="space-y-4 ">

@@ -24,9 +24,10 @@ const LawyerDashboard = ({ role }: { role: string }) => {
       <div className="flex justify-between items-center mb-4">
         <Intro user={role} />
         {(role === ROLES.EXTERNAL_PARALEGAL) ?
-          <Button variant="outline" onClick={() => setDialogOpenMediation(true)}>
-            <PlusCircleIcon />
-            File a Case</Button>
+        ""
+          // <Button variant="outline" onClick={() => setDialogOpenMediation(true)}>
+          //   <PlusCircleIcon />
+          //   File a Case</Button>
           : <Button variant="outline" onClick={() => setDialogOpen(true)}>
             <PlusCircleIcon />
             New Intake</Button>

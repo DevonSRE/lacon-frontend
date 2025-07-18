@@ -22,7 +22,8 @@ export const publicRoutes = [
   "probuno",
   "/invitation",
   "/password/forgot",
-  "/password/password-otp"
+  "/password/password-otp",
+  "/password/reset-password",
 ];
 
 /**
