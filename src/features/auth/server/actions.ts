@@ -33,6 +33,7 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         first_name: data.first_name,
         last_name: data.last_name,
         phone_number: data.phone_number,
+        id_image: data.id_image,
         state_id: (data.state_id != "00000000-0000-0000-0000-000000000000") ? data.state_id : "",
         state_name: data.state_name,
         zone_id: data.zone_id,
@@ -157,6 +158,7 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
           last_name: data.data.last_name,
           phone_number: data.data.phone_number,
           state_id: data.state_id ?? "",
+          id_image: data.id_image ?? "",
           state_name: data.state_name ?? "",
           zone_id: data.zone_id ?? "",
           zone_name: data.zone_name ?? "",
@@ -232,7 +234,6 @@ export async function logoutAction() {
 export async function verifyOTP(_prevState: unknown, formData: FormData) {
   const data = Object.fromEntries(formData);
   const result = OTPFormSchema.safeParse(data);
-
   if (!result.success) {
     return {
       status: 400,
@@ -255,17 +256,18 @@ export async function verifyOTP(_prevState: unknown, formData: FormData) {
       otp: result.data.otp,
       email: email,
     });
-    const data = res.data as LoginResponseData; //Cast to the expected type
+    console.log(res);
+
+    const data = res.data as LoginResponseData;
     (await cookies()).set("TempToken", data.token);
   } catch (err: any) {
-    console.error("Failed to verify OTP:", err);
     return {
       status: err?.response?.status || 500,
       message: err?.response?.data?.message || "Failed to verify OTP.",
       errors: err?.response?.data?.errors || "An unknown error occurred.",
     };
   }
-  redirect("/reset-password");
+  redirect("/password/reset-password");
 }
 
 export async function changePassword(_prevState: unknown, formData: FormData) {

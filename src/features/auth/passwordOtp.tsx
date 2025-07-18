@@ -94,7 +94,7 @@ export default function PASSWORDOTPCOMPONENT({ email }: { email: string }) {
                             shouldAutoFocus
                         />
 
-                        <SubmitButton value="PROCEED" pendingValue="Processing..." className="w-full bg-app-primary hover:bg-app-secondary/90 text-white h-12 rounded mt-2" />
+                        <SubmitButton value="PROCEED" pendingValue="Processing..." className="w-full  text-white h-12 rounded mt-2 bg-red-500 hover:bg-red-600" />
                     </form>
 
                     <div className="space-y-2 mt-6">

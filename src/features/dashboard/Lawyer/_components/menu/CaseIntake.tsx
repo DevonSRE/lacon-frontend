@@ -15,24 +15,51 @@ export default function CaseIntake() {
     const tabs = ["All Cases", "Pending Review", "Rejected"];
     const [activeTab, setActiveTab] = useState(0);
     const [currentPage, setCurrentPage] = useState(1);
-
     const [clientNameSearch, setClientNameSearch] = useState("");
+    const [caseIdSearch, setCaseIdSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
     const [debouncedSearchTerm] = useDebounce(clientNameSearch, 500);
+    const [debouncedCaseIdSearch] = useDebounce(caseIdSearch, 500);
+
+    // Determine the status based on active tab and status filter
+    const getStatusFromTab = (tabIndex: number) => {
+        switch (tabIndex) {
+            case 0: return undefined; // All Cases
+            case 1: return "Pending Review";
+            case 2: return "Rejected";
+            default: return undefined;
+        }
+    };
+
+    const finalStatus = statusFilter || getStatusFromTab(activeTab);
 
     const { data, isLoading } = useQuery({
-        queryKey: ["getCaseIntake", currentPage, debouncedSearchTerm, tabs, statusFilter],
+        queryKey: ["getCaseIntake", currentPage, debouncedSearchTerm, debouncedCaseIdSearch, activeTab, statusFilter, finalStatus],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 query: debouncedSearchTerm,
+                caseId: debouncedCaseIdSearch,
+                status: finalStatus
             };
             return await GetCaseInTake(filters);
         },
         staleTime: 100000,
     });
 
+    // Reset to first page when filters change
+    const handleStatusFilterChange = (value: string) => {
+        setStatusFilter(value);
+        setCurrentPage(1);
+    };
+
+    const handleTabChange = (tabIndex: number) => {
+        setActiveTab(tabIndex);
+        setCurrentPage(1);
+        // Clear status filter when changing tabs
+        setStatusFilter(undefined);
+    };
 
     return (
         <>
@@ -41,12 +68,11 @@ export default function CaseIntake() {
                     {tabs.map((tab, idx) => (
                         <button
                             key={tab}
-                            onClick={() => setActiveTab(idx)}
+                            onClick={() => handleTabChange(idx)}
                             className={`px-4 py-2 rounded ${activeTab === idx
                                 ? "bg-black text-white"
                                 : "bg-gray-100 text-gray-800"
-                                }`}
-                        >
+                                }`}>
                             {tab}
                         </button>
                     ))}
@@ -58,7 +84,10 @@ export default function CaseIntake() {
                             placeholder="Search Intake"
                             className="pl-10 h-11"
                             value={clientNameSearch}
-                            onChange={(e) => setClientNameSearch(e.target.value)}
+                            onChange={(e) => {
+                                setClientNameSearch(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         />
                     </div>
                     <div className="relative">
@@ -66,17 +95,20 @@ export default function CaseIntake() {
                         <Input
                             placeholder="Search by CaseId"
                             className="pl-10 h-11"
-                            value={clientNameSearch}
-                            onChange={(e) => setClientNameSearch(e.target.value)}
+                            value={caseIdSearch}
+                            onChange={(e) => {
+                                setCaseIdSearch(e.target.value);
+                                setCurrentPage(1);
+                            }}
                         />
                     </div>
                     <div className="">
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <Select value={statusFilter} onValueChange={handleStatusFilterChange}>
                             <SelectTrigger className="h-11 text-xs">
                                 <SelectValue placeholder="Case Status" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="Unassiged">Unassiged</SelectItem>
+                                <SelectItem value="Unassigned">Unassigned</SelectItem>
                                 <SelectItem value="Assigned">Assigned</SelectItem>
                                 <SelectItem value="Closed">Closed</SelectItem>
                             </SelectContent>
@@ -84,9 +116,7 @@ export default function CaseIntake() {
                     </div>
                 </div>
             </div>
-
-            <DataTable columns={caseIntakColumns} loading={isLoading} data={[]} />
-            {/* <DataTable columns={caseIntakColumns} loading={isLoading} data={data?.data.data} /> */}
+            <DataTable columns={caseIntakColumns} loading={isLoading} data={data?.data.data} />
             {data?.data?.data.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
@@ -97,7 +127,6 @@ export default function CaseIntake() {
                     />
                 </div>
             )}
-
         </>
     );
 }

@@ -69,7 +69,6 @@ const AuthService = {
         return await authConfig.post("/auth/resend-otp", payload);
     },
 
-
     async resetPassword(payload: {email: string;new_password: string;confirm_password: string;}) {
         return await authTemp.post("/auth/reset-password", payload);
     },
