@@ -22,6 +22,9 @@ const usersServices = {
             params: param,
         });
     },
+    async getProbunoLawyersRequestSingle(id: string) {
+        return await axiosInstance.get(`/users/probono-request/${id}`);
+    },
     async getUserType(param: any) {
         return await axiosInstance.get("/users/get-user-by-type", {
             params: param,

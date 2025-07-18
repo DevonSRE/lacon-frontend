@@ -45,6 +45,16 @@ export async function GetProbunoLawyerRequestAction(params: Ipage) {
         return handleApiError(error);
     }
 }
+export async function getProbunoLawyersRequestSingleAction(id: string) {
+    try {
+        const response = await usersServices.getProbunoLawyersRequestSingle(id);
+        return { data: response.data?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
 export async function GetUserByTypes(params: Ipage) {
     try {
         const response = await usersServices.getUserType(params);

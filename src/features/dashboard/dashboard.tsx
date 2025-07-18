@@ -23,7 +23,7 @@ export default function Dashboard() {
 
     if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.PDSS ||
         role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT ||
-        role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) {
+        role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD || role === ROLES.DIO) {
         return (<UnitHeadDashboard role={role} />);
     }
 

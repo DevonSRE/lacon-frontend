@@ -227,7 +227,7 @@ export default function ViewCase(details: { details: ICase | null },) {
                         </div>
                     </div>
                 </div>
-                {(role != "PARALEGAL") && (
+                {(role != "INTERNAL PARALEGAL") && (
                     <div className="grid grid-cols-2 gap-4 mt-10 justify-between">
                         <Button className='h-11 w-full'>Assign Case</Button>
                         <Button variant={"outline"} className='h-11 w-full'>Transfer to Department</Button>
