@@ -13,7 +13,7 @@ const detailsServices = {
     },
 
       async getActiveUser(param: any) {
-        return await axiosInstance.get("public/user-types/active", {
+        return await axiosInstance.get("public/user-types/inactive", {
             params: param,
         });
     },
