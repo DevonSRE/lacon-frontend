@@ -1,25 +1,14 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogTrigger,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+
 import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
 import { LoaderCircle, LogOut, ArrowRight } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
-
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
-import LogoutModal from "../logout-modal";
 import { useAppSelector } from "@/hooks/redux";
 
 export default function UserDropdown() {
