@@ -46,7 +46,7 @@ export const PdssBailatStation: ColumnDef<StateData>[] = [
 ];
 export const BiAnnualStatistic: ColumnDef<StateData>[] = [
     { accessorKey: "period", ...centerCell("period") },
-    { accessorKey: "received", ...centerCell("Reveived Cases") },
+    { accessorKey: "received", ...centerCell("Received Cases") },
     { accessorKey: "completed", ...centerCell("Completed Cases") },
 ];
 export const offenceComplain: ColumnDef<StateData>[] = [
@@ -102,12 +102,12 @@ export const CorrectionalVisitsTable: ColumnDef<StateData>[] = [
 
 export const AllUnitTable: ColumnDef<StateData>[] = [
     { accessorKey: "station", ...centerCell("Station") },
-    { accessorKey: "release_individuals", ...centerCell("Releases Individuals") },
+    { accessorKey: "release_individuals", ...centerCell("Released Individuals") },
     { accessorKey: "gender", ...centerCell("Gender") },
     { accessorKey: "offence", ...centerCell("Offenses") },
 ];
 export const PDSSBailTable: ColumnDef<StateData>[] = [
     { accessorKey: "station", ...centerCell("Station") },
-    { accessorKey: "release_individuals", ...centerCell("Releases Individuals") },
+    { accessorKey: "release_individuals", ...centerCell("Released Individuals") },
     { accessorKey: "gender", ...centerCell("Gender") },
 ];

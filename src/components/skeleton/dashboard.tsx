@@ -34,7 +34,6 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Case Assignment Overview */}
         <div className=" rounded-lg shadow-xs mb-8">
           <div className="p-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">Case Assignment Overview</h2>

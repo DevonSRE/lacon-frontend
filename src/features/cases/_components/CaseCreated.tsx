@@ -27,6 +27,8 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
     };
 
     const handleReturnDashboard = () => {
+        setOpen(false);
+
         router.push("/dashboard");
     };
 

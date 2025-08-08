@@ -228,6 +228,7 @@ export async function ForgotPasswordAction(
 
 export async function logoutAction() {
   deleteSession();
+
   redirect("/login");
 }
 

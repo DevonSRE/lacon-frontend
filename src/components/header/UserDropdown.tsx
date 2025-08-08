@@ -44,6 +44,7 @@ export default function UserDropdown() {
     try {
       await deleteSession();
       console.log("Session deleted successfully");
+      localStorage.clear();
 
       // Small delay to show the loading state
       await new Promise((resolve) => setTimeout(resolve, 500));

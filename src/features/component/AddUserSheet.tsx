@@ -11,7 +11,6 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useAction } from "@/context/ActionContext";
 import { InviteUser } from "../dashboard/server/action";
 import { SubmitButton } from "@/components/submit-button";
@@ -21,29 +20,12 @@ import InputField from "@/components/form/input/InputField";
 import { isFieldErrorObject, ROLES } from "@/types/auth";
 import { FormDataUser, zones } from "../dashboard/server/type";
 import { GetState } from "@/components/get-state";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ArrowLeft } from "lucide-react";
 import { CustomeSheet } from "@/components/CustomSheet";
 import LoadingDialog from "@/components/LoadingDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { GetZone } from "@/components/get-zone";
 import { GetActiveUser } from "@/components/get-active-users";
 
-const userTypeOptions = [
-  "CRIMINAL JUSTICE DEPT. HEAD",
-  "CIVIL JUSTICE DEPT. HEAD",
-  "DECONGESTION UNIT HEAD",
-  "PREROGATIVE OF MERCY UNIT HEAD",
-  "OSCAR UNIT HEAD",
-  "DIO",
-  "PDSS",
-  "ZONAL DIRECTOR",
-  "STATE COORDINATOR",
-  "CENTRE COORDINATOR",
-  "PARALEGAL",
-  "LACON LAWYER",
-  "PRO BONO LAWYER",
-] as const;
 
 const defaultFormData: FormDataUser = {
   user_type: "",
@@ -65,17 +47,12 @@ export function AddUserSheet() {
   const [formData, setFormData] = useState<FormDataUser>(defaultFormData);
   const [selectedState, setSelectedState] = useState<string>("");
   const [userType, setSelectedUserType] = useState<string>("");
-
   const queryClient = useQueryClient();
   const [loading, setLoading] = useState<boolean>(false);
-
   const handleChange = (key: keyof FormDataUser, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
-
   useEffectAfterMount(() => {
-    console.log(state);
-
     if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
       toast.error(state?.message, {
         description:
@@ -136,7 +113,7 @@ export function AddUserSheet() {
               value={userType}
               onValueChange={(val: string) => {
                 setSelectedUserType(val);
-                handleChange("user_type", val); // <-- sync with formData
+                handleChange("user_type", val);
               }}
               placeholder="Select User Type"
               onLoadingChange={(loading) => setLoading(loading)}
@@ -178,7 +155,7 @@ export function AddUserSheet() {
               )}
 
               {/* Paralegal Designation */}
-              {formData.user_type === "PARALEGAL" && (
+              {formData.user_type === "INTERNAL PARALEGAL" && (
                 <div className="space-y-1">
                   <Label>
                     Designation <span className="text-red-500">*</span>

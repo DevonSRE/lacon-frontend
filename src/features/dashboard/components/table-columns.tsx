@@ -8,7 +8,7 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     header: "Case Type",
   },
   {
-    accessorKey: "Department",
+    accessorKey: "department_name",
     header: "Department",
   },
   {
