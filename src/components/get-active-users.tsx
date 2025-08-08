@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { GetActiveUsers } from "@/server/actions/GetDetails";
+import { GetActiveUsers, GetInActiveUsers } from "@/server/actions/GetDetails";
 
 export const GetActiveUser = ({
   placeholder,
@@ -32,8 +32,7 @@ export const GetActiveUser = ({
     queryFn: async () => {
       const filters = { page: 1, size: 40 };
       try {
-        const result = await GetActiveUsers(filters);
-        console.log("Fetched users:", result); // ✅ Debug
+        const result = await GetInActiveUsers(filters);
         return result;
       } catch (err) {
         console.error("Failed to fetch users", err); // ✅ Debug
@@ -60,10 +59,7 @@ export const GetActiveUser = ({
     setSelectedTitle(newValue);
     onValueChange?.(newValue);
   };
-  console.log(data?.data);
-  // ✅ Extract user list safely
   const users = data?.data ?? []; // Adjust this if structure differs!
-  console.log(users);
   return (
     <Select
       onValueChange={handleDivisionChange}

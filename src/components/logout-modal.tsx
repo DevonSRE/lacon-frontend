@@ -24,9 +24,9 @@ export default function LogoutModal() {
     setLoading(true);
     try {
       await deleteSession();
-      // setDialogOpen(false);
+      localStorage.clear();
       await new Promise((resolve) => setTimeout(resolve, 100));
-      redirect('/signin');
+      redirect("/signin");
     } catch (error) {
       console.error("Logout failed:", error);
       setLoading(false); // Reset loading state on error
@@ -46,7 +46,8 @@ export default function LogoutModal() {
           <span className="relative block text-xs">
             <span className="gap-4 flex  group-hover:hidden items-center">
               <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
-              Log out</span>
+              Log out
+            </span>
             <span className="hidden items-center group-hover:block  flex-row">
               <div className="flex gap-2 items-center">
                 Yes log me out
@@ -72,7 +73,8 @@ export default function LogoutModal() {
             size={"lg"}
             disabled={loading}
             className="flex-1 text-xs sm:flex-none "
-            onClick={handleLogout}>
+            onClick={handleLogout}
+          >
             {loading ? (
               <div className="flex items-center gap-2">
                 <LoaderCircle
@@ -95,7 +97,6 @@ export default function LogoutModal() {
               CANCEL
             </Button>
           </DialogClose>
-
         </DialogFooter>
       </DialogContent>
     </Dialog>

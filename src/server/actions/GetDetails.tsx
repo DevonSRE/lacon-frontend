@@ -30,7 +30,17 @@ export async function GetActiveUsers(params: Ipage) {
     try {
         const response = await detailsServices.getActiveUser(params);
         return { data: response.data?.data, success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
 
+
+export async function GetInActiveUsers(params: Ipage) {
+    try {
+        const response = await detailsServices.getInActiveUser(params);
+        return { data: response.data?.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);
