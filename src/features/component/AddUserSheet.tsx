@@ -123,7 +123,7 @@ export function AddUserSheet() {
           {formData.user_type !== "" && (
             <>
               {/* LacON Lawyer Designation */}
-              {formData.user_type === "LACON LAWYER" && (
+              {formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER" && (
                 <div className="space-y-1">
                   <Label>
                     Designation <span className="text-red-500">*</span>
@@ -186,7 +186,7 @@ export function AddUserSheet() {
               {/* State Selection */}
               {(formData.user_type === "STATE COORDINATOR" ||
                 formData.user_type === "CENTRE COORDINATOR" ||
-                formData.user_type === "LACON LAWYER") && (
+                formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER") && (
                 <div className="space-y-1">
                   <Label>
                     Select State <span className="text-red-500">*</span>
@@ -347,7 +347,7 @@ export function AddUserSheet() {
                 </p>
               )}
 
-              {(formData.user_type === "LACON LAWYER" ||
+              {(formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER" ||
                 formData.designation === "PRO BONO LAWYER") && (
                 <div>
                   <InputField

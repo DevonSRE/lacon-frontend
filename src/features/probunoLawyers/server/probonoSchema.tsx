@@ -1,4 +1,6 @@
-import { z } from 'zod';
+import { z } from "zod";
+
+
 
 export const proBonoSchema = z.object({
   first_name: z.string().min(1),
@@ -14,25 +16,25 @@ export const proBonoSchema = z.object({
   year_of_call: z.string().min(4).max(4).optional(),
   nba_branch: z.string().min(1).optional(),
   experience_in_criminal_law: z.enum([
-    'Below 2 years',
-    '2-5 years',
-    '5-10 years',
-    'Above 10 years',
+    "Below 2 years",
+    "2-5 years",
+    "5-10 years",
+    "Above 10 years",
   ]),
   pro_bono_capacity: z.enum([
-    '1 case at a time',
-    '2 cases at a time',
-    '3-4 cases at a time',
-    '5 or more cases at a time',
+    "1 case at a time",
+    "2 cases at a time",
+    "3-4 cases at a time",
+    "5 or more cases at a time",
   ]),
   criminal_courts_preference: z.array(
     z.enum([
-      'Appellate Courts',
-      'High Courts',
-      'Magistrate Courts',
-      'Customary Court',
-      'Sharia Court',
-      'Area Court',
+      "Appellate Courts",
+      "High Courts",
+      "Magistrate Courts",
+      "Customary Court",
+      "Sharia Court",
+      "Area Court",
     ])
   ),
   areas_covered: z.string().min(1).optional(),
@@ -41,7 +43,6 @@ export const proBonoSchema = z.object({
 });
 
 export type TProbunoFormPayload = z.infer<typeof proBonoSchema>;
-
 
 export const probunoInventoryCaseformSchema = z.object({
   first_name: z.string().min(1),
@@ -61,21 +62,25 @@ export const probunoInventoryCaseformSchema = z.object({
   referral_sources: z.array(z.string()),
 });
 
-export type TProbunoInventoryCaseform = z.infer<typeof probunoInventoryCaseformSchema>;
+export type TProbunoInventoryCaseform = z.infer<
+  typeof probunoInventoryCaseformSchema
+>;
 
 const CaseSchema = z.object({
   client_name: z.string(),
   sex: z.enum(["male", "female"]),
-  date_case_taken: z.string().refine(date => !isNaN(Date.parse(date)), {
+  date_case_taken: z.string().refine((date) => !isNaN(Date.parse(date)), {
     message: "Invalid date format for date_case_taken",
   }),
   nature_of_service: z.string(),
   offering_charge: z.string(),
   suit_number: z.string(),
   status_of_case: z.string(),
-  last_date_of_appearance: z.string().refine(date => !isNaN(Date.parse(date)), {
-    message: "Invalid date format for last_date_of_appearance",
-  }),
+  last_date_of_appearance: z
+    .string()
+    .refine((date) => !isNaN(Date.parse(date)), {
+      message: "Invalid date format for last_date_of_appearance",
+    }),
   is_client_in_custody: z.boolean(),
 });
 
@@ -87,20 +92,17 @@ export const caseUpdateSchema = z.object({
   cases: z.array(CaseSchema),
 });
 
-
 export type TProbunoCaseUpdatePayload = z.infer<typeof caseUpdateSchema>;
-
-
 
 const createSchema = (fields: Record<string, any>) => ({
   parse: (data: any) => {
     const errors: Record<string, string> = {};
 
-    Object.keys(fields).forEach(key => {
+    Object.keys(fields).forEach((key) => {
       const field = fields[key];
       const value = data[key];
 
-      if (field.required && (!value || value.trim() === '')) {
+      if (field.required && (!value || value.trim() === "")) {
         errors[key] = `${key} is required`;
       }
 
@@ -108,12 +110,12 @@ const createSchema = (fields: Record<string, any>) => ({
         errors[key] = `${key} must be at least ${field.minLength} characters`;
       }
 
-      if (field.type === 'email' && value && !/\S+@\S+\.\S+/.test(value)) {
-        errors[key] = 'Invalid email format';
+      if (field.type === "email" && value && !/\S+@\S+\.\S+/.test(value)) {
+        errors[key] = "Invalid email format";
       }
 
-      if (field.type === 'number' && value && isNaN(Number(value))) {
-        errors[key] = 'Must be a valid number';
+      if (field.type === "number" && value && isNaN(Number(value))) {
+        errors[key] = "Must be a valid number";
       }
     });
 
@@ -122,89 +124,132 @@ const createSchema = (fields: Record<string, any>) => ({
     }
 
     return data;
-  }
+  },
 });
 
-
 export const personalInfoSchema = z.object({
-  state_id: z.string().min(1, { message: 'State filling from is not selected' }).optional(),
-  case_type: z.string().min(1, { message: 'Case Type is required' }).optional(),
-  first_name: z.string().min(2, { message: 'First name must be at least 2 characters' }),
-  last_name: z.string().min(2, { message: 'Last name must be at least 2 characters' }),
-  gender: z.string().min(1, { message: 'Gender is required' }),
-  permanent_address: z.string().min(10, { message: 'Address must be at least 10 characters' }),
-  age: z.coerce.number().min(1, { message: 'Age must be greater than 0' }),
-  phone_number: z.string().min(10, { message: 'Phone number must be at least 10 digits' }),
-  marital_status: z.string().min(1, { message: 'Marital status is required' }),
-  state_of_origin: z.string().min(1, { message: 'State of origin is required' }),
-  occupation: z.string().min(1, { message: 'Occupation is required' }).optional(),
-  disability_status: z.string().min(1, { message: 'Please Select one status' }),
+  state_id: z
+    .string()
+    .min(1, { message: "State filling from is not selected" })
+    .optional(),
+  case_type: z.string().min(1, { message: "Case Type is required" }).optional(),
+  first_name: z
+    .string()
+    .min(2, { message: "First name must be at least 2 characters" }),
+  last_name: z
+    .string()
+    .min(2, { message: "Last name must be at least 2 characters" }),
+  gender: z.string().min(1, { message: "Gender is required" }),
+  permanent_address: z
+    .string()
+    .min(10, { message: "Address must be at least 10 characters" }),
+  age: z.coerce.number().min(1, { message: "Age must be greater than 0" }),
+  phone_number: z
+    .string()
+    .min(10, { message: "Phone number must be at least 10 digits" }),
+  marital_status: z.string().min(1, { message: "Marital status is required" }),
+  state_of_origin: z
+    .string()
+    .min(1, { message: "State of origin is required" }),
+  occupation: z
+    .string()
+    .min(1, { message: "Occupation is required" })
+    .optional(),
+  disability_status: z.string().min(1, { message: "Please Select one status" }),
   disability_proof: z.any().optional(),
 });
 export const caseDetailsSchema = z.object({
-  complaint: z.string().min(5, { message: 'Complaint must be at least 5 characters' }),
-  average_income: z.string({ invalid_type_error: 'Average income must be a number' }),
-  legal_aid_reason: z.string().min(5, { message: 'Legal aid reason must be at least 5 characters' }),
-  number_of_dependants: z.coerce.number({ invalid_type_error: 'Number of dependants must be a number' }),
+  complaint: z
+    .string()
+    .min(5, { message: "Complaint must be at least 5 characters" }),
+  average_income: z.string({
+    invalid_type_error: "Average income must be a number",
+  }),
+  legal_aid_reason: z
+    .string()
+    .min(5, { message: "Legal aid reason must be at least 5 characters" }),
+  number_of_dependants: z.coerce.number({
+    invalid_type_error: "Number of dependants must be a number",
+  }),
   registration_number: z.string().optional(),
   case_number: z.string().optional(),
   court_of_hearing: z.string().optional(),
-  defendant_name: z.string().min(1, { message: 'Defendant name is required' }),
-  defendant_address: z.string().min(1, { message: 'Defendant address is required' }),
-  defendant_phone_number: z.string().min(1, { message: 'Defendant phone number is required' }),
+  defendant_name: z.string().min(1, { message: "Defendant name is required" }),
+  defendant_address: z
+    .string()
+    .min(1, { message: "Defendant address is required" }),
+  defendant_phone_number: z
+    .string()
+    .min(1, { message: "Defendant phone number is required" }),
 });
 export const legalAidFormSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
-  client_location: z.string().min(1, { message: "Client location is required" }),
-  date_of_admission: z.string().min(1, { message: "Date of admission is required" }),
+  client_location: z
+    .string()
+    .min(1, { message: "Client location is required" }),
+  date_of_admission: z
+    .string()
+    .min(1, { message: "Date of admission is required" }),
   average_income: z.string().min(1, { message: "Average income is required" }),
-  legal_aid_reason: z.string().min(1, { message: "Reason for legal aid is required" }),
+  legal_aid_reason: z
+    .string()
+    .min(1, { message: "Reason for legal aid is required" }),
   case_status: z.string().min(1, { message: "Case status is required" }),
   case_number: z.string().optional(),
   bail_status: z.string().optional(),
   court_of_trial: z.string().optional(),
-  prosecuting_agency: z.string().min(1, { message: "Prosecuting agency is required" }),
+  prosecuting_agency: z
+    .string()
+    .min(1, { message: "Prosecuting agency is required" }),
 });
 
 export const pdssCaseSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
-  client_location: z.string().min(1, { message: "Client location is required" }),
-  days_in_detention: z.coerce.number({ invalid_type_error: "Days in detention must be a number" }).nonnegative({ message: "Days in detention cannot be negative" }),
-  counsel_designation: z.string().min(1, { message: "Counsel designation is required" }).optional(),
-  counsel_paralegal: z.string().min(1, { message: "Counsel/Paralegal is required" }),
-  name_of_counsel_or_firm_or_organisation_id: z.string().min(1, { message: "Name of Counsel/Firm/Organisation ID is required" }).optional(),
+  client_location: z
+    .string()
+    .min(1, { message: "Client location is required" }),
+  days_in_detention: z.coerce
+    .number({ invalid_type_error: "Days in detention must be a number" })
+    .nonnegative({ message: "Days in detention cannot be negative" }),
+  counsel_designation: z
+    .string()
+    .min(1, { message: "Counsel designation is required" })
+    .optional(),
+  counsel_paralegal: z
+    .string()
+    .min(1, { message: "Counsel/Paralegal is required" }),
+  name_of_counsel_or_firm_or_organisation_id: z
+    .string()
+    .min(1, { message: "Name of Counsel/Firm/Organisation ID is required" })
+    .optional(),
   nature_of_legal_service_provided: z.string().optional(),
   organisation: z.string().optional(),
   case_status: z.string().optional(),
   bail_status: z.string().optional(),
   date_trial_ended: z.string().optional(),
-  case_outcome: z.string().optional()
+  case_outcome: z.string().optional(),
 });
-
 
 export type PdssCaseSchema = z.infer<typeof pdssCaseSchema>;
 
 export const PublicCivilCaseSchema = z.object({
   ...personalInfoSchema.shape,
-  ...caseDetailsSchema.shape
-})
+  ...caseDetailsSchema.shape,
+});
 export const PublicCriminalCaseSchema = z.object({
   ...personalInfoSchema.shape,
-  ...legalAidFormSchema.shape
-})
+  ...legalAidFormSchema.shape,
+});
 export const PDSSCaseFullSchema = z.object({
   ...personalInfoSchema.shape,
-  ...pdssCaseSchema.shape
-})
-
-
+  ...pdssCaseSchema.shape,
+});
 
 export type ReviewProbuno = {
   decision: string;
   reason: string;
-}
+};
 export type FormDataCivilCase = {
-
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -218,7 +263,6 @@ export type FormDataCivilCase = {
   occupation: string;
   disability_proof: File | null;
   disability_status: string;
-
 
   complaint: string;
   offence: string;
@@ -245,11 +289,10 @@ export type FormDataCivilCase = {
   bail_status?: string;
   date_next_court?: string;
   legal_service_provided?: string;
-  case_outcome?: ''
+  case_outcome?: "";
 };
 
 export type FormDataPDSSCase = {
-
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -263,7 +306,6 @@ export type FormDataPDSSCase = {
   occupation: string;
   disability_proof: File | null;
   disability_status: string;
-
 
   organisation: string;
   offence: string;
@@ -279,9 +321,7 @@ export type FormDataPDSSCase = {
   case_outcome?: string;
 };
 
-
 export interface FormDataDEcongestionCase {
-
   first_name: string;
   middle_name: string;
   last_name: string;
@@ -293,7 +333,6 @@ export interface FormDataDEcongestionCase {
   need_legal_aid: string;
   custodial_visit: string;
   date_of_visit: string;
-
 
   case_name: string;
   name_of_defendant: string;
@@ -329,10 +368,8 @@ export interface FormDataDEcongestionCase {
 //   age: number | string;
 //   correctional_facility: string;
 
-
 //   case_type?: string;
 //   offence: string;
-
 
 //   sentence_passed?: string;
 //   date_of_sentence?: string;
@@ -341,13 +378,10 @@ export interface FormDataDEcongestionCase {
 //   health_condition?: string;
 //   recommendations?: File | string | null;
 
-
 //   state_id?: string;
 //   id?: string;
 //   created_at?: string;
 // }
-
-
 
 export const personalDecongestionInfoSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -363,13 +397,14 @@ export const personalDecongestionInfoSchema = z.object({
   date_of_visit: z.string().optional(),
 });
 
-
 export const decongestionCaseDetails = z.object({
   case_name: z.string().min(1, "Case name is required"),
   case_type: z.string().optional(),
   state_id: z.string().optional(),
   name_of_defendant: z.string().min(1, "Name of defendant is required"),
-  offence_charged_description: z.string().min(1, "Offence charged description is required"),
+  offence_charged_description: z
+    .string()
+    .min(1, "Offence charged description is required"),
   // offence_charged: z.string().min(1, "Offence charged is required").isOptional(),
   offence_charged: z.string().optional(),
   charge_number: z.string().min(1, "Charge number is required"),
@@ -386,17 +421,20 @@ export const decongestionCaseDetails = z.object({
   relative_phone_number: z.string().min(1, "Relative phone number is required"),
   state_of_origin: z.string().min(1, "State of origin is required"),
   religion: z.string().min(1, "Religion is required"),
-  average_monthly_income: z.string().min(1, "Average monthly income is required"),
+  average_monthly_income: z
+    .string()
+    .min(1, "Average monthly income is required"),
   stage_of_case: z.string().min(1, "Stage of case is required"),
   need_interpreter: z.string().min(1, "Need interpreter is required"),
   disability_ailment: z.string().min(1, "Disability ailment is required"),
-  confessional_statement: z.string().min(1, "Confessional statement is required"),
+  confessional_statement: z
+    .string()
+    .min(1, "Confessional statement is required"),
 });
 
-
-export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(decongestionCaseDetails);
-
-
+export const DecongestionCaseFullSchema = personalDecongestionInfoSchema.merge(
+  decongestionCaseDetails
+);
 
 // Alternative: If you prefer to keep the interface separate, you can do this:
 export interface FormDataMercyCase {
@@ -411,14 +449,13 @@ export interface FormDataMercyCase {
   gender: string;
   age: number;
   offence: string;
-  perogative_of_mercy: {
-    sentence_passed?: string;
-    date_of_sentence?: string;
-    perogative_of_mercy?: number;
-    reason_for_clemency?: string;
-    health_condition?: string;
-    recommendations?: string;
-  };
+  sentence_passed?: string;
+  date_of_sentence?: string;
+  perogative_of_mercy?: number;
+  reason_for_clemency?: string;
+  health_condition?: string;
+  is_recommendations?: string;
+  recommendations?: File | string | null;
 }
 
 // And create a matching Zod schema
@@ -432,30 +469,28 @@ export const MercyApplicationCaseFullSchema = z.object({
   gender: z.string().min(1, "Gender is required"),
   age: z.coerce.number().min(1, "Age must be greater than 0"),
   offence: z.string().min(1, "Offense description is required"),
-  perogative_of_mercy: z.object({
-    sentence_passed: z.string().optional(),
-    date_of_sentence: z.string().optional(),
-    perogative_of_mercy: z.coerce.number().optional(),
-    reason_for_clemency: z.string().optional(),
-    health_condition: z.string().optional(),
-    recommendations: z.string().optional(),
-  })
+  sentence_passed: z.string().optional(),
+  date_of_sentence: z.string().optional(),
+  // perogative_of_mercy: z.coerce.number().optional(),
+  reason_for_clemency: z.string().optional(),
+  health_condition: z.string().optional(),
+  recommendations: z.any().optional(),
 }) satisfies z.ZodType<FormDataMercyCase>;
-
-
-
-
 
 export const caseSchema = z.object({
   client_name: z.string(),
   sex: z.enum(["male", "female"]),
-  date_case_taken: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
+  date_case_taken: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   nature_of_service: z.string(),
   offering_charge: z.string(),
   suit_number: z.string(),
   status_of_case: z.string(),
 
-  last_date_of_appearance: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
+  last_date_of_appearance: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
   is_client_in_custody: z.coerce.boolean(),
 });
 
@@ -464,11 +499,6 @@ export const probunoUpdateForm = z.object({
   last_name: z.string(),
   email: z.string().email(),
 
-
-
   phone_number: z.string(),
   cases: z.array(caseSchema),
 });
-
-
-
