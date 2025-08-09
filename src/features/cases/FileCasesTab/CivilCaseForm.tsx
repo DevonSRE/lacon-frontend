@@ -232,7 +232,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                     <div className="flex items-center mb-4 sm:mb-0">
                         <h1 className="text-lg font-semibold text-gray-900">
-                            Filing A Civil Case
+                            Filing A Civil Cases
                         </h1>
                     </div>
                     <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
@@ -566,7 +566,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                             type="text"
                                             name="defendant_name"
                                             label="Defendant's Name"
-                                            required
                                             placeholder="Enter Name"
                                             value={formData.defendant_name}
                                             onChange={(e) => updateField('defendant_name', e.target.value)}
@@ -580,7 +579,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                             type="email"
                                             name="defendant_address"
                                             label="Defendant's Email Address"
-                                            required
                                             placeholder="Enter Email Address"
                                             value={formData.defendant_address}
                                             onChange={(e) => updateField('defendant_address', e.target.value)}
@@ -594,7 +592,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                             type="tel"
                                             name="defendant_phone_number"
                                             label=" Defendant's Phone number"
-                                            required
                                             placeholder="080 0000 000"
                                             value={formData.defendant_phone_number}
                                             onChange={(e) => updateField('defendant_phone_number', e.target.value)}

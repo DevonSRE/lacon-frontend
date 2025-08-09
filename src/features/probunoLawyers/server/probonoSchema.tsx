@@ -161,26 +161,38 @@ export const personalInfoSchema = z.object({
 export const caseDetailsSchema = z.object({
   complaint: z
     .string()
-    .min(5, { message: "Complaint must be at least 5 characters" }),
-  average_income: z.string({
-    invalid_type_error: "Average income must be a number",
-  }),
+    .min(5, { message: "Complaint must be at least 5 characters" })
+    .optional(),
+  average_income: z
+    .string({
+      invalid_type_error: "Average income must be a number",
+    })
+    .optional(),
   legal_aid_reason: z
     .string()
-    .min(5, { message: "Legal aid reason must be at least 5 characters" }),
-  number_of_dependants: z.coerce.number({
-    invalid_type_error: "Number of dependants must be a number",
-  }),
+    .min(5, { message: "Legal aid reason must be at least 5 characters" })
+    .optional(),
+  number_of_dependants: z
+    .coerce
+    .number({
+      invalid_type_error: "Number of dependants must be a number",
+    })
+    .optional(),
   registration_number: z.string().optional(),
   case_number: z.string().optional(),
   court_of_hearing: z.string().optional(),
-  defendant_name: z.string().min(1, { message: "Defendant name is required" }),
+  defendant_name: z
+    .string()
+    .min(1, { message: "Defendant name is required" })
+    .optional(),
   defendant_address: z
     .string()
-    .min(1, { message: "Defendant address is required" }),
+    .min(1, { message: "Defendant address is required" })
+    .optional(),
   defendant_phone_number: z
     .string()
-    .min(1, { message: "Defendant phone number is required" }),
+    .min(1, { message: "Defendant phone number is required" })
+    .optional(),
 });
 export const legalAidFormSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),

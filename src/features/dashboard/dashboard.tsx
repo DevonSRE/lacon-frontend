@@ -14,7 +14,6 @@ export default function Dashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
-
     // Platform Admin / Director roles
     if (role === ROLES.ADMIN || role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL
         || role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR || role === ROLES.CENTRE_COORDINATOR) {

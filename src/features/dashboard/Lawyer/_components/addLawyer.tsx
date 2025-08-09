@@ -24,6 +24,7 @@ import { InviteLawyer, InviteUser } from "../../server/action";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/redux";
+import { useQueryClient } from "@tanstack/react-query";
 
 const defaultFormData: FormDataLawyer = {
   user_type: "",
@@ -40,6 +41,7 @@ const defaultFormData: FormDataLawyer = {
 };
 
 export function AddLawyerSheet() {
+  const queryClient = useQueryClient();
   const { isOpen, setIsOpen } = useAction();
   const [state, dispatch, isPending] = useActionState(InviteLawyer, undefined);
   const [formData, setFormData] = useState<FormDataLawyer>(defaultFormData);
@@ -60,6 +62,8 @@ export function AddLawyerSheet() {
             : undefined,
       });
     } else if (state?.status === 200 || state?.status === 201) {
+      queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
+
       toast.success("User invited successfully!");
       setIsOpen(false);
       setFormData(defaultFormData); // ✅ Reset form on success
@@ -101,9 +105,13 @@ export function AddLawyerSheet() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
-                    <SelectItem value="PRO BONO LAWYER">
-                      Pro bono Lawyer
-                    </SelectItem>
+
+                    {role === ROLES.DECONGESTION_UNIT_HEAD && (
+                      <SelectItem value="PRO BONO LAWYER">
+                        Pro bono Lawyer
+                      </SelectItem>
+                    )}
+
                     {role === ROLES.DIO && (
                       <SelectItem value="EXTERNAL PARALEGAL">
                         EXTERNAL PARALEGAL
@@ -112,6 +120,7 @@ export function AddLawyerSheet() {
                     {role === ROLES.ZONAL_DIRECTOR ||
                     role === ROLES.STATE_COORDINATOR ||
                     role === ROLES.CENTRE_COORDINATOR ||
+                    role === ROLES.CIVIL_JUSTICE_DEPT ||
                     role === ROLES.DIRECTOR_GENERAL ? (
                       <SelectItem value="INTERNAL PARALEGAL">
                         INTERNAL PARALEGAL
@@ -199,10 +208,10 @@ export function AddLawyerSheet() {
                   {serverErrors.phone_number[0]}
                 </p>
               )}
-
+{/* 
               <div className="space-y-1">
                 <Label>
-                  Status <span className="text-red-500">*</span>
+                  Stiv>atus <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   key={formData.status + state?.status}
@@ -227,8 +236,8 @@ export function AddLawyerSheet() {
                     {serverErrors.status[0]}
                   </p>
                 )}
-              </div>
-              <div>
+              </div */}
+              {/* <div>
                 <InputField
                   label="Max Case Load"
                   type="number"
@@ -246,7 +255,7 @@ export function AddLawyerSheet() {
                     {serverErrors.max_load[0]}
                   </p>
                 )}
-              </div>
+              </div> */}
 
               {state?.errors && typeof state.errors === "object" && (
                 <div className="text-red-500 bg-red-50 p-4 rounded">

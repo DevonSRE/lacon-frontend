@@ -455,28 +455,7 @@ export async function submitMercyApplicationForm(
   const rawData = Object.fromEntries(formData);
 
   try {
-    const data = {
-      case_type: rawData.case_type,
-      state_id: rawData.state_id,
-      first_name: rawData.first_name,
-      middle_name: rawData.middle_name,
-      last_name: rawData.last_name,
-      gender: rawData.gender,
-      age: parseInt(rawData.age as string),
-      correctional_facility: rawData.correctional_facility,
-      offence: rawData.offence,
-      confessional_statement: rawData.confessional_statement === "Yes",
-      perogative_of_mercy: {
-        sentence_passed: rawData.sentence_passed || undefined,
-        date_of_sentence: rawData.date_of_sentence || undefined,
-        perogative_of_mercy: rawData.perogative_of_mercy || 0,
-        reason_for_clemency: rawData.reason_for_clemency || undefined,
-        health_condition: rawData.health_condition || undefined,
-      },
-    };
-    console.log("Parsed data:", data);
-
-    const result = MercyApplicationCaseFullSchema.safeParse(data);
+    const result = MercyApplicationCaseFullSchema.safeParse(rawData);
     if (!result.success) {
       console.log("Validation errors:", result.error.flatten().fieldErrors);
       console.log("Validation failed:", result.error);
@@ -486,8 +465,6 @@ export async function submitMercyApplicationForm(
         message: "Invalid field found",
       };
     }
-    console.log(result.data);
-
     let disabilityProof;
     const hasDisability = rawData.is_recommendations === "yes";
     const file = rawData.recommendations as File | null;
@@ -523,10 +500,32 @@ export async function submitMercyApplicationForm(
       console.log("File uploaded successfully:", disabilityProof);
     }
 
+    const data = {
+      case_type: rawData.case_type,
+      state_id: rawData.state_id,
+      first_name: rawData.first_name,
+      middle_name: rawData.middle_name,
+      last_name: rawData.last_name,
+      gender: rawData.gender,
+      age: parseInt(rawData.age as string),
+      correctional_facility: rawData.correctional_facility,
+      offence: rawData.offence,
+      confessional_statement: rawData.confessional_statement === "Yes",
+      perogative_of_mercy: {
+        sentence_passed: rawData.sentence_passed || undefined,
+        date_of_sentence: rawData.date_of_sentence || undefined,
+        perogative_of_mercy: rawData.perogative_of_mercy || 0,
+        reason_for_clemency: rawData.reason_for_clemency || undefined,
+        health_condition: rawData.health_condition || undefined,
+        recommendations: "" ,
+      },
+    };
+    console.log("Parsed data:", data);
+
     // Prepare data for API call
-    let uploadData = { ...result.data };
+    let uploadData = { ...data };
     if (disabilityProof != null) {
-      uploadData.recommendations = disabilityProof;
+      data.perogative_of_mercy.recommendations = disabilityProof;
     }
 
     console.log("Upload data:", uploadData);
