@@ -208,7 +208,7 @@ export function AddLawyerSheet() {
                   {serverErrors.phone_number[0]}
                 </p>
               )}
-{/* 
+              {/* 
               <div className="space-y-1">
                 <Label>
                   Stiv>atus <span className="text-red-500">*</span>
