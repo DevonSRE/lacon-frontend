@@ -1,31 +1,9 @@
 {
-  "message": "Records fetched successfully",
-  "success": true,
-  "data": {
-    "id": "7dca8e30-3de1-40d3-a8e3-094c19affb16",
-    "case_type": "MERCY APPLICATION",
-    "first_name": "Non magnam in nisi c",
-    "middle_name": "",
-    "last_name": "Do et qui vel cum of",
-    "gender": "Female",
-    "permanent_address": "",
-    "age": 87,
-    "phone_number": "",
-    "marital_status": "",
-    "email": "",
-    "state_of_origin": "",
-    "occupation": "",
-    "disability_status": "",
-    "disability_proof": "",
-    "department_name": "PREROGATIVE OF MERCY UNIT HEAD",
-    "perogative_of_mercy": {
-      "sentence_passed": "",
-      "date_of_sentence": "",
-      "is_confession": false,
-      "reason_for_clemency": "",
-      "health_condition": "",
-      "recommendations": ""
-    },
-    "status": ""
-  }
+  "user_type": "INTERNAL PARALEGAL",
+  "designation": "Zonal Office",
+  "zone_id": "c677bd5f-3692-4868-8ab1-8e1ecf4ba23c",
+  "first_name": "Prince",
+  "last_name": "Muteh",
+  "email": "internalParalegal2@yopmail.com",
+  "phone_number": "07530338024"
 }

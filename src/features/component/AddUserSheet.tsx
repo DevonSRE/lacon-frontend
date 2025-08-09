@@ -26,7 +26,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GetZone } from "@/components/get-zone";
 import { GetActiveUser } from "@/components/get-active-users";
 
-
 const defaultFormData: FormDataUser = {
   user_type: "",
   designation: "",
@@ -123,36 +122,43 @@ export function AddUserSheet() {
           {formData.user_type !== "" && (
             <>
               {/* LacON Lawyer Designation */}
-              {formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER" && (
-                <div className="space-y-1">
-                  <Label>
-                    Designation <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    key={formData.designation + state?.status}
-                    name="designation"
-                    value={formData.designation}
-                    onValueChange={(val) => handleChange("designation", val)}
-                  >
-                    <SelectTrigger className="w-full  rounded-none h-11">
-                      <SelectValue placeholder="Select Designation" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Centre Lawyer">
-                        Centre Lawyer
-                      </SelectItem>
-                      <SelectItem value="State Lawyer">State Lawyer</SelectItem>
-                      <SelectItem value="Zonal Lawyer">Zonal Lawyer</SelectItem>
-                      <SelectItem value="Head Quarter">Head Quarter</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {serverErrors.designation && (
-                    <p className="text-red-500 text-sm">
-                      {serverErrors.designation[0]}
-                    </p>
-                  )}
-                </div>
-              )}
+              {formData.user_type === "LACON LAWYER" ||
+                (formData.user_type === "PRO BONO LAWYER" && (
+                  <div className="space-y-1">
+                    <Label>
+                      Designation <span className="text-red-500">*</span>
+                    </Label>
+                    <Select
+                      key={formData.designation + state?.status}
+                      name="designation"
+                      value={formData.designation}
+                      onValueChange={(val) => handleChange("designation", val)}
+                    >
+                      <SelectTrigger className="w-full  rounded-none h-11">
+                        <SelectValue placeholder="Select Designation" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Centre Lawyer">
+                          Centre Lawyer
+                        </SelectItem>
+                        <SelectItem value="State Lawyer">
+                          State Lawyer
+                        </SelectItem>
+                        <SelectItem value="Zonal Lawyer">
+                          Zonal Lawyer
+                        </SelectItem>
+                        <SelectItem value="Head Quarter">
+                          Head Quarter
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {serverErrors.designation && (
+                      <p className="text-red-500 text-sm">
+                        {serverErrors.designation[0]}
+                      </p>
+                    )}
+                  </div>
+                ))}
 
               {/* Paralegal Designation */}
               {formData.user_type === "INTERNAL PARALEGAL" && (
@@ -184,9 +190,12 @@ export function AddUserSheet() {
               )}
 
               {/* State Selection */}
-              {(formData.user_type === "STATE COORDINATOR" ||
+              {((formData.designation === "State Office" &&
+                formData.user_type === "INTERNAL PARALEGAL") ||
+                formData.user_type === "STATE COORDINATOR" ||
                 formData.user_type === "CENTRE COORDINATOR" ||
-                formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER") && (
+                formData.user_type === "LACON LAWYER" ||
+                formData.user_type === "PRO BONO LAWYER") && (
                 <div className="space-y-1">
                   <Label>
                     Select State <span className="text-red-500">*</span>
@@ -347,7 +356,8 @@ export function AddUserSheet() {
                 </p>
               )}
 
-              {(formData.user_type === "LACON LAWYER" ||  formData.user_type === "PRO BONO LAWYER" ||
+              {(formData.user_type === "LACON LAWYER" ||
+                formData.user_type === "PRO BONO LAWYER" ||
                 formData.designation === "PRO BONO LAWYER") && (
                 <div>
                   <InputField
