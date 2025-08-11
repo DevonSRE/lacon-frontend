@@ -6,8 +6,13 @@ const detailsServices = {
       params: param,
     });
   },
+  async getInactiveState(param: any) {
+    return await axiosInstance.get("/states?status=inactive", {
+      params: param,
+    });
+  },
   async getZone(param: any) {
-    return await axiosInstance.get("/zones", {
+    return await axiosInstance.get("/zones?status=inactive", {
       params: param,
     });
   },

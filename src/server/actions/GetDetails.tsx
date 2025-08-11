@@ -14,12 +14,22 @@ export async function GetStates(params: Ipage) {
         return handleApiError(error);
     }
 }
+export async function GetInactiveStates(params: Ipage) {
+    try {
+        const response = await detailsServices.getInactiveState(params);
+        return { data: response?.data, success: true };
+
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
 
 export async function GetZones(params: Ipage) {
     try {
         const response = await detailsServices.getZone(params);
         console.log("response inveontory  =>" + JSON.stringify(response.data?.data));
-        return { data: response.data?.data, success: true };
+        return { data: response.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);

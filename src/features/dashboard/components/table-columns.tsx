@@ -11,10 +11,10 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     accessorKey: "department_name",
     header: "Department",
   },
-  {
-    accessorKey: "priority",
-    header: "Priority",
-  },
+  // {
+  //   accessorKey: "priority",
+  //   header: "Priority",
+  // },
   {
     accessorKey: "status",
     header: "Status",

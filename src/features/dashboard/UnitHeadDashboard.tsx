@@ -206,13 +206,15 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                                     ? processedData.assignedCases.categories
                                     : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
                                 }
-                                data={processedData.assignedCases.data.length > 0
+                                data={
+                                    processedData.assignedCases.data.length > 0
                                     ? processedData.assignedCases.data
-                                    : [0, 0, 0, 0, 0, 0]
+                                    : 
+                                    [0, 2, 9, 0, 0, 0]
                                 }
                                 orientation="horizontal"
-                                cardBg="bg-red-50"
-                                barColor="#BD2B12"
+                                cardBg="bg-black-50"
+                                barColor="#000000"
                             />
                             <CaseStatCard
                                 title="Pending Cases"
@@ -222,13 +224,14 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                                     ? processedData.pendingCases.categories
                                     : ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
                                 }
-                                data={processedData.pendingCases.data.length > 0
+                                data={
+                                    processedData.pendingCases.data.length > 0
                                     ? processedData.pendingCases.data
-                                    : [0, 0, 0, 0, 0, 0]
+                                    : [1, 2, 0, 0, 0, 0]
                                 }
                                 orientation="vertical"
-                                cardBg="bg-red-50"
-                                barColor="#BD2B12"
+                                cardBg="bg-black-50"
+                                barColor="#000000"
                             />
                         </div>
                     </div>
