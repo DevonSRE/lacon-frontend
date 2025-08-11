@@ -25,6 +25,7 @@ import LoadingDialog from "@/components/LoadingDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { GetZone } from "@/components/get-zone";
 import { GetActiveUser } from "@/components/get-active-users";
+import { GetInactiveState } from "@/components/get-inactive-state";
 
 const defaultFormData: FormDataUser = {
   user_type: "",
@@ -200,7 +201,7 @@ export function AddUserSheet() {
                   <Label>
                     Select State <span className="text-red-500">*</span>
                   </Label>
-                  <GetState
+                  <GetInactiveState
                     value={selectedState}
                     onValueChange={(val: string) => setSelectedState(val)}
                     placeholder="Select state"
@@ -259,23 +260,7 @@ export function AddUserSheet() {
                     placeholder="Select your zone"
                     onLoadingChange={(loading) => setLoading(loading)}
                   />
-                  {/* <Select
-                                        key={formData.zone_id + state?.status}
-                                        name="zone_id"
-                                        value={formData.zone_id}
-                                        onValueChange={(val) => handleChange("zone_id", val)}
-                                    >
-                                        <SelectTrigger className={`w-full ${serverErrors.zone_id ? 'border-red-500' : ''}`}>
-                                            <SelectValue placeholder="Select Political Zone" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {zones.map((zone) => (
-                                                <SelectItem key={zone} value={zone}>
-                                                    {zone}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select> */}
+              
                   {serverErrors.zone_id && (
                     <p className="text-red-500 text-sm">
                       {serverErrors.zone_id[0]}

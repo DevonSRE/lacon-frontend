@@ -455,9 +455,9 @@ export default function MercyApplication({
                 >
                   1
                 </div>
-                <div className="w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-gray-200 text-gray-600">
+                {/* <div className="w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-gray-200 text-gray-600">
                   2
-                </div>
+                </div> */}
               </div>
             </div>
 
