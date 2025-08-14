@@ -64,7 +64,8 @@ export const offenceComplain: ColumnDef<StateData>[] = [
 
 export const demographicsTable: ColumnDef<StateData>[] = [
     { accessorKey: "sex", ...centerCell("Sex") },
-    { accessorKey: "sex", ...centerCell("Sex") },
+    { accessorKey: "marital_status", ...centerCell("Marital status") },
+    { accessorKey: "count", ...centerCell("Count") },
 ];
 export const laconLawyerColumns: ColumnDef<StateData>[] = [
     {
