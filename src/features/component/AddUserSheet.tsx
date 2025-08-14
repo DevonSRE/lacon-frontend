@@ -1,3 +1,5 @@
+
+
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
@@ -122,44 +124,37 @@ export function AddUserSheet() {
 
           {formData.user_type !== "" && (
             <>
-              {/* LacON Lawyer Designation */}
-              {formData.user_type === "LACON LAWYER" ||
-                (formData.user_type === "PRO BONO LAWYER" && (
-                  <div className="space-y-1">
-                    <Label>
-                      Designation <span className="text-red-500">*</span>
-                    </Label>
-                    <Select
-                      key={formData.designation + state?.status}
-                      name="designation"
-                      value={formData.designation}
-                      onValueChange={(val) => handleChange("designation", val)}
-                    >
-                      <SelectTrigger className="w-full  rounded-none h-11">
-                        <SelectValue placeholder="Select Designation" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Centre Lawyer">
-                          Centre Lawyer
-                        </SelectItem>
-                        <SelectItem value="State Lawyer">
-                          State Lawyer
-                        </SelectItem>
-                        <SelectItem value="Zonal Lawyer">
-                          Zonal Lawyer
-                        </SelectItem>
-                        <SelectItem value="Head Quarter">
-                          Head Quarter
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {serverErrors.designation && (
-                      <p className="text-red-500 text-sm">
-                        {serverErrors.designation[0]}
-                      </p>
-                    )}
-                  </div>
-                ))}
+              {(formData.user_type === "LACON LAWYER" ||
+                formData.user_type === "PRO BONO LAWYER") && (
+                <div className="space-y-1">
+                  <Label>
+                    Designation <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    key={formData.designation + state?.status}
+                    name="designation"
+                    value={formData.designation}
+                    onValueChange={(val) => handleChange("designation", val)}
+                  >
+                    <SelectTrigger className="w-full  rounded-none h-11">
+                      <SelectValue placeholder="Select Designation" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Centre Lawyer">
+                        Centre Lawyer
+                      </SelectItem>
+                      <SelectItem value="State Lawyer">State Lawyer</SelectItem>
+                      <SelectItem value="Zonal Lawyer">Zonal Lawyer</SelectItem>
+                      <SelectItem value="Head Quarter">Head Quarter</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {serverErrors.designation && (
+                    <p className="text-red-500 text-sm">
+                      {serverErrors.designation[0]}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {/* Paralegal Designation */}
               {formData.user_type === "INTERNAL PARALEGAL" && (
@@ -191,12 +186,16 @@ export function AddUserSheet() {
               )}
 
               {/* State Selection */}
-              {((formData.designation === "State Office" &&
-                formData.user_type === "INTERNAL PARALEGAL") ||
-                formData.user_type === "STATE COORDINATOR" ||
-                formData.user_type === "CENTRE COORDINATOR" ||
-                formData.user_type === "LACON LAWYER" ||
-                formData.user_type === "PRO BONO LAWYER") && (
+              {(
+                (formData.designation === "State Office" && formData.user_type === "INTERNAL PARALEGAL") ||
+                formData.user_type === "STATE COORDINATOR" || formData.user_type === "CENTRE COORDINATOR" ||
+
+                (formData.user_type === "LACON LAWYER" && (formData.designation === "State Lawyer" || formData.designation === "Centre Lawyer")) ||
+
+               (formData.user_type === "PRO BONO LAWYER" && (formData.designation === "State Lawyer" || formData.designation === "Centre Lawyer")) 
+                  // (formData.designation === "State Office" ||  formData.designation === "Center Lawyer")
+
+                ) && (
                 <div className="space-y-1">
                   <Label>
                     Select State <span className="text-red-500">*</span>
@@ -214,7 +213,14 @@ export function AddUserSheet() {
                   )}
                 </div>
               )}
-              {formData.user_type === "CENTRE COORDINATOR" && (
+              {
+                (
+              formData.user_type === "CENTRE COORDINATOR"  ||
+               (formData.user_type === "PRO BONO LAWYER" && formData.designation === "Centre Lawyer") ||
+               (formData.user_type === "LACON LAWYER" && formData.designation === "Centre Lawyer") 
+
+                )
+              && (
                 <div className="space-y-1">
                   <Label>
                     Select Center <span className="text-red-500">*</span>
@@ -249,7 +255,14 @@ export function AddUserSheet() {
               {/* Zone Selection */}
               {(formData.user_type === "ZONAL DIRECTOR" ||
                 formData.designation === "CENTRE COORDINATOR" ||
-                formData.designation === "Zonal Office") && (
+                formData.designation === "Zonal Office" ||
+
+                   (formData.user_type === "LACON LAWYER" && formData.designation === "Zonal Lawyer") ||
+
+               (formData.user_type === "PRO BONO LAWYER" && formData.designation === "Zonal Lawyer")
+              
+              
+              ) && (
                 <div className="space-y-1">
                   <Label>
                     Zone Selection <span className="text-red-500">*</span>
@@ -260,7 +273,7 @@ export function AddUserSheet() {
                     placeholder="Select your zone"
                     onLoadingChange={(loading) => setLoading(loading)}
                   />
-              
+
                   {serverErrors.zone_id && (
                     <p className="text-red-500 text-sm">
                       {serverErrors.zone_id[0]}

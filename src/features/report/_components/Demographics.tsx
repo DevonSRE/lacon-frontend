@@ -63,9 +63,7 @@ function transformToPieData(data: DemographicBreakdown[]): PieChartData[] {
 function generateLegendItems(data: DemographicBreakdown[]) {
     return data.map(item => {
         const key = `${item.sex}-${item.marital_status}`;
-        const label = `${item.sex.charAt(0) + item.sex.slice(1).toLowerCase()} - ${item.marital_status.charAt(0).toUpperCase() + item.marital_status.slice(1)
-            }`;
-
+        const label = `${item.sex.charAt(0) + item.sex.slice(1).toLowerCase()} - ${item.marital_status.charAt(0).toUpperCase() + item.marital_status.slice(1)}`;
         return {
             color: colorMap[key] || '#95A5A6',
             label,

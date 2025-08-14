@@ -458,7 +458,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         errorMessage={errors.disability_status}
                                     />
                                 </div>
-                                {formData.disability_status === "yes" && (
+                                {/* {formData.disability_status === "yes" && (
                                     <div className="mb-6">
                                         <Label className="block mb-2">Disability (if any)</Label>
                                         <div className={`rounded-lg p-6 text-center border-2 ${errors.disability_proof ? "border-red-500" : "border-gray-300"}`}>
@@ -493,7 +493,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                             </p>
                                         )}
                                     </div>
-                                )}
+                                )} */}
 
                             </div>
                         )}

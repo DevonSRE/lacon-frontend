@@ -25,6 +25,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ArrowLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/redux";
 import { useQueryClient } from "@tanstack/react-query";
+import { GetInactiveState } from "@/components/get-inactive-state";
 
 const defaultFormData: FormDataLawyer = {
   user_type: "",
@@ -137,6 +138,50 @@ export function AddLawyerSheet() {
                 )}
               </div>
 
+              {/* <div className="space-y-1">
+                <Label>
+                  Designation <span className="text-red-500">*</span>
+                </Label>
+                <Select
+                  key={formData.designation + state?.status}
+                  name="designation"
+                  value={formData.designation}
+                  onValueChange={(val) => handleChange("designation", val)}
+                >
+                  <SelectTrigger className="w-full  rounded-none h-11">
+                    <SelectValue placeholder="Select Designation" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Centre Lawyer">Centre Lawyer</SelectItem>
+                    <SelectItem value="State Lawyer">State Lawyer</SelectItem>
+                    <SelectItem value="Zonal Lawyer">Zonal Lawyer</SelectItem>
+                    <SelectItem value="Head Quarter">Head Quarter</SelectItem>
+                  </SelectContent>
+                </Select>
+                {serverErrors.designation && (
+                  <p className="text-red-500 text-sm">
+                    {serverErrors.designation[0]}
+                  </p>
+                )}
+              </div> */}
+
+              {/* <div className="space-y-1">
+                <Label>
+                  Select State <span className="text-red-500">*</span>
+                </Label>
+                <GetInactiveState
+                  value={selectedState}
+                  onValueChange={(val: string) => setSelectedState(val)}
+                  placeholder="Select state"
+                />
+
+                {serverErrors.state_id && (
+                  <p className="text-red-500 text-sm">
+                    {serverErrors.state_id[0]}
+                  </p>
+                )}
+              </div> */}
+
               {/* First Name */}
               <InputField
                 type="text"
@@ -208,54 +253,6 @@ export function AddLawyerSheet() {
                   {serverErrors.phone_number[0]}
                 </p>
               )}
-              {/* 
-              <div className="space-y-1">
-                <Label>
-                  Stiv>atus <span className="text-red-500">*</span>
-                </Label>
-                <Select
-                  key={formData.status + state?.status}
-                  name="status"
-                  value={formData.status}
-                  onValueChange={(val) => handleChange("status", val)}
-                >
-                  <SelectTrigger
-                    className={`w-full h-11 ${
-                      serverErrors.status ? "border-red-500" : ""
-                    }`}
-                  >
-                    <SelectValue placeholder="Select Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Active">Active</SelectItem>
-                    <SelectItem value="Inactive">Inactive</SelectItem>
-                  </SelectContent>
-                </Select>
-                {serverErrors.status && (
-                  <p className="text-red-500 text-sm">
-                    {serverErrors.status[0]}
-                  </p>
-                )}
-              </div */}
-              {/* <div>
-                <InputField
-                  label="Max Case Load"
-                  type="number"
-                  required
-                  name="max_load"
-                  className={
-                    serverErrors.max_load ? "border-red-500 bg-red-50" : ""
-                  }
-                  placeholder="Enter Maximum case"
-                  value={formData.max_load}
-                  onChange={(e) => handleChange("max_load", e.target.value)}
-                />
-                {serverErrors.max_load && (
-                  <p className="text-red-500 text-sm">
-                    {serverErrors.max_load[0]}
-                  </p>
-                )}
-              </div> */}
 
               {state?.errors && typeof state.errors === "object" && (
                 <div className="text-red-500 bg-red-50 p-4 rounded">
