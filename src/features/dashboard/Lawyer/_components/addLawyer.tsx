@@ -26,11 +26,14 @@ import { ArrowLeft } from "lucide-react";
 import { useAppSelector } from "@/hooks/redux";
 import { useQueryClient } from "@tanstack/react-query";
 import { GetInactiveState } from "@/components/get-inactive-state";
+import { GetZone } from "@/components/get-zone";
 
 const defaultFormData: FormDataLawyer = {
   user_type: "",
   designation: "",
   state: "",
+  center_id: "",
+  zone_id: "",
   zone: "",
   first_name: "",
   last_name: "",
@@ -47,6 +50,8 @@ export function AddLawyerSheet() {
   const [state, dispatch, isPending] = useActionState(InviteLawyer, undefined);
   const [formData, setFormData] = useState<FormDataLawyer>(defaultFormData);
   const [dailogOpen, setDialogOpen] = useState(false);
+  const [selectedState, setSelectedState] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const { data: user } = useAppSelector((state) => state.profile);
   const role = user?.role;
   const handleChange = (key: keyof FormDataLawyer, value: string) => {
@@ -119,14 +124,16 @@ export function AddLawyerSheet() {
                       </SelectItem>
                     )}
                     {role === ROLES.ZONAL_DIRECTOR ||
-                    role === ROLES.STATE_COORDINATOR ||
-                    role === ROLES.CENTRE_COORDINATOR ||
-                    role === ROLES.CIVIL_JUSTICE_DEPT ||
-                    role === ROLES.DIRECTOR_GENERAL ? (
-                      <SelectItem value="INTERNAL PARALEGAL">
-                        INTERNAL PARALEGAL
-                      </SelectItem>
-                    ) : (
+                      role === ROLES.STATE_COORDINATOR ||
+                      role === ROLES.CENTRE_COORDINATOR ||
+                      role === ROLES.CIVIL_JUSTICE_DEPT ||
+                      (role === ROLES.DIRECTOR_GENERAL && (
+                        <SelectItem value="INTERNAL PARALEGAL">
+                          INTERNAL PARALEGAL
+                        </SelectItem>
+                      ))}
+
+                    {role != ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD && (
                       <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
                     )}
                   </SelectContent>
@@ -138,34 +145,55 @@ export function AddLawyerSheet() {
                 )}
               </div>
 
+              <div className="space-y-1">
+                <Label>
+                  Zone Selection <span className="text-red-500">*</span>
+                </Label>
+                <GetZone
+                  value={selectedState}
+                  onValueChange={(val: string) => setSelectedState(val)}
+                  placeholder="Select your zone"
+                  onLoadingChange={(loading) => setLoading(loading)}
+                />
+
+                {serverErrors.zone_id && (
+                  <p className="text-red-500 text-sm">
+                    {serverErrors.zone_id[0]}
+                  </p>
+                )}
+              </div>
+
               {/* <div className="space-y-1">
                 <Label>
-                  Designation <span className="text-red-500">*</span>
+                  Select Center <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  key={formData.designation + state?.status}
-                  name="designation"
-                  value={formData.designation}
-                  onValueChange={(val) => handleChange("designation", val)}
+                  key={formData.center_id + state?.status}
+                  name="center_id"
+                  value={formData.center_id}
+                  onValueChange={(val) => handleChange("center_id", val)}
                 >
-                  <SelectTrigger className="w-full  rounded-none h-11">
-                    <SelectValue placeholder="Select Designation" />
+                  <SelectTrigger
+                    className={`w-full ${
+                      serverErrors.center_id ? "border-red-500" : ""
+                    }`}
+                  >
+                    <SelectValue placeholder="Select Designated Center" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Centre Lawyer">Centre Lawyer</SelectItem>
-                    <SelectItem value="State Lawyer">State Lawyer</SelectItem>
-                    <SelectItem value="Zonal Lawyer">Zonal Lawyer</SelectItem>
-                    <SelectItem value="Head Quarter">Head Quarter</SelectItem>
+                  <SelectContent className="h-60 overflow-y-auto">
+                    <SelectItem value="Center A"> Center A</SelectItem>
+                    <SelectItem value="Center B"> Center B</SelectItem>
+                    <SelectItem value="Center C"> Center C</SelectItem>
                   </SelectContent>
                 </Select>
-                {serverErrors.designation && (
+                {serverErrors.center_id && (
                   <p className="text-red-500 text-sm">
-                    {serverErrors.designation[0]}
+                    {serverErrors.center_id[0]}
                   </p>
                 )}
               </div> */}
 
-              {/* <div className="space-y-1">
+              <div className="space-y-1">
                 <Label>
                   Select State <span className="text-red-500">*</span>
                 </Label>
@@ -180,7 +208,7 @@ export function AddLawyerSheet() {
                     {serverErrors.state_id[0]}
                   </p>
                 )}
-              </div> */}
+              </div>
 
               {/* First Name */}
               <InputField

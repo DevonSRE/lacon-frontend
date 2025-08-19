@@ -49,13 +49,13 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
                     <p className="text-green-600 font-medium">{`Today, ${today}`}</p>
                 </div>
                 <div className="flex flex-col w-full  space-y-4 mt-6">
-                    <Button
+                    {/* <Button
                         onClick={handleViewCase}
                         variant={"outline"}
                         className="border border-black w-full py-2 rounded text-black hover:bg-black hover:text-white transition h-14"
                     >
                         View This Case
-                    </Button>
+                    </Button> */}
                     <Button
                         onClick={handleFileAnother}
                         className="bg-black text-white py-2 rounded hover:bg-gray-800 transition h-14"

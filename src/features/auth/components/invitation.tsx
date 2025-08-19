@@ -10,8 +10,6 @@ import { invitationAction } from '../server/actions';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from "sonner";
-import { isFieldErrorObject } from '@/types/auth';
-import { LoginPasswordField } from '@/components/passwordField';
 import { SubmitButton } from '@/components/submit-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import PasswordValidation from '@/components/PasswordValidation';

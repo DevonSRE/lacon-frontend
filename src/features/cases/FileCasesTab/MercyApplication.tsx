@@ -11,13 +11,12 @@ import SelectField from "@/components/SelectField";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 
-import {
-  submitMercyApplicationForm,
-} from "@/features/probunoLawyers/server/action";
+import { submitMercyApplicationForm } from "@/features/probunoLawyers/server/action";
 import { FormDataMercyCase } from "@/features/probunoLawyers/server/probonoSchema";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
-import { CLIENT_ERROR_STATUS } from "@/lib/constants";
+import { CLIENT_ERROR_STATUS, SUCCESS_STATUS } from "@/lib/constants";
 import CaseCreated from "../_components/CaseCreated";
+import { useQueryClient } from "@tanstack/react-query";
 
 type CustomeSheetProps = {
   openFileACase: Dispatch<SetStateAction<boolean>>;
@@ -30,8 +29,14 @@ export default function MercyApplication({
 }: CustomeSheetProps) {
   const router = useRouter();
 
-  const [recommendationImage, setRecommendationImage] = useState<File | null>(null);
-  const [state, formAction, isPending] = useActionState(submitMercyApplicationForm, undefined);
+  const [recommendationImage, setRecommendationImage] = useState<File | null>(
+    null
+  );
+  const [state, formAction, isPending] = useActionState(
+    submitMercyApplicationForm,
+    undefined
+  );
+  const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedState, setSelectedState] = useState<string>("");
@@ -55,24 +60,29 @@ export default function MercyApplication({
     recommendations: null,
   });
 
-  const [confessionalStatement, setConfessionalStatement] = useState<string>("");
+  const [confessionalStatement, setConfessionalStatement] =
+    useState<string>("");
 
   useEffectAfterMount(() => {
     if (!state) return;
 
     if (CLIENT_ERROR_STATUS.includes(state.status)) {
-      toast.error(typeof state.message === "string" ? state.message : "Something went wrong", {
-        description:
-          typeof state?.errors === "string"
-            ? state.errors
-            : state?.errors
-            ? Object.values(state.errors).flat().join(", ")
-            : undefined,
-      });
-      return;
+      toast.error(
+        typeof state.message === "string"
+          ? state.message
+          : "Something went wrong",
+        {
+          description:
+            typeof state?.errors === "string"
+              ? state.errors
+              : state?.errors
+              ? Object.values(state.errors).flat().join(", ")
+              : undefined,
+        }
+      );
     }
-
-    if (state.status === 200) {
+    if (SUCCESS_STATUS.includes(state.status)) {
+      queryClient.invalidateQueries({ queryKey: ["getCases"] });
       toast.success("Mercy application submitted successfully");
       setCurrentStep(3);
     }
@@ -103,9 +113,13 @@ export default function MercyApplication({
     clearFieldError(name);
   };
 
-  const updateField = (field: keyof FormDataMercyCase | "recommendations", value: string | number | File | null) => {
+  const updateField = (
+    field: keyof FormDataMercyCase | "recommendations",
+    value: string | number | File | null
+  ) => {
     if (field === "age") {
-      const age = typeof value === "string" ? parseInt(value, 10) || 0 : Number(value);
+      const age =
+        typeof value === "string" ? parseInt(value, 10) || 0 : Number(value);
       setFormData((prev) => ({ ...prev, age }));
       clearFieldError("age");
       return;
@@ -119,7 +133,10 @@ export default function MercyApplication({
 
     setFormData((prev) => ({
       ...prev,
-      [field]: typeof value === "string" || typeof value === "number" ? value : (value as never),
+      [field]:
+        typeof value === "string" || typeof value === "number"
+          ? value
+          : (value as never),
     }));
 
     clearFieldError(field);
@@ -128,18 +145,23 @@ export default function MercyApplication({
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
-    if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
+    if (!formData.first_name.trim())
+      newErrors.first_name = "First name is required";
+    if (!formData.last_name.trim())
+      newErrors.last_name = "Last name is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
     if (!formData.age || formData.age <= 0) newErrors.age = "Age is required";
     if (!formData.correctional_facility.trim())
       newErrors.correctional_facility = "Correctional facility is required";
-    if (!formData.offence.trim()) newErrors.offence = "Offense description is required";
-    if (!confessionalStatement) newErrors.confessional_statement = "Confessional statement field is required";
+    if (!formData.offence.trim())
+      newErrors.offence = "Offense description is required";
+    if (!confessionalStatement)
+      newErrors.confessional_statement =
+        "Confessional statement field is required";
 
-    if (formData.is_recommendations === "yes" && !recommendationImage) {
-      newErrors.recommendations = "Please upload a recommendation image.";
-    }
+    // if (formData.is_recommendations === "yes" && !recommendationImage) {
+    //   newErrors.recommendations = "Please upload a recommendation image.";
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -223,7 +245,9 @@ export default function MercyApplication({
             required
             className="w-full p-2 mt-1 rounded border border-gray-300"
           />
-          {errors.first_name && <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>}
+          {errors.first_name && (
+            <p className="text-red-500 text-sm mt-1">{errors.first_name}</p>
+          )}
         </div>
 
         <div className="flex-1">
@@ -247,7 +271,9 @@ export default function MercyApplication({
             required
             className="w-full p-2 mt-1 rounded border border-gray-300"
           />
-          {errors.last_name && <p className="text-red-500 text-sm mt-1">{errors.last_name}</p>}
+          {errors.last_name && (
+            <p className="text-red-500 text-sm mt-1">{errors.last_name}</p>
+          )}
         </div>
       </div>
 
@@ -288,7 +314,9 @@ export default function MercyApplication({
           required
           className="w-full p-2 mt-1 rounded border border-gray-300"
         />
-        {errors.age && <p className="text-red-500 text-sm mt-1">{errors.age}</p>}
+        {errors.age && (
+          <p className="text-red-500 text-sm mt-1">{errors.age}</p>
+        )}
       </div>
 
       <div>
@@ -302,7 +330,9 @@ export default function MercyApplication({
           className="w-full p-2 mt-1 rounded border border-gray-300"
         />
         {errors.correctional_facility && (
-          <p className="text-red-500 text-sm mt-1">{errors.correctional_facility}</p>
+          <p className="text-red-500 text-sm mt-1">
+            {errors.correctional_facility}
+          </p>
         )}
       </div>
 
@@ -317,7 +347,9 @@ export default function MercyApplication({
           required
           className="w-full p-2 mt-1 rounded border border-gray-300 min-h-[60px]"
         />
-        {errors.offence && <p className="text-red-500 text-sm mt-1">{errors.offence}</p>}
+        {errors.offence && (
+          <p className="text-red-500 text-sm mt-1">{errors.offence}</p>
+        )}
       </div>
 
       <div>
@@ -353,7 +385,9 @@ export default function MercyApplication({
           ]}
           required
           value={confessionalStatement}
-          onValueChange={(value) => handleSelectChange(value, "confessional_statement")}
+          onValueChange={(value) =>
+            handleSelectChange(value, "confessional_statement")
+          }
           error={!!errors.confessional_statement}
           errorMessage={errors.confessional_statement}
         />
@@ -389,13 +423,15 @@ export default function MercyApplication({
             { value: "no", label: "No" },
           ]}
           value={formData.is_recommendations}
-          onValueChange={(value) => handleSelectChange(value, "is_recommendations")}
+          onValueChange={(value) =>
+            handleSelectChange(value, "is_recommendations")
+          }
           error={!!errors.is_recommendations}
           errorMessage={errors.is_recommendations}
         />
       </div>
 
-      {formData.is_recommendations === "yes" && (
+      {/* {formData.is_recommendations === "yes" && (
         <div className="mb-6">
           <Label className="block mb-2">Recommendation from Prison Authority (If Available)</Label>
           <div
@@ -432,25 +468,31 @@ export default function MercyApplication({
             <p className="mt-1.5 text-xs text-red-500">{errors.recommendations}</p>
           )}
         </div>
-      )}
+      )} */}
     </div>
   );
 
   return (
     <>
       <div className="mx-auto">
-        {currentStep === 3 && <CaseCreated setOpen={setOpen} openFileACase={openFileACase} />}
+        {currentStep === 3 && (
+          <CaseCreated setOpen={setOpen} openFileACase={openFileACase} />
+        )}
 
         {currentStep === 1 && (
           <>
             <div className="w-full max-w-6xl flex flex-col sm:flex-row sm:items-center mb-6">
               <div className="flex items-center sm:mb-0">
-                <h1 className="text-lg font-semibold text-gray-900">Filing A Mercy Application</h1>
+                <h1 className="text-lg font-semibold text-gray-900">
+                  Filing A Mercy Application
+                </h1>
               </div>
               <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
                 <div
                   className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium ${
-                    currentStep === 1 ? "bg-black text-white" : "bg-gray-200 text-gray-600"
+                    currentStep === 1
+                      ? "bg-black text-white"
+                      : "bg-gray-200 text-gray-600"
                   }`}
                 >
                   1
@@ -469,26 +511,33 @@ export default function MercyApplication({
               noValidate
             > */}
 
-                <form action={submit}>
-
+            <form action={submit}>
               <div>
                 <Label>Case Type</Label>
-                <div className="bg-gray-100 p-2 rounded mt-1 text-gray-700">Mercy Application</div>
+                <div className="bg-gray-100 p-2 rounded mt-1 text-gray-700">
+                  Mercy Application
+                </div>
               </div>
 
               {renderStep1()}
 
               {state?.errors && typeof state.errors === "object" && (
                 <div className="text-red-500 bg-red-50 p-4 rounded">
-                  <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
+                  <h3 className="font-semibold mb-2">
+                    Please fix the following errors:
+                  </h3>
                   <ul className="list-disc list-inside space-y-1">
                     {Object.entries(state.errors).map(([key, val]) =>
                       Array.isArray(val) ? (
                         val.map((msg, idx) => (
-                          <li key={`${key}-${idx}`}>{key.replace(/_/g, " ")}: {msg}</li>
+                          <li key={`${key}-${idx}`}>
+                            {key.replace(/_/g, " ")}: {msg}
+                          </li>
                         ))
                       ) : (
-                        <li key={key}>{key.replace(/_/g, " ")}: {String(val)}</li>
+                        <li key={key}>
+                          {key.replace(/_/g, " ")}: {String(val)}
+                        </li>
                       )
                     )}
                   </ul>
