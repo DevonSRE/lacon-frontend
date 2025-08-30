@@ -156,13 +156,13 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             if (currentStep < 2) {
                 if (currentStep === 1) {
                     console.log(formData.disability_status);
-                    if (formData.disability_status === 'yes' && !formData.disability_proof) {
-                        setErrors(prev => ({
-                            ...prev,
-                            disability_proof: 'Please upload proof of disability.'
-                        }));
-                        return;
-                    }
+                    // if (formData.disability_status === 'yes' && !formData.disability_proof) {
+                    //     setErrors(prev => ({
+                    //         ...prev,
+                    //         disability_proof: 'Please upload proof of disability.'
+                    //     }));
+                    //     return;
+                    // }
                     setCurrentStep(currentStep + 1);
                 }
             } else {
@@ -575,14 +575,30 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     error={errors.nature_of_legal_service_provided}
                                 />
 
-                                <InputField
+
+                                <SelectField
+                                    name="case_status"
+                                    label="Case Status"
+                                    placeholder="Case Status"
+                                    options={[
+                                        { value: 'Mediation / Interphase', label: 'Mediation / Interphase' },
+                                        { value: 'Legal Advice', label: 'Legal Advice' },
+                                    ]}
+                                    required
+                                    value={formData.case_status} // Add value prop
+                                    onValueChange={(value) => handleSelectChange(value, 'case_status')}
+                                    error={!!errors.case_status}
+                                    errorMessage={errors.case_status}
+                                />
+
+                                {/* <InputField
                                     label="Case Status"
                                     name='case_status'
                                     type="text"
                                     value={formData.case_status}
                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
                                     className="border-gray-300"
-                                />
+                                /> */}
 
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <InputField

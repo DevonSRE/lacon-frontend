@@ -328,7 +328,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                             <SelectContent>
                                 <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
                                 <SelectItem value="PRO BONO LAWYER">Pro bono Lawyer</SelectItem>
-                                <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
+                                {/* <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem> */}
                             </SelectContent>
                         </Select>
                         {serverErrors.user_type && (

@@ -41,6 +41,19 @@ const reportServices = {
             params: filters,
         });
     },
+    async exportAdminOverview() {
+        return await axiosInstance.get("export/admin-overview", {
+            responseType: 'blob' // Important for file downloads
+        });
+    },
+    async exportCaseType() {
+        return await axiosInstance.get("export/casetypes");
+    },
+    async exportAdminUnit(filters: any) {
+        return await axiosInstance.get("export/admin-unit", {
+            params: filters,
+        });
+    },
 }
 
 export default reportServices;

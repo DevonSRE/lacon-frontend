@@ -140,9 +140,7 @@ export function AddUserSheet() {
                       <SelectValue placeholder="Select Designation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Centre Lawyer">
-                        Centre Lawyer
-                      </SelectItem>
+                      <SelectItem value="Centre Lawyer">Centre Lawyer</SelectItem>
                       <SelectItem value="State Lawyer">State Lawyer</SelectItem>
                       <SelectItem value="Zonal Lawyer">Zonal Lawyer</SelectItem>
                       <SelectItem value="Head Quarter">Head Quarter</SelectItem>

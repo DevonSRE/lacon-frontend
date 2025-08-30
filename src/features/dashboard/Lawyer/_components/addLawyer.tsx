@@ -64,8 +64,8 @@ export function AddLawyerSheet() {
           typeof state?.errors === "string"
             ? state.errors
             : state?.errors
-            ? Object.values(state.errors).flat().join(", ")
-            : undefined,
+              ? Object.values(state.errors).flat().join(", ")
+              : undefined,
       });
     } else if (state?.status === 200 || state?.status === 201) {
       queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
@@ -103,9 +103,8 @@ export function AddLawyerSheet() {
                   onValueChange={(val) => handleChange("user_type", val)}
                 >
                   <SelectTrigger
-                    className={`w-full h-11 ${
-                      serverErrors.user_type ? "border-red-500" : ""
-                    }`}
+                    className={`w-full h-11 ${serverErrors.user_type ? "border-red-500" : ""
+                      }`}
                   >
                     <SelectValue placeholder="Select Role" />
                   </SelectTrigger>
@@ -145,23 +144,25 @@ export function AddLawyerSheet() {
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>
-                  Zone Selection <span className="text-red-500">*</span>
-                </Label>
-                <GetZone
-                  value={selectedState}
-                  onValueChange={(val: string) => setSelectedState(val)}
-                  placeholder="Select your zone"
-                  onLoadingChange={(loading) => setLoading(loading)}
-                />
+              {role != ROLES.ZONAL_DIRECTOR && (
+                <div className="space-y-1">
+                  <Label>
+                    Zone Selection <span className="text-red-500">*</span>
+                  </Label>
+                  <GetZone
+                    value={selectedState}
+                    onValueChange={(val: string) => setSelectedState(val)}
+                    placeholder="Select your zone"
+                    onLoadingChange={(loading) => setLoading(loading)}
+                  />
+                  {serverErrors.zone_id && (
+                    <p className="text-red-500 text-sm">
+                      {serverErrors.zone_id[0]}
+                    </p>
+                  )}
+                </div>
+              )}
 
-                {serverErrors.zone_id && (
-                  <p className="text-red-500 text-sm">
-                    {serverErrors.zone_id[0]}
-                  </p>
-                )}
-              </div>
 
               {/* <div className="space-y-1">
                 <Label>
