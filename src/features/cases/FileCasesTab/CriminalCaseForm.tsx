@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
-import { ChevronLeft, CloudUpload, Upload } from 'lucide-react'
+import { ArrowLeft, ChevronLeft, CloudUpload, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
 import TextAreaField from '@/components/TextAreaField'
@@ -24,10 +24,10 @@ interface CivilCaseFormProps {
   handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
   isPublic: boolean;
   state_id?: string;
-
+  backButton?: boolean;
 }
 
-export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
+export default function CriminalCaseForm({ currentStep = 1, state_id, backButton = false, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
@@ -161,13 +161,13 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       if (currentStep < 2) {
         if (currentStep === 1) {
           console.log(formData.disability_status);
-          if (formData.disability_status === 'yes' && !formData.disability_proof) {
-            setErrors(prev => ({
-              ...prev,
-              disability_proof: 'Please upload proof of disability.'
-            }));
-            return;
-          }
+          // if (formData.disability_status === 'yes' && !formData.disability_proof) {
+          //   setErrors(prev => ({
+          //     ...prev,
+          //     disability_proof: 'Please upload proof of disability.'
+          //   }));
+          //   return;
+          // }
           setCurrentStep(currentStep + 1);
         }
         setCurrentStep(currentStep + 1);
@@ -238,6 +238,11 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
       />
+      <div className="">
+        {backButton &&
+          <button className="border-none"><ArrowLeft onClick={() => {  ( currentStep > 1 ) ? setCurrentStep(1) : setOpen(false) }} /></button>
+        }
+      </div>
       <div className="mx-auto  bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -545,13 +550,31 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
 
-                    <InputField
+                    <SelectField
+                      name="case_status"
+                      label="Case Status"
+                      placeholder="Case Status"
+                      options={[
+                        { value: 'For Arraignment', label: 'For Arraignment' },
+                        { value: 'Plea Taken', label: 'Plea Taken' },
+                        { value: 'Hearing/Trial', label: 'Hearing/Trial' },
+                        { value: 'Judgement.', label: 'Judgement' }
+                      ]}
+                      required
+                      value={formData.case_status} // Add value prop
+                      onValueChange={(value) => handleSelectChange(value, 'case_status')}
+                      error={!!errors.case_status}
+                      errorMessage={errors.case_status}
+                    />
+
+
+                    {/* <InputField
                       label="Case Status"
                       type="text"
                       value={formData.case_status}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
                       className="border-gray-300"
-                    />
+                    /> */}
 
                     <InputField
                       label="Court /Case No (If this exist, add it)"

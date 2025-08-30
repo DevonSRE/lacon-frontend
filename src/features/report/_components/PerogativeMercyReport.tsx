@@ -3,7 +3,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { GetAllUnit } from '../server/reportAction';
 import { DataTable } from '@/components/data-table';
-import { CorrectionalVisitsTable, PDSSBailTable } from './table_Column';
+import { CorrectionalVisitsTable, PDSSBailTable, PerogativeMercyColumn } from './table_Column';
 import { Icons } from '@/icons/icons';
 import LawyerSkeleton from '@/components/skeleton/LawyerSkeleton';
 import Chart from '../charts/Chart';
@@ -120,57 +120,40 @@ export default function PerogativeMercyReport() {
             {/* Header Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                 <StatCard
-                    title="Total PDSS Cases"
+                    title="Total Cases"
                     bgColor='text-red-500'
-                    value={getStatValue(pdssUnitSummary, "Total PDSS Cases")}
+                    value={getStatValue(pdssUnitSummary, "Total Cases")}
                 />
                 <StatCard
-                    title="Average Detention Days"
-                    value={getStatValue(pdssUnitSummary, "Average Detention Days")}
-                />
-                <StatCard
-                    title="Persons Bailed"
-                    value={getStatValue(pdssUnitSummary, "Persons Bailed")}
+                    title="Pending Recommendation"
+                    value={getStatValue(pdssUnitSummary, "Pending Recommendation")}
                 />
                 <StatCard
                     title="Cases Completed"
                     value={getStatValue(pdssUnitSummary, "Cases Completed")}
                 />
+              
                 <StatCard
-                    title="Pending Actions"
-                    value={getStatValue(pdssUnitSummary, "Pending Actions")}
+                    title="Resolution Rate"
+                    value={getStatValue(pdssUnitSummary, "Resolution Rate")}
                 />
             </div>
-
-            {/* Chart Section */}
-            <div className="mt-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">Monthly PDSS Cases Overview</h2>
-                {chartData && (
-                    <Chart
-                        categories={chartData.categories}
-                        series={chartData.series}
-                        colors={["#BD2B12", "#2C3E50"]}
-                        columnWidth="40%"
-                    />
-                )}
-            </div>
-
 
             {/* PDSS Bail Section */}
             <div className="overflow-x-auto">
                 <div className="">
                     <div className="flex justify-between items-center py-4">
-                        <h2 className="text-xl font-semibold">PDSS Bail at Police Stations</h2>
+                        <h2 className="text-xl font-semibold">Perogative of Mercy</h2>
                         <Icons.trendingIcon className="w-5 h-5 text-gray-400" />
                     </div>
                     <DataTable
-                        columns={PDSSBailTable}
+                        columns={PerogativeMercyColumn}
                         loading={isLoading}
                         data={pdssBail || []}
                     />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
+                    {/* <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
                         view all
-                    </div>
+                    </div> */}
                 </div>
             </div>
 

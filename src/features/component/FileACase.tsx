@@ -105,7 +105,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                                     <SelectItem value="Civil">Civil</SelectItem>
                                     <SelectItem value="Criminal">Criminal</SelectItem>
                                     <SelectItem value="pdss-instation">PDSS(In Station)</SelectItem>
-                                    <SelectItem value="pdss-organisation">PDSS(In Organization)</SelectItem>
+                                    {/* <SelectItem value="pdss-organisation">PDSS(In Organization)</SelectItem> */}
                                 </>
                             )}
                             {userRole === ROLES.DECONGESTION_UNIT_HEAD && (
@@ -130,16 +130,17 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
             </CustomeSheet>
 
             {/* Case Form Sheet */}
-            <CustomeSheet open={openCaseType} setOpen={handleCloseCaseType} className="min-w-3xl">
+            <CustomeSheet open={openCaseType} backButton={false} setOpen={handleCloseCaseType} className="min-w-3xl">
                 <div className="mt-6">
                     {selectedCaseForm === "Civil" && (
                         <CivilCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {selectedCaseForm === "Criminal" && (
-                        <CriminalCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
+                        <CriminalCaseForm  backButton={true} handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {(selectedCaseForm === "pdss-instation" || selectedCaseForm === "pdss-organisation") && (
-                        <PDSSCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} type={selectedCaseForm} state_id={state_id} />
+                        <PDSSCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false}
+                            currentStep={currentStep} setCurrentStep={setCurrentStep} type={selectedCaseForm} state_id={state_id} />
                     )}
                     {selectedCaseForm === "Decongestion" && (
                         <DecongestionForm

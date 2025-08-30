@@ -26,9 +26,9 @@ type StatCardProps = {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, bgColor = "text-black" }: StatCardProps) => {
     return (
-        <div className="border rounded-xs p-6 space-y-2 shadow-sm bg-gray-50">
+        <div className="border rounded-xs p-6  space-y-2 shadow-sm bg-gray-50">
             <div className={`text-lg font-medium ${bgColor}`}>{title}</div>
-            <div className="text-2xl font-semibold text-black">{value}</div>
+            <div className="text-4xl font-semibold text-black">{value}</div>
         </div>
     );
 };
@@ -121,60 +121,23 @@ export default function OscarUnitsReport() {
             {/* Header Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
                 <StatCard
-                    title="Total PDSS Cases"
+                    title="Total Complaints Received"
                     bgColor='text-red-500'
                     value={getStatValue(pdssUnitSummary, "Total PDSS Cases")}
                 />
                 <StatCard
-                    title="Average Detention Days"
+                    title="Case Mediated"
                     value={getStatValue(pdssUnitSummary, "Average Detention Days")}
                 />
                 <StatCard
-                    title="Persons Bailed"
+                    title="Disputes Resolved"
                     value={getStatValue(pdssUnitSummary, "Persons Bailed")}
                 />
                 <StatCard
-                    title="Cases Completed"
+                    title="Resolution Rate"
                     value={getStatValue(pdssUnitSummary, "Cases Completed")}
                 />
-                <StatCard
-                    title="Pending Actions"
-                    value={getStatValue(pdssUnitSummary, "Pending Actions")}
-                />
             </div>
-
-            {/* Chart Section */}
-            <div className="mt-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">Monthly PDSS Cases Overview</h2>
-                {chartData && (
-                    <Chart
-                        categories={chartData.categories}
-                        series={chartData.series}
-                        colors={["#BD2B12", "#2C3E50"]}
-                        columnWidth="40%"
-                    />
-                )}
-            </div>
-
-
-            {/* PDSS Bail Section */}
-            <div className="overflow-x-auto">
-                <div className="">
-                    <div className="flex justify-between items-center py-4">
-                        <h2 className="text-xl font-semibold">PDSS Bail at Police Stations</h2>
-                        <Icons.trendingIcon className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <DataTable
-                        columns={PDSSBailTable}
-                        loading={isLoading}
-                        data={pdssBail || []}
-                    />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
-                        view all
-                    </div>
-                </div>
-            </div>
-
         </div>
     );
 }

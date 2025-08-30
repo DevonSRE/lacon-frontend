@@ -26,7 +26,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, bgColor = "text-black
     return (
         <div className="border rounded-xs p-6 space-y-2 shadow-sm bg-gray-50">
             <div className={`text-lg font-medium ${bgColor}`}>{title}</div>
-            <div className="text-2xl font-semibold text-black">{value}</div>
+            <div className="text-4xl font-semibold text-black">{value}</div>
         </div>
     );
 };

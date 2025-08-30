@@ -153,14 +153,14 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {
-                    console.log(formData.disability_status);
-                    if (formData.disability_status === 'yes' && !formData.disability_proof) {
-                        setErrors(prev => ({
-                            ...prev,
-                            disability_proof: 'Please upload proof of disability.'
-                        }));
-                        return;
-                    }
+                    // console.log(formData.disability_status);
+                    // if (formData.disability_status === 'yes' && !formData.disability_proof) {
+                    //     setErrors(prev => ({
+                    //         ...prev,
+                    //         disability_proof: 'Please upload proof of disability.'
+                    //     }));
+                    //     return;
+                    // }
                     setCurrentStep(currentStep + 1);
                 }
             } else {
@@ -534,6 +534,22 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                    <SelectField
+                                        name="case_status"
+                                        label="Case Status"
+                                        placeholder="Case Status"
+                                        options={[
+                                            { value: 'For mention', label: 'For mention' },
+                                            { value: 'Hearing', label: 'Hearing' },
+                                            { value: 'Judgement.', label: 'Judgement' }
+                                        ]}
+                                        required
+                                        value={formData.case_status} // Add value prop
+                                        onValueChange={(value) => handleSelectChange(value, 'case_status')}
+                                        error={!!errors.case_status}
+                                        errorMessage={errors.case_status}
+                                    />
+
                                     <div>
                                         <InputField
                                             label='Case No'

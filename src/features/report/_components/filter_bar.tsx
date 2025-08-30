@@ -11,7 +11,6 @@ import { useState, useMemo } from "react";
 
 export default function FilterBar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
     const tabs = ["Overview", "Case Types", "Lawyers", "Demographics"];
-
     const { data, isLoading: loading } = useQuery({
         queryKey: ["zones"],
         queryFn: async () => {

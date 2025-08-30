@@ -112,3 +112,17 @@ export const PDSSBailTable: ColumnDef<StateData>[] = [
     { accessorKey: "release_individuals", ...centerCell("Released Individuals") },
     { accessorKey: "gender", ...centerCell("Gender") },
 ];
+export const PerogativeMercyColumn: ColumnDef<StateData>[] = [
+    { accessorKey: "station", ...centerCell("Defendant") },
+    { accessorKey: "release_individuals", ...centerCell("Offence") },
+    { accessorKey: "gender", ...centerCell("Recommendation") },
+    { accessorKey: "gender", ...centerCell("status") },
+    { accessorKey: "gender", ...centerCell("Date Reviews") },
+];
+export const DecongestionUnitColumn: ColumnDef<StateData>[] = [
+    { accessorKey: "defendant", ...centerCell("Defendant") },
+    { accessorKey: "offence", ...centerCell("Offence") },
+    { accessorKey: "visited_on", ...centerCell("Visited On") },
+    { accessorKey: "status", ...centerCell("Bail status") },
+    { accessorKey: "action", ...centerCell("Final Action") },
+];

@@ -80,10 +80,10 @@ export default function DIOReport() {
         setselectedDuration, selectedStateId, setSeletedStateId,
         selectedCentreId, setselectedCentreId } = useAction();
     const { data, isLoading, error } = useQuery({
-        queryKey: ["getPDSSREportOverview", selectedZoneId, selectedStateId, selectedDuration, selectedCentreId],
+        queryKey: ["getDioREport", selectedZoneId, selectedStateId, selectedDuration, selectedCentreId],
         queryFn: async () => {
             const filters = {
-                unit: "pdss unit",
+                unit: "DIO",
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
@@ -124,29 +124,25 @@ export default function DIOReport() {
                 <StatCard
                     title="Total PDSS Cases"
                     bgColor='text-red-500'
-                    value={getStatValue(pdssUnitSummary, "Total PDSS Cases")}
+                    value={getStatValue(pdssUnitSummary, "Total Active Cases")}
                 />
                 <StatCard
-                    title="Average Detention Days"
-                    value={getStatValue(pdssUnitSummary, "Average Detention Days")}
+                    title="Delay cases Alert"
+                    value={getStatValue(pdssUnitSummary, "Delay cases Alert")}
                 />
                 <StatCard
-                    title="Persons Bailed"
-                    value={getStatValue(pdssUnitSummary, "Persons Bailed")}
+                    title="Pending Case Update"
+                    value={getStatValue(pdssUnitSummary, "Pending Case Update")}
                 />
                 <StatCard
-                    title="Cases Completed"
-                    value={getStatValue(pdssUnitSummary, "Cases Completed")}
-                />
-                <StatCard
-                    title="Pending Actions"
-                    value={getStatValue(pdssUnitSummary, "Pending Actions")}
+                    title="Resolution Rate"
+                    value={getStatValue(pdssUnitSummary, "Resolution Rate")}
                 />
             </div>
 
             {/* Chart Section */}
             <div className="mt-6 mb-8">
-                <h2 className="text-xl font-semibold mb-4">Monthly PDSS Cases Overview</h2>
+                <h2 className="text-xl font-semibold mb-4">Cases Overview</h2>
                 {chartData && (
                     <Chart
                         categories={chartData.categories}
@@ -156,26 +152,7 @@ export default function DIOReport() {
                     />
                 )}
             </div>
-
-
-            {/* PDSS Bail Section */}
-            <div className="overflow-x-auto">
-                <div className="">
-                    <div className="flex justify-between items-center py-4">
-                        <h2 className="text-xl font-semibold">PDSS Bail at Police Stations</h2>
-                        <Icons.trendingIcon className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <DataTable
-                        columns={PDSSBailTable}
-                        loading={isLoading}
-                        data={pdssBail || []}
-                    />
-                    <div className="bg-black text-white text-end text-sm pr-6 cursor-pointer hover:bg-gray-800">
-                        view all
-                    </div>
-                </div>
-            </div>
-
+            
         </div>
     );
 }
