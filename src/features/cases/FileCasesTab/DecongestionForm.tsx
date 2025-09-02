@@ -188,10 +188,10 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                 </h1>
                             </div>
                             <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
-                                <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
+                                <div onClick={() => setCurrentStep(1)}  className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
                                     1
                                 </div>
-                                <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+                                <div  onClick={() => setCurrentStep(2)} className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
                                     2
                                 </div>
                             </div>

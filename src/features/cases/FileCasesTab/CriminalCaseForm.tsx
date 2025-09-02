@@ -24,10 +24,9 @@ interface CivilCaseFormProps {
   handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
   isPublic: boolean;
   state_id?: string;
-  backButton?: boolean;
 }
 
-export default function CriminalCaseForm({ currentStep = 1, state_id, backButton = false, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
+export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
@@ -102,8 +101,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
       ...prev,
       [name]: value
     }));
-
-    // Clear error when user selects
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -113,7 +110,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
   const updateField = (field: keyof FormDataCivilCase, value: string | File | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
-      // toast.error(errors[field]);
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
@@ -161,13 +157,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
       if (currentStep < 2) {
         if (currentStep === 1) {
           console.log(formData.disability_status);
-          // if (formData.disability_status === 'yes' && !formData.disability_proof) {
-          //   setErrors(prev => ({
-          //     ...prev,
-          //     disability_proof: 'Please upload proof of disability.'
-          //   }));
-          //   return;
-          // }
           setCurrentStep(currentStep + 1);
         }
         setCurrentStep(currentStep + 1);
@@ -194,38 +183,17 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
     }
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
 
-    if (!file) {
-      setFileError("No file selected.");
-      updateField("disability_proof", null);
-      return;
-    }
-
-    if (!file.type.startsWith("image/")) {
-      setFileError("Please upload a valid image file.");
-      updateField("disability_proof", null);
-      return;
-    }
-
-    const maxSizeInBytes = 5 * 1024 * 1024;
-    if (file.size > maxSizeInBytes) {
-      setFileError("File size exceeds 5MB limit.");
-      updateField("disability_proof", null);
-      return;
-    }
-
-    // ✅ All good
-    setFileError("");
-    updateField("disability_proof", file);
-  };
-
-  const handleBack = () => {
+  const handleBack = (isPublic: boolean) => {
     if (currentStep > 1) {
       setCurrentStep(currentStep - 1)
     } else {
+      if (!isPublic) {
+        console.log('handleCloseCaseType');
+        handleCloseCaseType(false);
+      }else{
       router.back();
+      }
     }
   }
 
@@ -238,21 +206,19 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
       />
-      <div className="">
-        {backButton &&
-          <button className="border-none"><ArrowLeft onClick={() => {  ( currentStep > 1 ) ? setCurrentStep(1) : setOpen(false) }} /></button>
+        {!isPublic &&
+          <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
         }
-      </div>
       <div className="mx-auto  bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
             <h1 className="text-lg font-semibold">Filing A Criminal Case</h1>
           </div>
           <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
-            <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
+            <div onClick={() => setCurrentStep(1)} className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
               1
             </div>
-            <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+            <div onClick={() => setCurrentStep(2)} className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
               2
             </div>
           </div>
@@ -458,43 +424,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
                     />
                   </div>
 
-
-                  {/* {formData.disability_status === "yes" && (
-                    <div className="mb-6">
-                      <Label className="block mb-2">Disability (if any)</Label>
-                      <div className={`rounded-lg p-6 text-center border-2 ${errors.disability_proof ? "border-red-500" : "border-gray-300"}`}>
-                        <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-500 text-sm mb-2">(If yes, upload picture proof)</p>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          name="disability_proof"
-                          id="disability-upload"
-                        />
-                        <label
-                          htmlFor="disability-upload"
-                          className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                        >
-                          Choose File
-                        </label>
-
-                        {formData.disability_proof && !fileError && (
-                          <p className="text-sm text-green-600 mt-2">{formData.disability_proof.name}</p>
-                        )}
-
-                        {fileError && (
-                          <p className="text-sm text-red-500 mt-2">{fileError}</p>
-                        )}
-                      </div>
-                      {errors.disability_proof && (
-                        <p className={`mt-1.5 text-xs ${errors.disability_proof ? "text-red-500" : errors.disability_proof ? "text-success-500" : "text-gray-500"}`}>
-                          Please Upload Picture Proof of Disability
-                        </p>
-                      )}
-                    </div>
-                  )} */}
                 </>
               )}
               {currentStep === 2 && (
@@ -629,25 +558,9 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
                 </ul>
               </div>
             )}
-
-            {/* {errors && Object.keys(errors).length > 0 && (
-              <div className="text-red-500 bg-red-50 p-4 rounded">
-                <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  {Object.entries(errors).map(([key, val]) => (
-                    <li key={key}>
-                      {key.replace(/_/g, ' ')}: {val}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )} */}
-
-            {/* Navigation Buttons */}
-            {/* Navigation Buttons */}
             <div className="grid grid-cols-2 mt-6 justify-end  gap-4 mb-6">
               {currentStep > 1 && (
-                <Button onClick={handleBack} className="h-11  w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
+                <Button onClick={() => handleBack(isPublic)} className="h-11  w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
                   Back
                 </Button>
               )}
@@ -655,11 +568,8 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, backButton
                 {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
               </Button>
             </div>
-
-
           </div>
         </form>
-
       </div>
     </>
 

@@ -52,7 +52,7 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
   const { data, isLoading: loading } = useQuery({
     queryKey: ["userByType", 'role'],
     queryFn: async () => {
-      if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS) {
+      if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.STATE_COORDINATOR) {
         const filters = { type: "lawyers" };
         return await GetUserByTypes(filters);
       } else {
@@ -133,7 +133,7 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
       <div className="border-b border-gray-200 pb-4 mb-6">
         <div className="flex justify-between items-start mb-2">
           <div>
-            <h1 className="text-xl font-bold text-gray-900"> {(type === "assign") ? "Assign New Case" : "Re-Assign Case"}</h1>
+            <h1 className="text-xl font-bold text-gray-900"> {(type === "Assign") ? "Assign New Case" : "Re-Assign Case"}</h1>
             <p className="text-sm text-gray-600 mt-1">
               Case NO: {details?.id.slice(0, 10) ?? "-"}
             </p>

@@ -1,7 +1,7 @@
 'use client'
 
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
-import { CloudUpload, Upload } from 'lucide-react'
+import { ArrowLeft} from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
 import TextAreaField from '@/components/TextAreaField'
@@ -10,7 +10,6 @@ import { useRouter } from 'next/navigation'
 import { stateOptions } from '@/lib/types'
 import { Label } from '@/components/ui/label'
 import { FormDataPDSSCase, pdssCaseSchema, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema'
-import { FormErrors } from '../../probunoLawyers/server/probunoTypes'
 import { useAction } from '@/context/ActionContext'
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
@@ -36,10 +35,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     const [open, setOpen] = useState(false);
     const [selectedState, setSelectedState] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    // const [errors, setErrors] = useState<FormErrors>({})
     const [errors, setErrors] = useState<Record<string, string>>({});
-
-
 
     useEffect(() => {
         if (selectedStateId === "") {
@@ -155,14 +151,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         if (validateStep(currentStep)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {
-                    console.log(formData.disability_status);
-                    // if (formData.disability_status === 'yes' && !formData.disability_proof) {
-                    //     setErrors(prev => ({
-                    //         ...prev,
-                    //         disability_proof: 'Please upload proof of disability.'
-                    //     }));
-                    //     return;
-                    // }
                     setCurrentStep(currentStep + 1);
                 }
             } else {
@@ -193,41 +181,18 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     };
     const [fileError, setFileError] = useState("");
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0] || null;
-
-        if (!file) {
-            setFileError("No file selected.");
-            updateField("disability_proof", null);
-            return;
-        }
-
-        if (!file.type.startsWith("image/")) {
-            setFileError("Please upload a valid image file.");
-            updateField("disability_proof", null);
-            return;
-        }
-
-        const maxSizeInBytes = 5 * 1024 * 1024;
-        if (file.size > maxSizeInBytes) {
-            setFileError("File size exceeds 5MB limit.");
-            updateField("disability_proof", null);
-            return;
-        }
-
-        // ✅ All good
-        setFileError("");
-        updateField("disability_proof", file);
-    };
-
-    const handleBack = () => {
+    const handleBack = (isPublic: boolean) => {
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1)
         } else {
-            router.back();
+            if (!isPublic) {
+                console.log('handleCloseCaseType');
+                handleCloseCaseType(false);
+            } else {
+                router.back();
+            }
         }
     }
-
     return (
         <>
             <CaseIntakeDialog
@@ -237,19 +202,18 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 isHome={isPublic ? true : false}
             />
             <div className="min-h-screen px-4">
-                {/* Header */}
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                        {/* <button onClick={handleBack} className="p-1">
-                            <ChevronLeft className="w-5 h-5" />
-                        </button> */}
+                        {!isPublic &&
+                            <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
+                        }
                         <h1 className="text-lg font-semibold">Filing A PDSS Case</h1>
                     </div>
                     <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
-                        <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
+                        <div onClick={() => setCurrentStep(1)} className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium bg-black text-white  text-gray-600'}`}>
                             1
                         </div>
-                        <div className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+                        <div onClick={() => setCurrentStep(2)} className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm ${currentStep === 2 ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
                             2
                         </div>
                     </div>
@@ -458,43 +422,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         errorMessage={errors.disability_status}
                                     />
                                 </div>
-                                {/* {formData.disability_status === "yes" && (
-                                    <div className="mb-6">
-                                        <Label className="block mb-2">Disability (if any)</Label>
-                                        <div className={`rounded-lg p-6 text-center border-2 ${errors.disability_proof ? "border-red-500" : "border-gray-300"}`}>
-                                            <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                                            <p className="text-gray-500 text-sm mb-2">(If yes, upload picture proof)</p>
-                                            <input
-                                                type="file"
-                                                accept="image/*"
-                                                onChange={handleFileUpload}
-                                                className="hidden"
-                                                name="disability_proof"
-                                                id="disability-upload"
-                                            />
-                                            <label
-                                                htmlFor="disability-upload"
-                                                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-                                            >
-                                                Choose File
-                                            </label>
-
-                                            {formData.disability_proof && !fileError && (
-                                                <p className="text-sm text-green-600 mt-2">{formData.disability_proof.name}</p>
-                                            )}
-
-                                            {fileError && (
-                                                <p className="text-sm text-red-500 mt-2">{fileError}</p>
-                                            )}
-                                        </div>
-                                        {errors.disability_proof && (
-                                            <p className={`mt-1.5 text-xs ${errors.disability_proof ? "text-red-500" : errors.disability_proof ? "text-success-500" : "text-gray-500"}`}>
-                                                Please Upload Picture Proof of Disability
-                                            </p>
-                                        )}
-                                    </div>
-                                )} */}
-
+                                
                             </div>
                         )}
 
@@ -591,15 +519,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     errorMessage={errors.case_status}
                                 />
 
-                                {/* <InputField
-                                    label="Case Status"
-                                    name='case_status'
-                                    type="text"
-                                    value={formData.case_status}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_status', e.target.value)}
-                                    className="border-gray-300"
-                                /> */}
-
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     <InputField
                                         label="Bail status"
@@ -632,11 +551,9 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                             </div>
                         )}
                     </div>
-
-                    {/* Navigation Buttons */}
                     <div className="grid grid-cols-2 mt-10  gap-4 mb-6">
                         {currentStep > 1 && (
-                            <Button onClick={handleBack} className="h-11 w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
+                            <Button onClick={() => handleBack(isPublic)} className="h-11 w-full bg-black text-white hover:bg-gray-800 transition-colors font-medium">
                                 Back
                             </Button>
                         )}

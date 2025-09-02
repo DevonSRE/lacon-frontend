@@ -94,7 +94,7 @@ const SearchFilterSection: React.FC<Props> = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="Unassiged">Unassiged</SelectItem>
+                        <SelectItem value="Unassigned">UnAssigned</SelectItem>
                         <SelectItem value="Assigned">Assigned</SelectItem>
                         <SelectItem value="Closed">Closed</SelectItem>
                     </SelectContent>
