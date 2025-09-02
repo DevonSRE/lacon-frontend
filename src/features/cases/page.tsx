@@ -32,7 +32,7 @@ export default function CasesPage() {
     const role = user?.role;
 
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter],
+        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter, debouncedSearchTerm],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
@@ -48,8 +48,11 @@ export default function CasesPage() {
     });
 
     const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
+        console.log("type" + type);
+
         setCaseDetails(user);
         setType(type);
+
         if (type == "viewCase") {
             setViewCase(true);
         }
@@ -79,7 +82,7 @@ export default function CasesPage() {
             <div className="flex justify-between items-center mb-8">
                 <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
                 <div className="flex gap-4">
-                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
+                    {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                         <>
                             <BulkCaseUploadDialog />
                             <FileACaseComponent
@@ -107,8 +110,7 @@ export default function CasesPage() {
                 setStatusFilter={setStatusFilter}
             />
 
-            {/* Cases Table */}
-            <DataTable columns={columns} loading={isLoading} data={data?.data.data}/>
+            <DataTable columns={columns} loading={isLoading} data={data?.data.data} />
             {data?.data?.data?.length > 0 && (
                 <div className="flex justify-end pt-4">
                     <TablePagination
@@ -121,11 +123,11 @@ export default function CasesPage() {
             )}
 
             <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
-                <ViewCase details={caseDetails}  />
+                <ViewCase details={caseDetails} />
             </CustomeSheet>
 
             <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
-                <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} type={type} />
+                <AssignmentSheet details={caseDetails}  setOpen={setViewAssignment} type={type} />
             </CustomeSheet>
         </div>
     );

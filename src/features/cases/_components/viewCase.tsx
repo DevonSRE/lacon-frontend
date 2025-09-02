@@ -1,13 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { ICase } from './table-columns';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { useAppSelector } from '@/hooks/redux';
+import { CustomeSheet } from '@/components/CustomSheet';
+import { AssignmentSheet } from './AssignmentSheet';
 
 
 export default function ViewCase(details: { details: ICase | null },) {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
+    const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
+    const [type, setType] = useState('');
+    const [viewAssignment, setViewAssignment] = useState(false);
+
+
+
+    const handleOpenSheet = (user: ICase | null, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
+        console.log("type" + type);
+        setCaseDetails(user);
+        setType(type);
+
+        if (type === "Assign" || type === "ReAssign") {
+            setViewAssignment(true);
+        }
+    };
+
     return (
         <div className="h-screen w-full">
             {/* Header Section */}
@@ -45,7 +63,7 @@ export default function ViewCase(details: { details: ICase | null },) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 font-medium">Sex:</span>
-                                    <span className="text-gray-900">{details?.details?.sex ?? "-"}</span>
+                                    <span className="text-gray-900">{details?.details?.gender ?? "-"}</span>
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 font-medium">Age:</span>
@@ -57,7 +75,7 @@ export default function ViewCase(details: { details: ICase | null },) {
                                 </div>
                                 <div className="flex justify-between">
                                     <span className="text-gray-500 font-medium">Disability:</span>
-                                    <span className="text-gray-900">{details?.details?.disability ?? "-"}</span>
+                                    <span className="text-gray-900">{details?.details?.disability_status ?? "-"}</span>
                                 </div>
                             </div>
                             <div className="space-y-3">
@@ -228,12 +246,19 @@ export default function ViewCase(details: { details: ICase | null },) {
                     </div>
                 </div>
                 {(role != "INTERNAL PARALEGAL") && (
-                    <div className="grid grid-cols-2 gap-4 mt-10 justify-between">
-                        <Button className='h-11 w-full'>Assign Case</Button>
-                        <Button variant={"outline"} className='h-11 w-full'>Transfer to Department</Button>
+                    <div className="flex  gap-4 mt-10 justify-between">
+                        <Button onClick={() => handleOpenSheet(details.details, "Assign")} className='h-11 w-full'>Assign Case</Button>
+                        {(role != "STATE COORDINATOR") && (
+                            <Button variant={"outline"} className='h-11 w-full'>Transfer to Department</Button>
+                        )}
                     </div>
                 )}
             </ScrollArea>
+
+            <CustomeSheet open={viewAssignment} setOpen={setViewAssignment}>
+                <AssignmentSheet details={caseDetails} setOpen={setViewAssignment} type={type} />
+            </CustomeSheet>
+
         </div>
     );
 };

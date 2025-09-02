@@ -38,15 +38,14 @@ export interface ICase {
   location: string;
   name: string;
   sex: string;
+  gender: string;
   age: number;
   marital_status: string;
-  disability: string;
+  disability_status: string;
   phone_number: string;
   email: string;
   occupation: string;
   state_of_origin: string;
-
-  // Optional groupings for specific case types:
   pdss?: {
     offence: string;
     client_location: string;

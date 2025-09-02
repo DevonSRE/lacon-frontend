@@ -56,19 +56,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
         setCaseForm(''); // Reset form selection when closing
     };
 
-    //   const handleCaseSubmitted = () => {
-    //     // Close all modals
-    //     setCaseType(false);
-    //     setOpenFileACase(false);
-    //     setCaseForm('');
-
-    //     // Call the callback if provided
-    //     if (onCaseSubmitted) {
-    //       onCaseSubmitted();
-    //     }
-    //   };
-
-    // Check if user has permission to file cases
+ 
     const canFileCase = [
         ROLES.OSCAR_UNIT_HEAD,
         ROLES.INTERNAL_PARALEGAL,
@@ -136,7 +124,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                         <CivilCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {selectedCaseForm === "Criminal" && (
-                        <CriminalCaseForm  backButton={true} handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
+                        <CriminalCaseForm  handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
                     )}
                     {(selectedCaseForm === "pdss-instation" || selectedCaseForm === "pdss-organisation") && (
                         <PDSSCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false}
