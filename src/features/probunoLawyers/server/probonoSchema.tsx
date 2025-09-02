@@ -183,15 +183,15 @@ export const caseDetailsSchema = z.object({
   court_of_hearing: z.string().optional(),
   defendant_name: z
     .string()
-    .min(1, { message: "Defendant name is required" })
+    // .min(1, { message: "Defendant name is required" })
     .optional(),
   defendant_address: z
     .string()
-    .min(1, { message: "Defendant address is required" })
+    // .min(1, { message: "Defendant address is required" })
     .optional(),
   defendant_phone_number: z
     .string()
-    .min(1, { message: "Defendant phone number is required" })
+    // .min(1, { message: "Defendant phone number is required" })
     .optional(),
 });
 export const legalAidFormSchema = z.object({

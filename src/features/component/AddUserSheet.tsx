@@ -35,7 +35,6 @@ const defaultFormData: FormDataUser = {
   state_id: "",
   center_id: "",
   zone_id: "",
-  max_load: "",
   first_name: "",
   last_name: "",
   email: "",
@@ -352,29 +351,7 @@ export function AddUserSheet() {
                 </p>
               )}
 
-              {(formData.user_type === "LACON LAWYER" ||
-                formData.user_type === "PRO BONO LAWYER" ||
-                formData.designation === "PRO BONO LAWYER") && (
-                <div>
-                  <InputField
-                    label="Max Case Load"
-                    type="number"
-                    required
-                    name="max_load"
-                    className={
-                      serverErrors.max_load ? "border-red-500 bg-red-50" : ""
-                    }
-                    placeholder="Enter Maximum case"
-                    value={formData.max_load}
-                    onChange={(e) => handleChange("max_load", e.target.value)}
-                  />
-                  {serverErrors.max_load && (
-                    <p className="text-red-500 text-sm">
-                      {serverErrors.max_load[0]}
-                    </p>
-                  )}
-                </div>
-              )}
+         
             </>
           )}
 

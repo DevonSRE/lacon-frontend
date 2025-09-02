@@ -7,7 +7,6 @@ export interface FormDataUser {
   state_id: string;
   zone_id: string;
   center_id: string;
-  max_load: string;
   first_name: string;
   last_name: string;
   email: string;
@@ -26,7 +25,6 @@ export interface FormDataLawyer {
   phone_number: string;
   role: string;
   status: string;
-  max_load: string;
 }
 
 export const zones: Zone[] = [
@@ -48,7 +46,6 @@ export const createUserSchema = z
     center_id: z.string().optional(),
     role: z.string().optional(),
     status: z.string().optional(),
-    max_load: z.string().optional(),
     first_name: z
       .string()
       .min(1, "First name is required")
@@ -115,7 +112,6 @@ export const createLawyerSchema = z.object({
   center_id: z.string().optional(),
 
   // status: z.string().optional(),
-  // max_load: z.string().min(1, 'Please Enter a valid maximum load'),
   first_name: z
     .string()
     .min(1, "First name is required")

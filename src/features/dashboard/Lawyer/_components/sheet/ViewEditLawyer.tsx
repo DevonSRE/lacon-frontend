@@ -44,7 +44,6 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
         phone_number: lawyer?.phone_number || '',
         user_type: lawyer?.user_type || '',
         status: lawyer?.status || '',
-        max_load: lawyer?.max_case_load?.toString() || ''
     });
 
     // Simplified loading dialog state
@@ -357,21 +356,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                         )}
                     </div>
 
-                    <div>
-                        <InputField
-                            label="Max Case Load"
-                            type="number"
-                            required
-                            name="max_load"
-                            className={serverErrors.max_load ? 'border-red-500 bg-red-50' : ''}
-                            placeholder="Enter Maximum case"
-                            value={formData.max_load}
-                            onChange={(e) => handleChange("max_load", e.target.value)}
-                        />
-                        {serverErrors.max_load && (
-                            <p className="text-red-500 text-sm">{serverErrors.max_load[0]}</p>
-                        )}
-                    </div>
+                   
 
                     {state?.errors && typeof state.errors === 'object' && (
                         <div className="text-red-500 bg-red-50 p-4 rounded">
