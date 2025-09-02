@@ -62,7 +62,7 @@ export default function LogoutModal() {
           Logout
         </DialogTitle>
         <DialogDescription className="text-sm text-black text-center">
-          Are you sure you want to log out? Any unsaved changes will be lost..
+          Are you sure you want to log out? Any unsaved changes will be lost.
         </DialogDescription>
         <div className="flex justify-center">
           <Icons.exclamation />

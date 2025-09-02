@@ -41,7 +41,6 @@ const defaultFormData: FormDataLawyer = {
   phone_number: "",
   role: "",
   status: "",
-  max_load: "",
 };
 
 export function AddLawyerSheet() {
