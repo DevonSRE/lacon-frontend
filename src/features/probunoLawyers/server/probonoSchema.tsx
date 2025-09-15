@@ -155,8 +155,7 @@ export const personalInfoSchema = z.object({
     .string()
     .min(1, { message: "Occupation is required" })
     .optional(),
-  disability_status: z.string().min(1, { message: "Please Select one status" }),
-  disability_proof: z.any().optional(),
+
 });
 export const caseDetailsSchema = z.object({
   complaint: z
@@ -273,9 +272,6 @@ export type FormDataCivilCase = {
   email: string;
   state_of_origin: string;
   occupation: string;
-  disability_proof: File | null;
-  disability_status: string;
-
   complaint: string;
   offence: string;
   average_income: string;
@@ -316,9 +312,6 @@ export type FormDataPDSSCase = {
   email: string;
   state_of_origin: string;
   occupation: string;
-  disability_proof: File | null;
-  disability_status: string;
-
   organisation: string;
   offence: string;
   client_location: string;

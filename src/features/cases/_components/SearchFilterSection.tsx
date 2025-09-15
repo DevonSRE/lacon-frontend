@@ -45,6 +45,7 @@ const SearchFilterSection: React.FC<Props> = ({
                         onChange={(e) => setClientNameSearch(e.target.value)}
                     />
                 </div>
+                
                 {(role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD || role === ROLES.DIO) && (
                     <Select value={caseTypeFilter} onValueChange={setCaseTypeFilter}>
                         <SelectTrigger className="w-full h-11">

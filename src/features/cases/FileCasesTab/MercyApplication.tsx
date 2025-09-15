@@ -65,7 +65,6 @@ export default function MercyApplication({
 
   useEffectAfterMount(() => {
     if (!state) return;
-
     if (CLIENT_ERROR_STATUS.includes(state.status)) {
       toast.error(
         typeof state.message === "string"
@@ -76,8 +75,8 @@ export default function MercyApplication({
             typeof state?.errors === "string"
               ? state.errors
               : state?.errors
-              ? Object.values(state.errors).flat().join(", ")
-              : undefined,
+                ? Object.values(state.errors).flat().join(", ")
+                : undefined,
         }
       );
     }
@@ -158,11 +157,6 @@ export default function MercyApplication({
     if (!confessionalStatement)
       newErrors.confessional_statement =
         "Confessional statement field is required";
-
-    // if (formData.is_recommendations === "yes" && !recommendationImage) {
-    //   newErrors.recommendations = "Please upload a recommendation image.";
-    // }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -283,7 +277,7 @@ export default function MercyApplication({
           value={selectedState}
           onValueChange={(val: string) => setSelectedState(val)}
           placeholder="Select your state"
-          onLoadingChange={() => {}}
+          onLoadingChange={() => { }}
         />
       </div>
 
@@ -430,45 +424,6 @@ export default function MercyApplication({
           errorMessage={errors.is_recommendations}
         />
       </div>
-
-      {/* {formData.is_recommendations === "yes" && (
-        <div className="mb-6">
-          <Label className="block mb-2">Recommendation from Prison Authority (If Available)</Label>
-          <div
-            className={`rounded-lg p-6 text-center border-2 ${
-              errors.recommendations ? "border-red-500" : "border-gray-300"
-            }`}
-          >
-            <CloudUpload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-gray-500 text-sm mb-2">(If yes, upload picture proof)</p>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
-              className="hidden"
-              id="recommendation-upload"
-            />
-
-            <label
-              htmlFor="recommendation-upload"
-              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
-            >
-              Choose File
-            </label>
-
-            {recommendationImage && !fileError && (
-              <p className="text-sm text-green-600 mt-2">{recommendationImage.name}</p>
-            )}
-
-            {fileError && <p className="text-sm text-red-500 mt-2">{fileError}</p>}
-          </div>
-
-          {errors.recommendations && (
-            <p className="mt-1.5 text-xs text-red-500">{errors.recommendations}</p>
-          )}
-        </div>
-      )} */}
     </div>
   );
 
@@ -489,11 +444,10 @@ export default function MercyApplication({
               </div>
               <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
                 <div
-                  className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium ${
-                    currentStep === 1
+                  className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium ${currentStep === 1
                       ? "bg-black text-white"
                       : "bg-gray-200 text-gray-600"
-                  }`}
+                    }`}
                 >
                   1
                 </div>

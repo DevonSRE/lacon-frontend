@@ -41,7 +41,6 @@ export interface ICase {
   gender: string;
   age: number;
   marital_status: string;
-  disability_status: string;
   phone_number: string;
   email: string;
   occupation: string;

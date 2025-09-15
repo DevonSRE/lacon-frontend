@@ -73,8 +73,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
     email: '',
     state_of_origin: '',
     occupation: '',
-    disability_proof: null,
-    disability_status: '',
     complaint: '',
     average_income: '',
     offence: '',
@@ -155,10 +153,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   const handleNext = () => {
     if (validateStep(currentStep)) {
       if (currentStep < 2) {
-        if (currentStep === 1) {
-          console.log(formData.disability_status);
-          setCurrentStep(currentStep + 1);
-        }
         setCurrentStep(currentStep + 1);
       } else {
         const fd = new FormData();
@@ -174,8 +168,13 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         }
         fd.append("isPublic", isPublic ? "true" : "false");
         Object.entries(formData).forEach(([key, value]) => {
-          if (value !== null && value !== undefined) {
-            fd.append(key, value instanceof File ? value : String(value));
+          const v: any = value;
+          if (v instanceof File) {
+            fd.append(key, v);
+          } else if (typeof v === "object" && v !== null) {
+            fd.append(key, JSON.stringify(v));
+          } else {
+            fd.append(key, String(v));
           }
         });
         formAction(fd);
@@ -191,8 +190,8 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       if (!isPublic) {
         console.log('handleCloseCaseType');
         handleCloseCaseType(false);
-      }else{
-      router.back();
+      } else {
+        router.back();
       }
     }
   }
@@ -206,9 +205,9 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
       />
-        {!isPublic &&
-          <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
-        }
+      {!isPublic &&
+        <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
+      }
       <div className="mx-auto  bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -408,20 +407,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       />
                       {errors.occupation && <p className="text-red-500 text-xs mt-1">{errors.occupation}</p>}
                     </div>
-
-                    <SelectField
-                      name="disability_status"
-                      label="Disability (If any)"
-                      placeholder="If yes, upload picture proof"
-                      options={[
-                        { value: 'yes', label: 'Yes' },
-                        { value: 'no', label: 'No' },
-                      ]}
-                      value={formData.disability_status}
-                      onValueChange={(value) => handleSelectChange(value, 'disability_status')}
-                      error={!!errors.disability_status}
-                      errorMessage={errors.disability_status}
-                    />
                   </div>
 
                 </>

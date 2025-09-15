@@ -32,7 +32,7 @@ export const GetActiveUser = ({
     queryFn: async () => {
       const filters = { page: 1, size: 40 };
       try {
-        const result = await GetInActiveUsers(filters);
+        const result = await GetActiveUsers(filters);
         return result;
       } catch (err) {
         console.error("Failed to fetch users", err); // ✅ Debug

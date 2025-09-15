@@ -7,6 +7,7 @@ import { useAppSelector } from "@/hooks/redux";
 
 import UnitHeadDashboard from "./UnitHeadDashboard";
 import AdminDashboard from "./AdminDashboard";
+import StateCordinatorDashboard from "./StateCordinatorDashboard";
 
 
 
@@ -16,11 +17,15 @@ export default function Dashboard() {
 
     // Platform Admin / Director roles
     if (role === ROLES.ADMIN || role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL
-        || role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR || role === ROLES.CENTRE_COORDINATOR) {
+        || role === ROLES.ZONAL_DIRECTOR || role === ROLES.CENTRE_COORDINATOR) {
         return <AdminDashboard role={role} />;
     }
 
-    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.PDSS ||
+    // if (role === ROLES.STATE_COORDINATOR) {
+    //     return <StateCordinatorDashboard role={role} />;
+    // }
+
+    if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.STATE_COORDINATOR || role === ROLES.INTERNAL_PARALEGAL || role === ROLES.PDSS ||
         role === ROLES.CIVIL_JUSTICE_DEPT || role === ROLES.CRIMINAL_JUSTICE_DEPT ||
         role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD || role === ROLES.DIO) {
         return (<UnitHeadDashboard role={role} />);

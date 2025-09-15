@@ -73,10 +73,6 @@ export default function ViewCase(details: { details: ICase | null },) {
                                     <span className="text-gray-500 font-medium">Marital Status:</span>
                                     <span className="text-gray-900">{details?.details?.marital_status ?? "-"}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Disability:</span>
-                                    <span className="text-gray-900">{details?.details?.disability_status ?? "-"}</span>
-                                </div>
                             </div>
                             <div className="space-y-3">
                                 <div className="flex justify-between">
