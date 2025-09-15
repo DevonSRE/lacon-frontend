@@ -31,12 +31,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   loading: boolean;
+  emptyMessage?: string;
   onRowClick?: (val: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   loading,
+  emptyMessage,
   data,
   onRowClick,
 }: DataTableProps<TData, TValue>) {
@@ -126,11 +128,12 @@ export function DataTable<TData, TValue>({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-24 text-center  max-w-xl"
                 >
-                  <div className="space-y-2 mt-20" >
-
-                    No Record Yet.
+                  <div className="space-y-2 mt-20 " >
+                    <div className="text-center">
+                      {emptyMessage ?? "No Record Yet."}
+                    </div>
                     <Icons.EmptyIcon className="mx-auto mt-2" />
                   </div>
                 </TableCell>

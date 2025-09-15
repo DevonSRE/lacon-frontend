@@ -45,21 +45,21 @@ const SearchFilterSection: React.FC<Props> = ({
                         onChange={(e) => setClientNameSearch(e.target.value)}
                     />
                 </div>
-                
-                {(role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD || role === ROLES.DIO) && (
+
+                {(role === ROLES.INTERNAL_PARALEGAL || role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD || role === ROLES.DIO) && (
                     <Select value={caseTypeFilter} onValueChange={setCaseTypeFilter}>
                         <SelectTrigger className="w-full h-11">
                             <SelectValue placeholder="Case Type" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All</SelectItem>
-                            <SelectItem value="Criminal">Criminal</SelectItem>
-                            <SelectItem value="Civil">Civil</SelectItem>
-                            <SelectItem value="Decongestion">Decongestion</SelectItem>
+                            <SelectItem value="CRIMINAL CASE">Criminal</SelectItem>
+                            <SelectItem value="CIVIL CASE">Civil</SelectItem>
+                            <SelectItem value="DECONGESTION">Decongestion</SelectItem>
                         </SelectContent>
                     </Select>
                 )}
-                {(role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL) && (
+                {(role === ROLES.INTERNAL_PARALEGAL || role === ROLES.PLATFORM_ADMIN || role === ROLES.DIRECTOR_GENERAL) && (
                     <>
                         {/* <div className="relative">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
@@ -70,7 +70,6 @@ const SearchFilterSection: React.FC<Props> = ({
                                 onChange={(e) => setCaseIdSearch(e.target.value)}
                             />
                         </div> */}
-
                         <Select value={stateFilter} onValueChange={setStateFilter}>
                             <SelectTrigger className="w-full h-11">
                                 <SelectValue placeholder="Select State" />
@@ -95,9 +94,8 @@ const SearchFilterSection: React.FC<Props> = ({
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="all">All</SelectItem>
-                        <SelectItem value="Unassigned">UnAssigned</SelectItem>
-                        <SelectItem value="Assigned">Assigned</SelectItem>
-                        <SelectItem value="Closed">Closed</SelectItem>
+                        <SelectItem value="UNASSIGNED">UNASSIGNED</SelectItem>
+                        <SelectItem value="ASSIGNED">ASSIGNED</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

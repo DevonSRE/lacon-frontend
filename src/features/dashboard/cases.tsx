@@ -1,17 +1,21 @@
-'use client';
+ 'use client';
 
-import InternalCasesPage from "@/features/cases/internal_cases_page";
 import CasesPage from "@/features/cases/page";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
+import InternalCasesPage from "../cases/internal_cases_page";
 
 export default function CasesPageMain() {
   const { data: user } = useAppSelector((state) => state.profile);
   const role = user?.role;
 
-  if (role === ROLES.INTERNAL_PARALEGAL) {
-    return <InternalCasesPage />;
-  }
+//   if (role === ROLES.INTERNAL_PARALEGAL) {
+//     return <InternalCasesPage />;
+//   }
 
-  return <CasesPage />;
+return (
+  <h1 > AWEOSLE </h1>
+);
+
+//   return <CasesPage />;
 }

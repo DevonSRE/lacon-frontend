@@ -143,7 +143,7 @@ export function AddLawyerSheet() {
                 )}
               </div>
 
-              {role != ROLES.ZONAL_DIRECTOR && (
+              {(role !== ROLES.ZONAL_DIRECTOR && role != ROLES.STATE_COORDINATOR) && (
                 <div className="space-y-1">
                   <Label>
                     Zone Selection <span className="text-red-500">*</span>

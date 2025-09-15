@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import SearchFilterSection from './_components/SearchFilterSection';
 import { AssignmentSheet } from './_components/AssignmentSheet';
-import { createCaseColumns, ICase } from './_components/table-columns';
+import { createCaseColumns, ICase, InternalCaseASSignColumns, InternalCaseColumns } from './_components/table-columns';
 import { DataTable } from '@/components/data-table';
 import TablePagination from '@/components/TablePagination';
 import { useQuery } from '@tanstack/react-query';
@@ -15,13 +15,14 @@ import ViewCase from './_components/viewCase';
 import { ROLES } from '@/types/auth';
 import BulkCaseUploadDialog from '../dashboard/components/BulkUpload';
 import FileACaseComponent from '../component/FileACase';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-export default function CasesPage() {
+export default function InternalCasesPage() {
     const [clientNameSearch, setClientNameSearch] = useState('');
     const [caseIdSearch, setCaseIdSearch] = useState('');
     const [stateFilter, setStateFilter] = useState('');
     const [caseTypeFilter, setCaseTypeFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+    const [statusFilter, setStatusFilter] = useState('UNASSIGNED');
     const [type, setType] = useState('');
     const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
@@ -31,35 +32,24 @@ export default function CasesPage() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
-
     const { data, isLoading, refetch } = useQuery({
-        queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter, debouncedSearchTerm],
+        queryKey: ["getCasesInternal", currentPage, caseTypeFilter, stateFilter, statusFilter, debouncedSearchTerm],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 search: debouncedSearchTerm,
-                case_type: caseTypeFilter || "",
-                state: stateFilter === "all" ? "" : stateFilter,
-                status: statusFilter === "all" ? "" : statusFilter,
+                case_type: (caseTypeFilter) ? caseTypeFilter : "",
+                state: (stateFilter === "all") ? "" : stateFilter,
+                status: (statusFilter === "all") ? "" : statusFilter,
             };
-
-            const res = await fetch("/api/cases", {
-                method: "POST",
-                body: JSON.stringify(filters),
-            });
-
-            if (!res.ok) throw new Error("Failed to fetch cases");
-
-            return res.json();
+            return await GetCaseAction(filters);
         },
         staleTime: 100000,
     });
 
-
     const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
         console.log("type" + type);
-
         setCaseDetails(user);
         setType(type);
 
@@ -77,7 +67,17 @@ export default function CasesPage() {
     };
 
     const columns = useMemo(
-        () => createCaseColumns(user?.role as ROLES,
+        () => InternalCaseColumns(user?.role as ROLES,
+            (user) => handleOpenSheet(user, "Assign"),
+            (user) => handleOpenSheet(user, "ReAssign"),
+            (user) => handleOpenSheet(user, "Review"),
+            (user) => handleOpenSheet(user, "viewCase"),
+            (user) => handleOpenSheet(user, "suspend"),
+        ),
+        [user?.role]
+    );
+    const columnsAssgined = useMemo(
+        () => InternalCaseColumns(user?.role as ROLES,
             (user) => handleOpenSheet(user, "Assign"),
             (user) => handleOpenSheet(user, "ReAssign"),
             (user) => handleOpenSheet(user, "Review"),
@@ -94,7 +94,6 @@ export default function CasesPage() {
                 <div className="flex gap-4">
                     {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                         <>
-                            <BulkCaseUploadDialog />
                             <FileACaseComponent
                                 userRole={role as ROLES}
                                 showIcon={true}
@@ -106,31 +105,52 @@ export default function CasesPage() {
                     )}
                 </div>
             </div>
-
-            <SearchFilterSection
-                clientNameSearch={clientNameSearch}
-                setClientNameSearch={setClientNameSearch}
-                caseIdSearch={caseIdSearch}
-                setCaseIdSearch={setCaseIdSearch}
-                stateFilter={stateFilter}
-                setStateFilter={setStateFilter}
-                caseTypeFilter={caseTypeFilter}
-                setCaseTypeFilter={setCaseTypeFilter}
-                statusFilter={statusFilter}
-                setStatusFilter={setStatusFilter}
-            />
-
-            <DataTable columns={columns} loading={isLoading} data={data?.data.data} />
-            {data?.data?.data?.length > 0 && (
-                <div className="flex justify-end pt-4">
-                    <TablePagination
-                        currentPage={currentPage}
-                        totalCount={data?.data.total_rows}
-                        pageSize={DEFAULT_PAGE_SIZE}
-                        onPageChange={(page) => setCurrentPage(page)}
-                    />
-                </div>
-            )}
+            <Tabs defaultValue="account" >
+                <TabsList className="bg-transparent mb-6 border-none p-0 h-auto space-x-6">
+                    <TabsTrigger
+                        onClick={() => { setStatusFilter('UNASSIGNED') }}
+                        value="account"
+                        className="bg-transparentborder-none shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-black text-gray-500 p-0 font-normal hover:bg-transparent"
+                    >
+                        Filed Cases
+                    </TabsTrigger>
+                    <TabsTrigger
+                        onClick={() => { setStatusFilter('ASSIGNED') }}
+                        value="password"
+                        className="bg-transparent border-none shadow-none data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-black text-gray-500 p-0 font-normal hover:bg-transparent"
+                    >
+                        Assigned Cases
+                    </TabsTrigger>
+                </TabsList>
+                <SearchFilterSection
+                    clientNameSearch={clientNameSearch}
+                    setClientNameSearch={setClientNameSearch}
+                    caseIdSearch={caseIdSearch}
+                    setCaseIdSearch={setCaseIdSearch}
+                    stateFilter={stateFilter}
+                    setStateFilter={setStateFilter}
+                    caseTypeFilter={caseTypeFilter}
+                    setCaseTypeFilter={setCaseTypeFilter}
+                    statusFilter={statusFilter}
+                    setStatusFilter={setStatusFilter}
+                />
+                <TabsContent value="account">
+                    <DataTable  columns={columns} loading={isLoading} data={data?.data.data} />
+                </TabsContent>
+                <TabsContent value="password">
+                    <DataTable columns={columnsAssgined} loading={isLoading} data={data?.data.data} />
+                </TabsContent>
+                {data?.data?.data?.length > 0 && (
+                    <div className="flex justify-end pt-4">
+                        <TablePagination
+                            currentPage={currentPage}
+                            totalCount={data?.data.total_rows}
+                            pageSize={DEFAULT_PAGE_SIZE}
+                            onPageChange={(page) => setCurrentPage(page)}
+                        />
+                    </div>
+                )}
+            </Tabs>
 
             <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
                 <ViewCase details={caseDetails} />
