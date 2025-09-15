@@ -112,7 +112,6 @@ export interface CaseOverview {
     state_of_origin: string;
     occupation: string;
     disability_status: string;
-    disability_proof: string;
     status: string;
     criminal_case?: any;
     civil_case?: any;

@@ -68,8 +68,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         email: '',
         state_of_origin: '',
         occupation: '',
-        disability_proof: null,
-        disability_status: '',
         complaint: '',
         average_income: '',
         offence: '',
@@ -165,8 +163,13 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 }
                 fd.append("isPublic", isPublic ? "true" : "false");
                 Object.entries(formData).forEach(([key, value]) => {
-                    if (value !== null && value !== undefined) {
-                        fd.append(key, value instanceof File ? value : String(value));
+                    const v: any = value;
+                    if (v instanceof File) {
+                        fd.append(key, v);
+                    } else if (typeof v === "object" && v !== null) {
+                        fd.append(key, JSON.stringify(v));
+                    } else {
+                        fd.append(key, String(v));
                     }
                 });
                 formAction(fd);
@@ -180,7 +183,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         } else {
             if (!isPublic) {
                 handleCloseCaseType(false);
-            }else{
+            } else {
                 router.back();
             }
         }
@@ -191,7 +194,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
             <CaseIntakeDialog open={open} onOpenChange={setOpen} handleCloseCaseType={handleCloseCaseType} isHome={isPublic ? true : false} />
             <div className="min-h-screen">
                 {!isPublic &&
-                   <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
+                    <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
                 }
                 <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                     <div className="flex items-center mb-4 sm:mb-0">
@@ -383,19 +386,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         onChange={(e) => updateField('occupation', e.target.value)}
                                         className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                     />
-                                    <SelectField
-                                        name="disability_status"
-                                        label="Disability (If any)"
-                                        placeholder="If yes, upload picture proof"
-                                        options={[
-                                            { value: 'yes', label: 'Yes' },
-                                            { value: 'no', label: 'No' },
-                                        ]}
-                                        value={formData.disability_status}
-                                        onValueChange={(value) => handleSelectChange(value, 'disability_status')}
-                                        error={!!errors.disability_status}
-                                        errorMessage={errors.disability_status}
-                                    />
+
                                 </div>
                             </div>
                         )}

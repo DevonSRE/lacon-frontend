@@ -5,19 +5,17 @@ import React from "react";
 export const mainColumns: ColumnDef<CaseOverview>[] = [
   {
     accessorKey: "case_type",
-    header: "Case Type",
+    header: () => <div className="text-center font-semibold text-lg">Case Type</div>,
+    cell: ({ getValue }) => <div className="text-center">{getValue() as string}</div>,
   },
   {
     accessorKey: "department_name",
-    header: "Department",
+    header: () => <div className="text-center font-semibold  text-lg">Forwarded by</div>,
+    cell: ({ getValue }) => <div className="text-center">{getValue() as string}</div>,
   },
-  // {
-  //   accessorKey: "priority",
-  //   header: "Priority",
-  // },
   {
     accessorKey: "status",
-    header: "Status",
+    header: () => <div className="text-center text-lg">Status</div>,
     cell: ({ row }) => {
       const status = row.original.status || "Unknown";
       const statusColors: Record<string, string> = {
@@ -27,29 +25,14 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
         Unknown: "bg-gray-50 text-gray-700 border border-gray-200",
       };
       return (
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
-          {status}
-        </span>
+        <div className="flex justify-center">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}
+          >
+            {status}
+          </span>
+        </div>
       );
     },
   },
-  // {
-  //   accessorKey: "action",
-  //   header: "Action",
-  //   cell: ({ row }) => {
-  //     return (
-  //       <div className="flex items-center gap-2">
-  //         <button
-  //           className="px-3 py-1 text-xs font-medium text-green-600 bg-green-50 border rounded-md transition-colors"
-  //           onClick={() => {
-  //             // Handle view action
-  //             // console.log("View case:", row.original.case_id);
-  //           }}>
-  //           Assign
-  //         </button>
-
-  //       </div>
-  //     );
-  //   },
-  // },
 ];

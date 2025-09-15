@@ -190,9 +190,6 @@ export const createLawyerRequestColumns = (
   ];
 };
 
-
-
-
 export const createProbunoRequestColumns = (userRole: ROLES,
   onReview: (user: ILawyerRequest) => void): ColumnDef<ILawyerRequest>[] => {
   return [

@@ -92,7 +92,7 @@ export default function FileACase() {
                                         <SelectLabel>Case Type</SelectLabel>
                                         <SelectItem value="Civil">Civil</SelectItem>
                                         <SelectItem value="Criminal">Criminal</SelectItem>
-                                        <SelectItem value="PDSS-InStation">PDSS (In Station)</SelectItem>
+                                        {/* <SelectItem value="PDSS-InStation">PDSS (In Station)</SelectItem> */}
                                         <SelectItem value="PDSS-Organisation">PDSS (Organisation)</SelectItem>
                                     </SelectGroup>
                                 </SelectContent>
@@ -100,12 +100,10 @@ export default function FileACase() {
                         </div>
                     </div>
                 </DialogDescription>
-
                 <DialogFooter className="flex flex-col gap-2">
                     <DialogClose asChild>
                         <button ref={dialogCloseRef} className="hidden" />
                     </DialogClose>
-
                     <Button
                         disabled={loading}
                         className="w-full h-11 bg-red-500"

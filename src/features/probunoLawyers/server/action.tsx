@@ -629,10 +629,7 @@ export async function submitPublicCaseForm(
 
     // Prepare data for API call
     let uploadData = { ...result.data };
-    if (disabilityProof != null) {
-      uploadData.disability_proof = disabilityProof;
-    }
-
+  
     let response;
     const isPublic = data.isPublic === "true";
     if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {

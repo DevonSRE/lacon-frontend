@@ -74,8 +74,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         email: '',
         state_of_origin: '',
         occupation: '',
-        disability_proof: null,
-        disability_status: '',
         offence: '',
         organisation: '',
         client_location: '',
@@ -170,9 +168,14 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                     }
                 }
                 fd.append("isPublic", isPublic ? "true" : "false");
-                Object.entries(formData).forEach(([key, value]) => {
-                    if (value !== null && value !== undefined) {
-                        fd.append(key, value instanceof File ? value : String(value));
+               Object.entries(formData).forEach(([key, value]) => {
+                    const v: any = value;
+                    if (v instanceof File) {
+                        fd.append(key, v);
+                    } else if (typeof v === "object" && v !== null) {
+                        fd.append(key, JSON.stringify(v));
+                    } else {
+                        fd.append(key, String(v));
                     }
                 });
                 formAction(fd);
@@ -408,7 +411,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         onChange={(e) => updateField('occupation', e.target.value)}
                                         className={` ${errors.occupation ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                     />
-                                    <SelectField
+                                    {/* <SelectField
                                         name="disability_status"
                                         label="Disability (If any)"
                                         placeholder="If yes, upload picture proof)"
@@ -420,7 +423,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         onValueChange={(value) => handleSelectChange(value, 'disability_status')}
                                         error={!!errors.disability_status}
                                         errorMessage={errors.disability_status}
-                                    />
+                                    /> */}
                                 </div>
                                 
                             </div>

@@ -139,10 +139,10 @@ export default function AdminDashboard({ role }: { role: string }) {
                 {caseOverview.length > 0 && (
                 <div className="flex flex-1 flex-col gap-4 pt-0">
                     <div className="flex-1 bg-white md:min-h-min">
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90 mb-4">
+                        <h3 className="text-lg  font-bold text-gray-800 dark:text-white/90 mb-4">
                             Case Assignment Overview
                         </h3>
-                        <div className="flex flex-1 flex-col gap-4 pt-0">
+                        <div className="flex font-semibold flex-1 flex-col gap-4 pt-0">
                             <DataTable
                                 columns={mainColumns}
                                 loading={isLoading || loading}

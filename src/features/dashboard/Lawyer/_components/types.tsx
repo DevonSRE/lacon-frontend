@@ -30,8 +30,6 @@ export interface ICase {
     // Additional fields from JSON
     gender?: string;
     permanent_address?: string;
-    disability_status?: string;
-    disability_proof?: string;
     updated_by?: Array<{
         id: string;
         name: string;
