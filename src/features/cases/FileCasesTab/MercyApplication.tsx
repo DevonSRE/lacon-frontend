@@ -431,7 +431,11 @@ export default function MercyApplication({
     <>
       <div className="mx-auto">
         {currentStep === 3 && (
-          <CaseCreated setOpen={setOpen} openFileACase={openFileACase} />
+          <CaseCreated setOpen={setOpen} openFileACase={openFileACase} details={{
+            details: null
+          }} />
+          //TODO :: Please continue from here... get casedetials from API after successful creating then populate here
+
         )}
 
         {currentStep === 1 && (
@@ -445,8 +449,8 @@ export default function MercyApplication({
               <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
                 <div
                   className={`w-8 h-8 rounded-sm flex items-center justify-center text-sm font-medium ${currentStep === 1
-                      ? "bg-black text-white"
-                      : "bg-gray-200 text-gray-600"
+                    ? "bg-black text-white"
+                    : "bg-gray-200 text-gray-600"
                     }`}
                 >
                   1

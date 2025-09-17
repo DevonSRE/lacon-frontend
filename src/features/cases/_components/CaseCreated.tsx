@@ -1,23 +1,28 @@
-// components/CaseCreated.tsx
 "use client";
 
 import { useRouter } from "next/navigation";
-import { CheckCircle } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/icons/icons";
+import { CustomeSheet } from "@/components/CustomSheet";
+import ViewCase from "./viewCase";
+import { ICase } from "./table-columns";
 
 
 type CustomeSheetProps = {
     setOpen: Dispatch<SetStateAction<boolean>>;
     openFileACase: Dispatch<SetStateAction<boolean>>;
+    details: { details: ICase | null }
 };
 
 
 export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProps) {
     const router = useRouter();
+    const [viewCase, setViewCase] = useState(false);
+    const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
 
     const handleViewCase = () => {
+        setViewCase(true);
         setOpen(false);
     };
 
@@ -28,7 +33,6 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
 
     const handleReturnDashboard = () => {
         setOpen(false);
-
         router.push("/dashboard");
     };
 
@@ -49,17 +53,16 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
                     <p className="text-green-600 font-medium">{`Today, ${today}`}</p>
                 </div>
                 <div className="flex flex-col w-full  space-y-4 mt-6">
-                    {/* <Button
+                    <Button
                         onClick={handleViewCase}
                         variant={"outline"}
                         className="border border-black w-full py-2 rounded text-black hover:bg-black hover:text-white transition h-14"
                     >
                         View This Case
-                    </Button> */}
+                    </Button>
                     <Button
                         onClick={handleFileAnother}
-                        className="bg-black text-white py-2 rounded hover:bg-gray-800 transition h-14"
-                    >
+                        className="bg-black text-white py-2 rounded hover:bg-gray-800 transition h-14">
                         File Another Case
                     </Button>
                     <Button
@@ -70,6 +73,9 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
                     </Button>
                 </div>
             </div>
+            <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
+                <ViewCase details={caseDetails} />
+            </CustomeSheet>
         </div>
     );
 }

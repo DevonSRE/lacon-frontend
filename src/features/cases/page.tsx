@@ -31,7 +31,6 @@ export default function CasesPage() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
-
     const { data, isLoading, refetch } = useQuery({
         queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter, debouncedSearchTerm],
         queryFn: async () => {
@@ -43,12 +42,10 @@ export default function CasesPage() {
                 state: stateFilter === "all" ? "" : stateFilter,
                 status: statusFilter === "all" ? "" : statusFilter,
             };
-
             const res = await fetch("/api/cases", {
                 method: "POST",
                 body: JSON.stringify(filters),
             });
-
             if (!res.ok) throw new Error("Failed to fetch cases");
 
             return res.json();
@@ -59,10 +56,8 @@ export default function CasesPage() {
 
     const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
         console.log("type" + type);
-
         setCaseDetails(user);
         setType(type);
-
         if (type == "viewCase") {
             setViewCase(true);
         }

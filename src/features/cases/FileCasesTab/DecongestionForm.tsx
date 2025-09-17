@@ -138,7 +138,6 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
             } else {
                 setErrors({});
             }
-
             return false;
         }
     };
@@ -177,7 +176,6 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
     return (
         <>
             <div className="min-h-screen p-2">
-                {/* Header */}
                 {currentStep < 3 && (
                     <>
                         <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
@@ -798,7 +796,12 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                     </>
                 )}
                 {currentStep === 3 && (
-                    <CaseCreated setOpen={setOpen} openFileACase={openFileACase} />
+                    <CaseCreated setOpen={setOpen} openFileACase={openFileACase} details={{
+                        details: null
+                    }} />
+
+
+                    //TODO :: Please continue from here... get casedetials from API after successful creating then populate here
                 )}
             </div>
         </>

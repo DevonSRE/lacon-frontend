@@ -6,15 +6,12 @@ import { useAppSelector } from '@/hooks/redux';
 import { CustomeSheet } from '@/components/CustomSheet';
 import { AssignmentSheet } from './AssignmentSheet';
 
-
 export default function ViewCase(details: { details: ICase | null },) {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
     const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
     const [type, setType] = useState('');
     const [viewAssignment, setViewAssignment] = useState(false);
-
-
 
     const handleOpenSheet = (user: ICase | null, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
         console.log("type" + type);
@@ -28,7 +25,6 @@ export default function ViewCase(details: { details: ICase | null },) {
 
     return (
         <div className="h-screen w-full">
-            {/* Header Section */}
             <div className="border-b h-1/12 border-gray-200 pb-4 mb-6">
                 <div className="flex justify-between items-start mb-2">
                     <div>
@@ -45,7 +41,7 @@ export default function ViewCase(details: { details: ICase | null },) {
                         {details.details?.case_type ?? "-"}
                     </div>
                     <div className="inline-block bg-red-50 text-red-500 p-3 w-full font-medium mb-2 text-center items-center">
-                        {details.details?.location ?? "state"}
+                        {details.details?.state_of_origin ?? "state"}
                     </div>
                 </div>
             </div>
