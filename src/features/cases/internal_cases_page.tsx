@@ -52,7 +52,6 @@ export default function InternalCasesPage() {
         console.log("type" + type);
         setCaseDetails(user);
         setType(type);
-
         if (type == "viewCase") {
             setViewCase(true);
         }
@@ -135,7 +134,7 @@ export default function InternalCasesPage() {
                     setStatusFilter={setStatusFilter}
                 />
                 <TabsContent value="account">
-                    <DataTable  columns={columns} loading={isLoading} data={data?.data.data} />
+                    <DataTable columns={columns} loading={isLoading} data={data?.data.data} />
                 </TabsContent>
                 <TabsContent value="password">
                     <DataTable columns={columnsAssgined} loading={isLoading} data={data?.data.data} />

@@ -40,7 +40,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     const handleCaseTypeSelection = () => {
         if (selectedCaseForm) {
             setCaseType(true);
-            setOpenFileACase(false);
+            // setOpenFileACase(false);
             // handleCloseFileACase();
         }
     };
