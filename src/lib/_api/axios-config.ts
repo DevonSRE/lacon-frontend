@@ -105,6 +105,23 @@ axiosInstance.interceptors.response.use(
       response: error.response?.data,
     });
 
+    // Handle expired/invalid tokens
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.error("🔒 Authentication failed - token is invalid or expired");
+
+      // Only redirect if we're in the browser
+      if (typeof window !== 'undefined') {
+        // Store the current URL to redirect back after login
+        const currentPath = window.location.pathname;
+        window.location.href = `/signin?callbackUrl=${encodeURIComponent(currentPath)}`;
+      }
+
+      return Promise.reject({
+        ...error,
+        message: "Your session has expired. Please sign in again.",
+      });
+    }
+
     if (error.code === "ECONNABORTED" && error.message.includes("timeout")) {
       return Promise.reject({
         ...error,
@@ -154,6 +171,16 @@ publicAxiosInstance.interceptors.response.use(
       code: error.code,
       response: error.response?.data,
     });
+
+    // Handle expired/invalid API keys
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      console.error("🔒 Authentication failed - API key is invalid or expired");
+
+      return Promise.reject({
+        ...error,
+        message: "API authentication failed. Please contact support.",
+      });
+    }
 
     if (error.code === "ECONNABORTED" && error.message.includes("timeout")) {
       return Promise.reject({

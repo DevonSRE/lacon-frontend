@@ -7,6 +7,9 @@ import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { GetInactiveStates, GetStates } from "@/server/actions/GetDetails";
 
 
+/*************  ✨ Windsurf Command ⭐  *************/
+/*******  20b21a9e-160b-414c-8a1c-1344a402b5dd  *******/
+
 export const GetInactiveState = ({
     placeholder,
     value,

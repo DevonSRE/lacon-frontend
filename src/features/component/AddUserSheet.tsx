@@ -28,6 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GetZone } from "@/components/get-zone";
 import { GetActiveUser } from "@/components/get-active-users";
 import { GetInactiveState } from "@/components/get-inactive-state";
+import { GetInActiveUser } from "@/components/get-inactive-users";
 
 const defaultFormData: FormDataUser = {
   user_type: "",
@@ -110,7 +111,7 @@ export function AddUserSheet() {
           <h2 className="text-xl font-semibold">Add New User</h2>
           <div className="space-y-1">
             <Label>User Role</Label>
-            <GetActiveUser
+            <GetInActiveUser
               value={userType}
               onValueChange={(val: string) => {
                 setSelectedUserType(val);
