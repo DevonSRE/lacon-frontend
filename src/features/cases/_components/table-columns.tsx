@@ -64,12 +64,12 @@ export interface ICase {
     defendant_address: string;
     defendant_phone_number: string;
   };
-  judiciary?: {
-    case_number: string;
+  criminal_case?: {
+    court_case_number: string;
     bail_status: string;
-    trial_of_court: string;
+    court_of_trial: string;
     prosecuting_agency: string;
-    current_case_status: string;
+    case_status: string;
   };
 }
 
