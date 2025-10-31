@@ -5,17 +5,17 @@ import React from "react";
 export const mainColumns: ColumnDef<CaseOverview>[] = [
   {
     accessorKey: "case_type",
-    header: () => <div className="text-center font-semibold text-lg">Case Type</div>,
-    cell: ({ getValue }) => <div className="text-center">{getValue() as string}</div>,
+    header: () => <div className="text-left font-semibold text-base">Case Type</div>,
+    cell: ({ getValue }) => <div className="text-left">{getValue() as string}</div>,
   },
   {
     accessorKey: "department_name",
-    header: () => <div className="text-center font-semibold  text-lg">Forwarded by</div>,
+    header: () => <div className="text-center font-semibold  text-base">Forwarded by</div>,
     cell: ({ getValue }) => <div className="text-center">{getValue() as string}</div>,
   },
   {
     accessorKey: "status",
-    header: () => <div className="text-center text-lg">Status</div>,
+    header: () => <div className="text-center text-base">Status</div>,
     cell: ({ row }) => {
       const status = row.original.status || "Unknown";
       const statusColors: Record<string, string> = {

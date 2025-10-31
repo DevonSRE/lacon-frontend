@@ -23,6 +23,8 @@ export default function ViewCase(details: { details: ICase | null },) {
         }
     };
 
+    console.log(details);
+
     return (
         <div className="h-screen w-full">
             <div className="border-b h-1/12 border-gray-200 pb-4 mb-6">
@@ -154,7 +156,6 @@ export default function ViewCase(details: { details: ICase | null },) {
                                     </div>
                                 </div>
                             )}
-
                             {details.details?.case_type === "CIVIL CASE" && (
                                 <div className="space-y-3">
                                     <div className="flex justify-between">
@@ -206,36 +207,39 @@ export default function ViewCase(details: { details: ICase | null },) {
                             )}
                         </div>
                     </div>
-                    <div>
-                        <h2 className="text-sm font-semibold mt-6 text-gray-800 mb-4 border-b border-gray-100 pb-2">
-                            Judicial Information
-                        </h2>
-                        <div className="grid grid-cols-1  gap-4 text-xs">
-                            <div className="space-y-3">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Court Suit/Case No:</span>
-                                    <span className="text-gray-900 font-semibold">{details?.details?.judiciary?.case_number ?? "-"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Bail Status:</span>
-                                    <span className="text-gray-900">{details?.details?.judiciary?.bail_status ?? "-"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Court of Trial:</span>
-                                    <span className="text-gray-900">{details?.details?.judiciary?.trial_of_court ?? "-"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Prosecuting Agency::</span>
-                                    <span className="text-gray-900">{details?.details?.judiciary?.prosecuting_agency ?? "-"}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500 font-medium">Current Case Status:</span>
-                                    <span className="text-gray-900">{details?.details?.judiciary?.current_case_status ?? "-"}</span>
-                                </div>
+                    {details.details?.case_type === "CRIMINAL CASE" && (
+                        <div>
+                            <h2 className="text-sm font-semibold mt-6 text-gray-800 mb-4 border-b border-gray-100 pb-2">
+                                Judicial Information
+                            </h2>
+                            <div className="grid grid-cols-1  gap-4 text-xs">
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 font-medium">Court Suit/Case No:</span>
+                                        <span className="text-gray-900 font-semibold">{details?.details?.criminal_case?.court_case_number ?? "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 font-medium">Bail Status:</span>
+                                        <span className="text-gray-900">{details?.details?.criminal_case?.bail_status ?? "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 font-medium">Court of Trial:</span>
+                                        <span className="text-gray-900">{details?.details?.criminal_case?.court_of_trial ?? "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 font-medium">Prosecuting Agency::</span>
+                                        <span className="text-gray-900">{details?.details?.criminal_case?.prosecuting_agency ?? "-"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-500 font-medium">Current Case Status:</span>
+                                        <span className="text-gray-900">{details?.details?.criminal_case?.case_status ?? "-"}</span>
+                                    </div>
 
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
+
                 </div>
                 {(role != "INTERNAL PARALEGAL") && (
                     <div className="flex  gap-4 mt-10 justify-between">

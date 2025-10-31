@@ -65,6 +65,8 @@ export default function InternalCasesPage() {
         refetch();
     };
 
+    console.log(data);
+
     const columns = useMemo(
         () => InternalCaseColumns(user?.role as ROLES,
             (user) => handleOpenSheet(user, "Assign"),
