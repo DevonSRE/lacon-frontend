@@ -188,8 +188,12 @@ export async function DeleteUser(_prevState: unknown, formData: FormData) {
       response = await UserService.deleteUser(
         typeof data?.id === "string" ? data.id : ""
       );
-    } else {
+    } else if(data?.type === "suspend") {
       response = await UserService.suspendUser(
+        typeof data?.id === "string" ? data.id : ""
+      );
+    } else{
+      response = await UserService.ActivateUser(
         typeof data?.id === "string" ? data.id : ""
       );
     }

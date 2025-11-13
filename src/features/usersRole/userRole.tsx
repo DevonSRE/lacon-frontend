@@ -55,6 +55,7 @@ export default function UserRoles() {
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dailogOpen, setdailogOpen] = useState(false);
+  const [dailogActiveOpen, setdailogActiveOpen] = useState(false);
   const [state, dispatch, isPending] = useActionState(DeleteUser, undefined);
   const queryClient = useQueryClient();
 
@@ -80,15 +81,17 @@ export default function UserRoles() {
     }
   }, [state]);
 
-  const handleOpenSheet = (user: IUser, type: "suspend" | "delete") => {
+  const handleOpenSheet = (user: IUser, type: "suspend" | "delete" | "activate") => {
     setSelectedUser(user);
     if (type === "suspend") setSheetOpen(true);
     if (type === "delete") setdailogOpen(true);
+    if (type === "activate") setdailogActiveOpen(true);
   };
   const columns = useMemo(
     () =>
       createUserColumns(
         user?.role as ROLES,
+        (user) => handleOpenSheet(user, "activate"),
         (user) => handleOpenSheet(user, "suspend"),
         (user) => handleOpenSheet(user, "delete")
       ),
@@ -117,7 +120,7 @@ export default function UserRoles() {
     console.log("Filtering users by role:", role);
   };
 
-  const dispatchAction = (type: "suspend" | "delete") => {
+  const dispatchAction = (type: "suspend" | "delete" | "activate") => {
     startTransition(() => {
       const formData = new FormData();
       formData.append("id", String(selectedUser?.id));
@@ -287,6 +290,59 @@ export default function UserRoles() {
                 <>
                   <span className="transition-opacity duration-300 group-hover:opacity-0">
                     Yes, Suspend
+                  </span>
+                  <ThumbsUp className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5" />
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full h-11 group relative overflow-hidden"
+              onClick={() => setdailogOpen(false)}
+            >
+              <span className="transition-opacity duration-300 group-hover:opacity-0">
+                No, I'll Do it Later
+              </span>
+              <ThumbsDown className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5 text-gray-500" />
+            </Button>
+          </div>
+        </div>
+      </CustomDialog>
+      <CustomDialog
+        open={dailogActiveOpen}
+        setOpen={setdailogActiveOpen}
+        className="w-xl h-[400px]"
+      >
+        <div className="mt-4 space-y-8 ">
+          <div className="flex justify-between bg-[#0008ff] text-white rounded-xl text-center mb-10 shadow ">
+            <Icons.smallLeftFlowwer />
+            <div className="justify-center items-center text-center flex flex-col space-y-2">
+              <Button
+                className="bg-white rounded-full"
+                onClick={() => setdailogOpen(false)}
+              >
+                <ArrowLeft className="h-5 text-red-500 w-5" />
+              </Button>
+            </div>
+            <Icons.smallRightFlowwer />
+          </div>
+          <div className="space-y-4">
+            <div className="flex text-xl font-semibold justify-center text-center">
+              Activate User
+            </div>
+            <div className="justify-center text-center">
+              Are You Sure You Want To Activate This User
+            </div>
+            <Button
+              onClick={() => dispatchAction("activate")}
+              className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden"
+            >
+              {isPending ? (
+                "Activating..."
+              ) : (
+                <>
+                  <span className="transition-opacity duration-300 group-hover:opacity-0">
+                    Yes, Activate
                   </span>
                   <ThumbsUp className="absolute inset-0 m-auto opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-5 h-5" />
                 </>
