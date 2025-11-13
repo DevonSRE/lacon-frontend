@@ -9,6 +9,7 @@ import { ROLES } from "@/types/auth";
 
 export const createUserColumns = (
   userRole: ROLES,
+  onActivate: (user: IUser) => void,
   onSuspend: (user: IUser) => void,
   onDelete: (user: IUser) => void
 ): ColumnDef<IUser>[] => {
@@ -82,6 +83,7 @@ export const createUserColumns = (
 
         // Optional: restrict actions based on role
         if (userRole !== "ADMIN" && userRole !== "DIRECTOR GENERAL") return null;
+         const status = row.original.status.toUpperCase();
 
         return (
           <DropdownMenu>
@@ -91,9 +93,16 @@ export const createUserColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="p-1 space-y-2 bg-gray-50 rounded-xs hover:bg-gray-200 text-xs" >
-              <DropdownMenuItem onClick={() => onSuspend(user)}>
-                Suspend Account
-              </DropdownMenuItem>
+              {status !== "INACTIVE" && (
+                <DropdownMenuItem onClick={() => onSuspend(user)}>
+                  Suspend Account
+                </DropdownMenuItem>
+              )}
+              {status === "INACTIVE" && (
+                <DropdownMenuItem onClick={() => onActivate(user)}>
+                  Activate Account
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
                 Delete Account
               </DropdownMenuItem>

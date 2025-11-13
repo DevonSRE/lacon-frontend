@@ -38,7 +38,7 @@ interface ApiResponse {
 const StatCard: React.FC<StatCardProps> = ({ title, value, subtitle, titleColor = "text-gray-500" }) => {
     return (
         <div className="border rounded-xs p-6 space-y-2 shadow-sm bg-white">
-            <div className={`text-sm font-medium ${titleColor}`}>{title}</div>
+            <div className={`text-md font-medium ${titleColor}`}>{title}</div>
             <div className="text-2xl font-semibold text-black">{value}</div>
             <div className="text-sm text-gray-400">{subtitle}</div>
         </div>
@@ -127,12 +127,12 @@ export default function AdminDashboard({ role }: { role: string }) {
                     <StatCard
                         title="Pro Bono Applications"
                         value={casesSummation.probonoApplications}
-                        subtitle={casesSummation.probonoApplications > 0 ? "Review needed" : "None pending"}
+                        subtitle={casesSummation.probonoApplications > 0 ? "Review needed" : "Review needed"}
                     />
                     <StatCard
-                        title="Weekly Civil & Criminal"
+                        title="New cases this week"
                         value={casesSummation.weeklyCivilAndCriminal}
-                        subtitle="New cases this week"
+                        subtitle="Weekly Civil & Crimnal"
                     />
                 </div>
 

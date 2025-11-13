@@ -56,9 +56,6 @@ const handleDeleteUser = (user: IUser) => {
   console.log("Deleting", user);
 };
 
-
-
-
 export const createLawyersColumns = (
   userRole: ROLES,
   onView: (user: IUser) => void,

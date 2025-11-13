@@ -17,6 +17,9 @@ const UserService = {
     async suspendUser(id: string) {
         return await axiosInstance.patch(`/users/${id}`, { status: "INACTIVE" });
     },
+    async ActivateUser(id: string) {
+        return await axiosInstance.patch(`/users/${id}`, { status: "ACTIVE" });
+    },
     async apporveUser(payload: any, id: string) {
         console.log(`/users/lawyer-unit-request/${id}/approve`);
         return await axiosInstance.post(`/users/lawyer-unit-request/${id}/approve`, payload);
