@@ -42,13 +42,7 @@ export default function CasesPage() {
                 state: stateFilter === "all" ? "" : stateFilter,
                 status: statusFilter === "all" ? "" : statusFilter,
             };
-            const res = await fetch("/api/cases", {
-                method: "POST",
-                body: JSON.stringify(filters),
-            });
-            if (!res.ok) throw new Error("Failed to fetch cases");
-
-            return res.json();
+            return await GetCaseAction(filters);
         },
         staleTime: 100000,
     });
