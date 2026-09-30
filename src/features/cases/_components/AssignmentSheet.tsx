@@ -157,7 +157,7 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
       {/* Form */}
       <form action={dispatchAction} className="w-full space-y-6">
         <input type="hidden" name="casefile_id" value={details?.id ?? ""} />
-        <input type="hidden" name="is_reassigned" value="true" />
+        <input type="hidden" name="is_reassigned" value={type === "ReAssign" ? "true" : "false"} />
 
         <div className="pt-4">
           <Label htmlFor="department" className="block text-sm font-medium">

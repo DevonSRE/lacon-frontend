@@ -9,7 +9,7 @@ import z from "zod";
 const assigncase = z.object({
     casefile_id: z.string().min(1, { message: "Please select case file" }),
     assignee_id: z.string().min(1, { message: "Please select assignee" }),
-    is_reassigned: z.coerce.boolean(),
+    is_reassigned: z.enum(["true", "false"]).transform((v) => v === "true"),
 });
 
 const updateCase = z.object({
