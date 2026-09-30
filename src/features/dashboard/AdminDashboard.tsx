@@ -110,7 +110,6 @@ export default function AdminDashboard({ role }: { role: string }) {
                 <div className="flex justify-between items-center mb-8">
                     <Intro user={role} />
                 </div>
-
                 {/* Main Stats Cards using actual API data */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
                     <StatCard
