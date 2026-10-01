@@ -126,14 +126,15 @@ export default function Overview() {
         { title: "Cases Accepted", value: getStatValue("Cases Accepted") },
         { title: "Cases Completed", value: getStatValue("Cases Completed") },
         { title: "Criminal Cases", value: getStatValue("Criminal Cases") },
-        { title: "Civil Cases", value: getStatValue("Civil Cases") }
+        { title: "Civil Cases", value: getStatValue("Civil Cases") },
+        { title: "Other Cases", value: getStatValue("Other Cases") }
     ];
 
     return (
         <>
         
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
                 {stats.map((stat, idx) => (
                     <Card key={idx} className="bg-[#F4F4F4] rounded-sm border-2 border-[#D9D9D9]">
                         <CardContent className="px-4">
