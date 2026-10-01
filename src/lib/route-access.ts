@@ -1,18 +1,13 @@
 import { ROLES } from "@/types/auth";
 
-// The API names these roles "PDSS UNIT HEAD" / "DIO UNIT HEAD" while ROLES uses
-// "PDSS" / "DIO"; accept both so the guard never blocks a real unit head.
-const PDSS = [ROLES.PDSS, "PDSS UNIT HEAD"];
-const DIO = [ROLES.DIO, "DIO UNIT HEAD"];
-
-const UNIT_HEADS = [
+const UNIT_HEADS: string[] = [
   ROLES.CIVIL_JUSTICE_DEPT,
   ROLES.CRIMINAL_JUSTICE_DEPT,
   ROLES.DECONGESTION_UNIT_HEAD,
   ROLES.OSCAR_UNIT_HEAD,
   ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD,
-  ...PDSS,
-  ...DIO,
+  ROLES.PDSS,
+  ROLES.DIO,
 ];
 
 /**
