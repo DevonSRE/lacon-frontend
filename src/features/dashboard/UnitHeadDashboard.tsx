@@ -143,9 +143,9 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
         <>
             <div className="grid grid-cols-12 gap-4 md:gap-6">
                 <div className="col-span-12 space-y-6">
-                    <div className="flex justify-between items-center mb-8">
+                    <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                         <Intro user={role} />
-                        <div className="flex gap-4">
+                        <div className="flex flex-wrap gap-4">
                             {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL|| role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                                 <>
                                     <BulkCaseUploadDialog />
