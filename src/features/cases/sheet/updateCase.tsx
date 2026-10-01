@@ -4,9 +4,22 @@ import { ICase } from "../../dashboard/Lawyer/_components/types";
 
 interface DEtails {
     caseDetails: ICase | null;
+    onUpdateProgress?: () => void;
+    onUploadDocument?: () => void;
 }
 
-export default function UpdateCaseDetails({ caseDetails }: DEtails) {
+export default function UpdateCaseDetails({ caseDetails, onUpdateProgress, onUploadDocument }: DEtails) {
+    const clientName = [caseDetails?.first_name, caseDetails?.middle_name, caseDetails?.last_name]
+        .filter(Boolean)
+        .join(" ");
+    const decongestion = caseDetails?.decongestion_unit;
+    const mercy = caseDetails?.perogative_of_mercy;
+    const description =
+        decongestion?.offence_charged_description ||
+        decongestion?.offence_charged ||
+        mercy?.reason_for_clemency ||
+        mercy?.sentence_passed;
+
     return (
         <div className="max-w-md mx-auto mt-10   space-y-6">
             <div>
@@ -20,29 +33,29 @@ export default function UpdateCaseDetails({ caseDetails }: DEtails) {
             </div>
 
             <div className="grid grid-cols-2 gap-2">
-                <Button className="bg-black w-full text-white px-4 py-2 rounded h-11">✎ Edit</Button>
-                <Button className="bg-red-600 w-full text-white px-4 py-2 rounded h-11">Update Progress</Button>
+                <Button onClick={onUploadDocument} className="bg-black w-full text-white px-4 py-2 rounded h-11">Upload Document</Button>
+                <Button onClick={onUpdateProgress} className="bg-red-600 w-full text-white px-4 py-2 rounded h-11">Update Progress</Button>
             </div>
 
             <hr />
 
             <div>
                 <h3 className="font-semibold text-gray-700 mb-2">Client Information</h3>
-                <p><span className="font-medium">Name:</span> -</p>
-                <p><span className="font-medium">Number:</span> -</p>
-                <p><span className="font-medium">Remanded:</span>-</p>
+                <p><span className="font-medium">Name:</span> {clientName || "-"}</p>
+                <p><span className="font-medium">Number:</span> {caseDetails?.phone_number || "-"}</p>
+                <p><span className="font-medium">Remanded:</span> {decongestion?.remand_date || "-"}</p>
             </div>
 
             <div>
                 <h3 className="font-semibold text-gray-700 mb-2">Case Description</h3>
                 <p className="text-sm text-gray-700">
-                    -
+                    {description || "-"}
                 </p>
             </div>
 
             <div>
                 <h3 className="font-semibold text-gray-700 mb-2">Next Hearing</h3>
-                <p className="text-sm text-gray-700">-</p>
+                <p className="text-sm text-gray-700">{decongestion?.next_adjournment || "-"}</p>
             </div>
 
             <div>
@@ -54,12 +67,6 @@ export default function UpdateCaseDetails({ caseDetails }: DEtails) {
                 <h3 className="font-semibold text-gray-700 mb-2">Supporting Document</h3>
                 <div className="space-y-2">
                     -
-                    {/* {["Police Report.pdf", "Client Statement.docx"].map((doc, i) => (
-                        <div key={i} className="flex justify-between items-center bg-gray-100 p-2 rounded">
-                            <span className="text-sm">{doc}</span>
-                            <button className="bg-green-500 text-white px-3 py-1 rounded text-sm">Download</button>
-                        </div>
-                    ))} */}
                 </div>
             </div>
         </div>

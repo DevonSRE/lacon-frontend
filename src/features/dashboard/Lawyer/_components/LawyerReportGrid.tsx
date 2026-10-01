@@ -36,9 +36,6 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                                     <DropdownMenuItem onClick={() => { setCaseDetails(item); setOpenCaseProgressUpdate(true); }}>
                                         Edit Case
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem >
-                                        Escalate Case
-                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => { setCaseDetails(item); setOpenUpdateCaseDetails(true) }}>
                                         View Case
                                     </DropdownMenuItem>
@@ -48,9 +45,9 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                         </div>
 
                         <div className="space-y-4">
-                            <div className="text-xs mt-4 text-gray-400">{item?.id}</div>
+                            <div className="text-xs mt-4 text-gray-400">Case NO: {item?.id?.slice(0, 10)}</div>
                             <h4 className="font-semibold leading-tight text-base">
-                                {item.case_title ?? "-"}
+                                {[item.first_name, item.last_name].filter(Boolean).join(" ") || "-"}
                             </h4>
                             <p className="text-xs text-blue-500">{item.case_type ?? "-"}</p>
                             <div className="flex flex-row text-xs gap-4 justify-between">
@@ -89,7 +86,11 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                 <CaseProgressUpdate caseDetails={caseDetails} setIsOpen={setOpenCaseProgressUpdate} />
             </CustomeSheet>
             <CustomeSheet open={openUpdateCaseDetails} setOpen={setOpenUpdateCaseDetails}>
-                <UpdateCaseDetails caseDetails={caseDetails} />
+                <UpdateCaseDetails
+                    caseDetails={caseDetails}
+                    onUpdateProgress={() => { setOpenUpdateCaseDetails(false); setOpenCaseProgressUpdate(true); }}
+                    onUploadDocument={() => { setOpenUpdateCaseDetails(false); setOpenCaseDocumentUpload(true); }}
+                />
             </CustomeSheet>
         </div>
     );
