@@ -63,6 +63,7 @@
 import axios from "axios";
 import { NEXT_BASE_URL, NEXT_PUBLIC_CASE_API_KEY } from "../constants";
 import { getToken } from "@/server/auth";
+import { stripSensitiveResponses } from "./sanitize";
 
 const DEFAULT_TIMEOUT = 10000;
 
@@ -131,10 +132,13 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+stripSensitiveResponses(axiosInstance);
+
 const publicAxiosInstance = axios.create({
   baseURL: NEXT_BASE_URL,
   timeout: DEFAULT_TIMEOUT,
 });
+stripSensitiveResponses(publicAxiosInstance);
 
 publicAxiosInstance.interceptors.request.use(async (config: any) => {
   const token = NEXT_PUBLIC_CASE_API_KEY;
