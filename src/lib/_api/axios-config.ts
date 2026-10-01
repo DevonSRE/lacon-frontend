@@ -104,20 +104,18 @@ axiosInstance.interceptors.response.use(
       apiMessage: error.response?.data?.message,
     });
 
-    // Handle expired/invalid tokens
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      console.error("🔒 Authentication failed - token is invalid or expired");
-
-      // Only redirect if we're in the browser
-      if (typeof window !== 'undefined') {
-        // Store the current URL to redirect back after login
-        const currentPath = window.location.pathname;
-        window.location.href = `/signin?callbackUrl=${encodeURIComponent(currentPath)}`;
-      }
-
+    // This client only runs server-side (server actions), so callers surface
+    // these messages; middleware handles redirecting signed-out users.
+    if (error.response?.status === 401) {
       return Promise.reject({
         ...error,
         message: "Your session has expired. Please sign in again.",
+      });
+    }
+    if (error.response?.status === 403) {
+      return Promise.reject({
+        ...error,
+        message: "You don't have permission to do this.",
       });
     }
 
