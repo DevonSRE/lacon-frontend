@@ -2,7 +2,9 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
@@ -30,6 +32,33 @@ import { CLIENT_ERROR_STATUS } from "@/lib/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
 
+const LAWYER_TYPES = ["LACON LAWYER", "PRO BONO LAWYER", "NYSC LAWYER"];
+
+// Department and unit heads assign to lawyers and can forward to another head.
+const HEAD_ROLES: string[] = [
+  ROLES.CRIMINAL_JUSTICE_DEPT,
+  ROLES.CIVIL_JUSTICE_DEPT,
+  ROLES.DECONGESTION_UNIT_HEAD,
+  ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD,
+  ROLES.OSCAR_UNIT_HEAD,
+  ROLES.PDSS,
+  ROLES.DIO,
+];
+// Coordinators and zonal directors assign straight to lawyers.
+const LAWYER_ONLY_ROLES: string[] = [
+  ROLES.STATE_COORDINATOR,
+  ROLES.CENTRE_COORDINATOR,
+  ROLES.ZONAL_DIRECTOR,
+];
+
+type Assignee = {
+  ID: string;
+  FirstName: string;
+  LastName: string;
+  UserType: string;
+  Status?: string;
+};
+
 interface AssignmentSheetProps {
   details: ICase | null;
   type: string;
@@ -49,20 +78,36 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
 
   const queryClient = useQueryClient();
 
-  const { data, isLoading: loading } = useQuery({
-    queryKey: ["userByType", 'role'],
-    queryFn: async () => {
-      if (role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.STATE_COORDINATOR) {
-        const filters = { type: "lawyers" };
-        return await GetUserByTypes(filters);
-      } else {
-        const filters = { type: "unit_heads" };
-        return await GetUserByTypes(filters);
-      }
-    },
+  const canPickLawyers = !!role && (HEAD_ROLES.includes(role) || LAWYER_ONLY_ROLES.includes(role));
+  const canPickHeads = !role || !LAWYER_ONLY_ROLES.includes(role);
+
+  const { data: lawyersData, isLoading: lawyersLoading } = useQuery({
+    queryKey: ["userByType", "lawyers"],
+    queryFn: () => GetUserByTypes({ type: "lawyers" }),
+    enabled: canPickLawyers,
     placeholderData: keepPreviousData,
     staleTime: 50000,
-  },);
+  });
+
+  const { data: headsData, isLoading: headsLoading } = useQuery({
+    queryKey: ["userByType", "unit_heads"],
+    queryFn: () => GetUserByTypes({ type: "unit_heads" }),
+    enabled: canPickHeads,
+    placeholderData: keepPreviousData,
+    staleTime: 50000,
+  });
+
+  const isActive = (u: Assignee) => !u.Status || u.Status === "ACTIVE";
+  const lawyers: Assignee[] = canPickLawyers
+    ? (lawyersData?.data ?? []).filter((u: Assignee) => LAWYER_TYPES.includes(u.UserType) && isActive(u))
+    : [];
+  const heads: Assignee[] = canPickHeads
+    ? (headsData?.data ?? []).filter((u: Assignee) => u.ID !== user?.id && isActive(u))
+    : [];
+  const loading = (canPickLawyers && lawyersLoading) || (canPickHeads && headsLoading);
+  const pickerLabel = canPickLawyers && canPickHeads
+    ? "Assign to a lawyer or forward to a department"
+    : canPickLawyers ? "Assign to a lawyer" : "Assign to a department";
 
   const handleDivisionChange = (newValue: string) => {
     setSelectedTitle(newValue === "all" ? "all" : newValue);
@@ -160,8 +205,8 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
         <input type="hidden" name="is_reassigned" value={type === "ReAssign" ? "true" : "false"} />
 
         <div className="pt-4">
-          <Label htmlFor="department" className="block text-sm font-medium">
-            Select Department
+          <Label htmlFor="assignee" className="block text-sm font-medium">
+            {pickerLabel}
           </Label>
           <Select
             onValueChange={handleDivisionChange}
@@ -169,23 +214,38 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
             name="assignee_id"
           >
             <SelectTrigger
+              id="assignee"
               className="h-11 flex justify-between items-center"
               disabled={loading}
               variant="underlined"
             >
               <SelectValue
                 className="text-neutral-700 text-xs mx-4"
-                placeholder={loading ? "Loading Users..." : "Choose Department to Assign case"}
+                placeholder={loading ? "Loading Users..." : "Choose assignee"}
               />
             </SelectTrigger>
             <SelectContent className="bg-white text-zinc-900">
-              {data?.data?.length > 0 ? (
-                data?.data.map((user: any) => (
-                  <SelectItem key={user.ID} value={user.ID} className="py-2">
-                    {user.FirstName} {user.LastName} - {user.UserType}
-                  </SelectItem>
-                ))
-              ) : (
+              {lawyers.length > 0 && (
+                <SelectGroup>
+                  {heads.length > 0 && <SelectLabel>Lawyers</SelectLabel>}
+                  {lawyers.map((u) => (
+                    <SelectItem key={u.ID} value={u.ID} className="py-2">
+                      {u.FirstName} {u.LastName} - {u.UserType}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              {heads.length > 0 && (
+                <SelectGroup>
+                  {lawyers.length > 0 && <SelectLabel>Forward to department</SelectLabel>}
+                  {heads.map((u) => (
+                    <SelectItem key={u.ID} value={u.ID} className="py-2">
+                      {u.FirstName} {u.LastName} - {u.UserType}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              )}
+              {lawyers.length === 0 && heads.length === 0 && (
                 <div className="py-2 px-4 text-sm text-gray-500">
                   No User available
                 </div>
