@@ -15,11 +15,9 @@ export async function InviteUser(_prevState: unknown, formData: FormData) {
   }
 
   try {
-    console.log(JSON.stringify(result.data));
     
     const response = await UserService.inviteUser(result.data);
 
-    console.log(response.data);
     return {
       status: 200,
       message: "Success",
@@ -28,7 +26,6 @@ export async function InviteUser(_prevState: unknown, formData: FormData) {
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
     if (error?.response) {
       return {
         status: error.response.status,
@@ -70,10 +67,8 @@ export async function InviteLawyer(_prevState: unknown, formData: FormData) {
       message: "Invalid field found",
     };
   }
-  console.log(result.data);
   try {
     const response = await UserService.inviteUser(result.data);
-    console.log(response.data);
     return {
       status: 200,
       message: "Success",
@@ -82,7 +77,6 @@ export async function InviteLawyer(_prevState: unknown, formData: FormData) {
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
     if (error?.response) {
       return {
         status: error.response.status,
@@ -124,7 +118,6 @@ export async function UpdateLawyer(_prevState: unknown, formData: FormData) {
       message: "Invalid field found",
     };
   }
-  console.log(result.data);
   try {
     if (!result.data?.id || typeof result.data.id !== "string") {
       return {
@@ -138,7 +131,6 @@ export async function UpdateLawyer(_prevState: unknown, formData: FormData) {
       result.data,
       result.data.id
     );
-    console.log(response.data);
     return {
       status: 200,
       message: "Success",
@@ -147,7 +139,6 @@ export async function UpdateLawyer(_prevState: unknown, formData: FormData) {
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
     if (error?.response) {
       return {
         status: error.response.status,
@@ -181,7 +172,6 @@ export async function UpdateLawyer(_prevState: unknown, formData: FormData) {
 }
 export async function DeleteUser(_prevState: unknown, formData: FormData) {
   const data = Object.fromEntries(formData);
-  console.log(data);
   try {
     let response;
     if (data?.type === "delete") {
@@ -197,7 +187,6 @@ export async function DeleteUser(_prevState: unknown, formData: FormData) {
         typeof data?.id === "string" ? data.id : ""
       );
     }
-    console.log(response.data);
     return {
       status: 200,
       message: "Success",
@@ -207,7 +196,6 @@ export async function DeleteUser(_prevState: unknown, formData: FormData) {
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
     if (error?.response) {
       return {
         status: error.response.status,
@@ -244,17 +232,14 @@ export async function ApproveRejectLawyerRequest(
   formData: FormData
 ) {
   const data = Object.fromEntries(formData);
-  console.log(data);
   try {
     let response;
     const id = typeof data?.id === "string" ? data.id : "";
-    console.log(id);
     if (data?.type == "approve") {
       response = await UserService.apporveUser(data, id);
     } else {
       response = await UserService.rejectUser(data, id);
     }
-    console.log(response.data);
     return {
       status: 200,
       message: "Success",
@@ -264,7 +249,6 @@ export async function ApproveRejectLawyerRequest(
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
     if (error?.response) {
       return {
         status: error.response.status,

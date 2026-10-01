@@ -65,7 +65,6 @@ export async function GetAdminReport(filters: Ipage) {
 export async function GetAllUnit(filters: Ipage) {
     try {
         const response = await reportServices.getAllUnit(filters);
-        console.log(response);
         return { data: response?.data.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
@@ -75,7 +74,6 @@ export async function GetAllUnit(filters: Ipage) {
 export async function GetLACONLAWYER(filters: Ipage) {
     try {
         const response = await reportServices.getLaconLAwyer(filters);
-        console.log(response);
         return { data: response?.data.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
@@ -129,7 +127,6 @@ export async function ExportCaseType() {
 export async function ExportAdminUnit(filters: Ipage) {
     try {
         const response = await reportServices.exportAdminUnit(filters);
-        console.log(response);
         return { data: response?.data.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;

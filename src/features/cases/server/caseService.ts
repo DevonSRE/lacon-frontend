@@ -15,7 +15,6 @@ const casesServices = {
         return await axiosInstance.patch("/admin/casefile/case-assignment", payload);
     },
     async UpdateCasesFile(payload: any, id: string) {
-        console.log(`/admin/casefile/${id}/case-update`);
         return await axiosInstance.post(`/admin/casefile/${id}/case-update`, payload);
     },
     async UploadeDocument(payload: any, id: string) {

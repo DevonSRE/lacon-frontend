@@ -40,7 +40,6 @@ export async function GetCaseAction(params: Ipage) {
 }
 export async function GetEventsAction(params: Ipage, id: string) {
     try {
-        console.log("params in get cases => " + JSON.stringify(params));
         const response = await casesServices.getEvents(params, id);
         return { data: response.data?.data, success: true };
     } catch (err: unknown) {
@@ -105,16 +104,13 @@ export async function CaseUpdate(_prevState: unknown, formData: FormData) {
             }
             const uploadResult = await uploadFile.json();
             supporting_documents = uploadResult?.data;
-            console.log("File uploaded successfully:", supporting_documents);
         }
         // Prepare data for API call
         let uploadData = { ...result.data };
         if (supporting_documents != null) {
             uploadData.supporting_documents = supporting_documents;
         }
-        console.log("uploadData => " + JSON.stringify(uploadData));
         const response = await casesServices.UpdateCasesFile(uploadData, uploadData.id);
-        console.log(response);
         return { status: 200, data: response.data?.data, success: true };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
@@ -124,7 +120,6 @@ export async function CaseUpdate(_prevState: unknown, formData: FormData) {
 
 
 export async function UploadCaseDocumentAction(_prevState: unknown, formData: FormData) {
-    console.log("formData => " + JSON.stringify(Object.fromEntries(formData)));
     const result = uploadDocument.safeParse(Object.fromEntries(formData));
     if (!result.success) {
         return {
@@ -160,14 +155,12 @@ export async function UploadCaseDocumentAction(_prevState: unknown, formData: Fo
             }
             const uploadResult = await uploadFile.json();
             document_path = uploadResult?.data;
-            console.log("File uploaded successfully:", document_path);
         }
         // Prepare data for API call
         let uploadData = { ...result.data };
         if (document_path != null) {
             uploadData.document_path = document_path;
         }
-        console.log("uploadData => " + JSON.stringify(uploadData));
         const response = await casesServices.UploadeDocument(uploadData, uploadData.casefile_id);
         return { status: 200, data: response.data?.data, success: true };
     } catch (err: unknown) {
