@@ -5,7 +5,6 @@ import InputField from '@/components/form/input/InputField';
 import SelectField from '@/components/SelectField';
 import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
@@ -24,7 +23,6 @@ type CustomeSheetProps = {
 };
 
 export default function DecongestionForm({ currentStep = 1, openFileACase, setOpen, setCurrentStep = () => { }, }: CustomeSheetProps) {
-    const router = useRouter();
     const [errors, setErrors] = useState<Record<string, string>>({});
     // const [currentStep, setCurrentStep] = useState(1);
     const [selectedState, setSelectedState] = useState<string>("");
@@ -133,8 +131,15 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                 Object.entries(formattedErrors).forEach(([key, messages]) => {
                     singleStringErrors[key] = messages.join(', ');
                 });
-                console.log(singleStringErrors);
                 setErrors(singleStringErrors);
+                const firstInvalid = Object.keys(singleStringErrors)[0];
+                if (firstInvalid) {
+                    setTimeout(() => {
+                        document
+                            .querySelector<HTMLElement>(`[name="${firstInvalid}"]`)
+                            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                    }, 0);
+                }
             } else {
                 setErrors({});
             }
@@ -147,6 +152,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {
+                    // Step 2 asks for "Sex" again; carry over the gender from step 1.
+                    setFormData(prev => ({ ...prev, sex: prev.sex || prev.gender }));
                     setCurrentStep(currentStep + 1);
                 }
             } else {
@@ -170,7 +177,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1)
         } else {
-            router.back();
+            // Close this form and return to the case-type picker.
+            setOpen(false);
         }
     }
     return (
@@ -207,7 +215,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                                             <div>
                                                 <InputField
-                                                    label="Name of Interviewer"
+                                                    label="First Name"
                                                     required
                                                     name='first_name'
                                                     type="text"
@@ -349,8 +357,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                                 <InputField
                                                     type="text"
                                                     name="custodial_visit"
-                                                    label='Custodial legal Visited'
-                                                    placeholder="custodial legal Visited"
+                                                    label='Custodial Facility Visited'
+                                                    placeholder="Name of custodial facility"
                                                     value={formData.custodial_visit}
                                                     onChange={(e) => updateField('custodial_visit', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -362,8 +370,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                                 <InputField
                                                     type="date"
                                                     name="date_of_visit"
-                                                    label='Custodial legal Visited'
-                                                    placeholder="custodial legal Visited"
+                                                    label='Date of Custodial Visit'
+                                                    placeholder="Date of visit"
                                                     value={formData.date_of_visit}
                                                     onChange={(e) => updateField('date_of_visit', e.target.value)}
                                                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
@@ -728,6 +736,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         <div className="mb-6">
                                             <InputField
                                                 label="Need for Interpreter(If Yes, Which language?)"
+                                                required
                                                 name="need_interpreter"
                                                 type="text"
                                                 placeholder="Need for Interpreter(If Yes, Which language?)"
@@ -742,6 +751,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         <div className="mb-6">
                                             <InputField
                                                 label="Any Disability or Underlying ailment?"
+                                                required
                                                 name="disability_ailment"
                                                 type="text"
                                                 placeholder="Any Disability or Underlying ailment"
@@ -755,6 +765,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         <div className="mb-6">
                                             <InputField
                                                 label="Any Confessional statement(How Obtained/Circumstances Thereof)"
+                                                required
                                                 name="confessional_statement"
                                                 type="text"
                                                 placeholder="Any Confessional statement"
@@ -797,7 +808,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                 )}
                 {currentStep === 3 && (
                     <CaseCreated setOpen={setOpen} openFileACase={openFileACase} details={{
-                        details: null
+                        details: state?.data ?? null
                     }} />
 
 

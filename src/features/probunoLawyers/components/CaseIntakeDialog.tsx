@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import {
     Dialog,
     DialogContent,
+    DialogTitle,
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
@@ -26,7 +27,7 @@ export default function CaseIntakeDialog({
                 <Card className="border-none shadow-none">
                     <CardContent className="flex flex-col items-center space-y-6 p-0">
                         <CheckCircle className="text-green-600 w-12 h-12" />
-                        <h2 className="text-xl font-semibold">Case Intake Submitted</h2>
+                        <DialogTitle className="text-xl font-semibold">Case Intake Submitted</DialogTitle>
 
                         <p className="text-sm text-gray-600 text-center">
                             The case intake form has been successfully<br />

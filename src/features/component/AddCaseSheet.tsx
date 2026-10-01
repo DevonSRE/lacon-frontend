@@ -13,6 +13,7 @@ import {
     Sheet,
     SheetTrigger,
     SheetContent,
+    SheetTitle,
 } from "@/components/ui/sheet"
 import SheetDemo from "./FileACase"
 
@@ -27,7 +28,7 @@ export function AddCaseSheet({ open, setOpen }: AddCaseSheetProps) {
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetContent className="max-w-md p-6 space-y-6 pt-20">
-                <h2 className="text-xl font-semibold">File A Case</h2>
+                <SheetTitle className="text-xl font-semibold">File A Case</SheetTitle>
 
                 <div className="space-y-1">
                     <Label>User Type</Label>

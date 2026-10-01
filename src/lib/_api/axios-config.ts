@@ -63,6 +63,7 @@
 import axios from "axios";
 import { NEXT_BASE_URL, NEXT_PUBLIC_CASE_API_KEY } from "../constants";
 import { getToken } from "@/server/auth";
+import { stripSensitiveResponses } from "./sanitize";
 
 const DEFAULT_TIMEOUT = 10000;
 
@@ -80,8 +81,6 @@ axiosInstance.interceptors.request.use(async (config: any) => {
   console.log("🔵 Request [Auth]:", {
     url: config.url,
     method: config.method,
-    headers: config.headers,
-    data: config.data,
     params: config.params,
   });
 
@@ -93,7 +92,6 @@ axiosInstance.interceptors.response.use(
     console.log("🟢 Response [Auth]:", {
       url: response.config.url,
       status: response.status,
-      data: response.data,
     });
     return response;
   },
@@ -102,23 +100,22 @@ axiosInstance.interceptors.response.use(
       url: error?.config?.url,
       message: error.message,
       code: error.code,
-      response: error.response?.data,
+      status: error.response?.status,
+      apiMessage: error.response?.data?.message,
     });
 
-    // Handle expired/invalid tokens
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      console.error("🔒 Authentication failed - token is invalid or expired");
-
-      // Only redirect if we're in the browser
-      if (typeof window !== 'undefined') {
-        // Store the current URL to redirect back after login
-        const currentPath = window.location.pathname;
-        window.location.href = `/signin?callbackUrl=${encodeURIComponent(currentPath)}`;
-      }
-
+    // This client only runs server-side (server actions), so callers surface
+    // these messages; middleware handles redirecting signed-out users.
+    if (error.response?.status === 401) {
       return Promise.reject({
         ...error,
         message: "Your session has expired. Please sign in again.",
+      });
+    }
+    if (error.response?.status === 403) {
+      return Promise.reject({
+        ...error,
+        message: "You don't have permission to do this.",
       });
     }
 
@@ -133,10 +130,13 @@ axiosInstance.interceptors.response.use(
   }
 );
 
+stripSensitiveResponses(axiosInstance);
+
 const publicAxiosInstance = axios.create({
   baseURL: NEXT_BASE_URL,
   timeout: DEFAULT_TIMEOUT,
 });
+stripSensitiveResponses(publicAxiosInstance);
 
 publicAxiosInstance.interceptors.request.use(async (config: any) => {
   const token = NEXT_PUBLIC_CASE_API_KEY;
@@ -147,8 +147,6 @@ publicAxiosInstance.interceptors.request.use(async (config: any) => {
   console.log("🔵 Request [Public]:", {
     url: config.url,
     method: config.method,
-    headers: config.headers,
-    data: config.data,
     params: config.params,
   });
 
@@ -160,7 +158,6 @@ publicAxiosInstance.interceptors.response.use(
     console.log("🟢 Response [Public]:", {
       url: response.config.url,
       status: response.status,
-      data: response.data,
     });
     return response;
   },
@@ -169,7 +166,8 @@ publicAxiosInstance.interceptors.response.use(
       url: error?.config?.url,
       message: error.message,
       code: error.code,
-      response: error.response?.data,
+      status: error.response?.status,
+      apiMessage: error.response?.data?.message,
     });
 
     // Handle expired/invalid API keys

@@ -41,7 +41,6 @@ import { CustomDialog } from "@/components/CustomDialog";
 import { DeleteUser } from "../dashboard/server/action";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { toast } from "sonner";
-import { stat } from "fs";
 
 export default function UserRoles() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,11 +112,8 @@ export default function UserRoles() {
   const tabs = Object.entries(ROLES).map(([id, label]) => ({ id, label }));
   const handleRoleFilter = (role: ROLES | "All") => {
     setSelectedRole(role === "All" ? undefined : role);
-    const searchInput = document.getElementsByName(
-      "searchTerm"
-    )[0] as HTMLInputElement;
-    if (searchInput) searchInput.value = "";
-    console.log("Filtering users by role:", role);
+    setSearchTerm("");
+    setCurrentPage(1);
   };
 
   const dispatchAction = (type: "suspend" | "delete" | "activate") => {
@@ -152,9 +148,13 @@ export default function UserRoles() {
             name="searchTerm"
             autoComplete="off"
             data-form-type="other"
-            placeholder="Search User By Name"
+            placeholder="Search by name or email"
             className="pl-9  h-11 w-full"
-            onChange={(e) => setSearchTerm(e.target.value)}
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
           />
         </div>
 

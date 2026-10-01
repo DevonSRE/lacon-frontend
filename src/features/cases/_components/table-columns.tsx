@@ -18,6 +18,8 @@ import { Badge } from "@/components/ui/badge";
 
 export interface ICase {
   id: string;
+  forwarded_by?: string;
+  assignment?: { assignor?: string; assignee?: string };
   filed_date: string;
   first_name: string;
   middle_name?: string;
@@ -161,7 +163,7 @@ export const createCaseColumns = (
       accessorKey: "assignedBy",
       header: "Assigned By",
       cell: ({ row }) => (
-        <span className="text-sm text-gray-900">{row.original.filed_by}</span>
+        <span className="text-sm text-gray-900">{row.original.assignment?.assignor || row.original.forwarded_by || "-"}</span>
       ),
     });
   }
@@ -174,7 +176,7 @@ export const createCaseColumns = (
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+            <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Case actions">
               <MoreVerticalIcon className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -184,12 +186,15 @@ export const createCaseColumns = (
             </DropdownMenuItem>
             {(userRole !== ROLES.ADMIN && userRole !== ROLES.PLATFORM_ADMIN) && (
               <>
-                <DropdownMenuItem onClick={() => onAssign(user)}>
-                  Assign
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onReAssign(user)}>
-                  Re Assign
-                </DropdownMenuItem>
+                {user.status === "UNASSIGNED" ? (
+                  <DropdownMenuItem onClick={() => onAssign(user)}>
+                    Assign
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => onReAssign(user)}>
+                    Re Assign
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={() => onReview(user)}>
                   Review
                 </DropdownMenuItem>
@@ -275,7 +280,7 @@ export const InternalCaseColumns = (
       accessorKey: "assignedBy",
       header: "Assigned By",
       cell: ({ row }) => (
-        <span className="text-sm text-gray-900">{row.original.filed_by}</span>
+        <span className="text-sm text-gray-900">{row.original.assignment?.assignor || row.original.forwarded_by || "-"}</span>
       ),
     });
   }
@@ -360,7 +365,7 @@ export const InternalCaseASSignColumns = (
       accessorKey: "assignedBy",
       header: "Assigned By",
       cell: ({ row }) => (
-        <span className="text-sm text-gray-900">{row.original.filed_by}</span>
+        <span className="text-sm text-gray-900">{row.original.assignment?.assignor || row.original.forwarded_by || "-"}</span>
       ),
     });
   }

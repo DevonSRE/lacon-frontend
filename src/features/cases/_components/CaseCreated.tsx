@@ -16,14 +16,24 @@ type CustomeSheetProps = {
 };
 
 
-export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProps) {
+export default function CaseCreated({ setOpen, openFileACase, details }: CustomeSheetProps) {
     const router = useRouter();
     const [viewCase, setViewCase] = useState(false);
     const [caseDetails, setCaseDetails] = useState<ICase | null>(null);
 
+    // Keep the filing sheets mounted while the case is shown (this view lives
+    // inside them); close everything once the case view is dismissed.
     const handleViewCase = () => {
+        setCaseDetails(details?.details ?? null);
         setViewCase(true);
-        setOpen(false);
+    };
+    const handleViewCaseOpenChange: Dispatch<SetStateAction<boolean>> = (value) => {
+        const open = typeof value === "function" ? value(viewCase) : value;
+        setViewCase(open);
+        if (!open) {
+            setOpen(false);
+            openFileACase(false);
+        }
     };
 
     const handleFileAnother = () => {
@@ -33,6 +43,7 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
 
     const handleReturnDashboard = () => {
         setOpen(false);
+        openFileACase(false);
         router.push("/dashboard");
     };
 
@@ -73,7 +84,7 @@ export default function CaseCreated({ setOpen, openFileACase }: CustomeSheetProp
                     </Button>
                 </div>
             </div>
-            <CustomeSheet open={viewCase} setOpen={setViewCase} className='sm:w-[600px]'>
+            <CustomeSheet open={viewCase} setOpen={handleViewCaseOpenChange} className='sm:w-[600px]'>
                 <ViewCase details={caseDetails} />
             </CustomeSheet>
         </div>

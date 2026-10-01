@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ReactNode, Dispatch, SetStateAction } from "react";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "./ui/scroll-area";
@@ -16,6 +16,7 @@ export function CustomDialog({ open, setOpen, children, className }: CustomeDial
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogContent className={cn("sm:max-w-5xl ", className)}>
+                <DialogTitle className="sr-only">Details</DialogTitle>
                 <ScrollArea className="h-auto max:h-[600px]">
                     <div className="">
                         <div>{children}</div>

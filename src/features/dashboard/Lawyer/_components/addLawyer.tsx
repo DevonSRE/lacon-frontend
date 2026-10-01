@@ -12,7 +12,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Sheet, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useAction } from "@/context/ActionContext";
 import { SubmitButton } from "@/components/submit-button";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
@@ -89,7 +89,7 @@ export function AddLawyerSheet() {
           </span>
           <ScrollArea className="h-screen mt-4">
             <form className="space-y-4 p-1" action={dispatch}>
-              <h2 className="text-xl font-semibold">Add New Lawyer</h2>
+              <SheetTitle className="text-xl font-semibold">Add New Lawyer</SheetTitle>
 
               <div className="space-y-1">
                 <Label>
@@ -121,15 +121,15 @@ export function AddLawyerSheet() {
                         EXTERNAL PARALEGAL
                       </SelectItem>
                     )}
-                    {role === ROLES.ZONAL_DIRECTOR ||
+                    {(role === ROLES.ZONAL_DIRECTOR ||
                       role === ROLES.STATE_COORDINATOR ||
                       role === ROLES.CENTRE_COORDINATOR ||
                       role === ROLES.CIVIL_JUSTICE_DEPT ||
-                      (role === ROLES.DIRECTOR_GENERAL && (
+                      role === ROLES.DIRECTOR_GENERAL) && (
                         <SelectItem value="INTERNAL PARALEGAL">
                           INTERNAL PARALEGAL
                         </SelectItem>
-                      ))}
+                      )}
 
                     {role != ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD && (
                       <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>

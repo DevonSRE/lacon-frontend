@@ -3,6 +3,7 @@
 import axios from "axios";
 import { cookies } from "next/headers";
 import { NEXT_BASE_URL } from "../constants";
+import { stripSensitiveResponses } from "./sanitize";
 
 export const authConfig = axios.create({
   baseURL: NEXT_BASE_URL,
@@ -21,6 +22,9 @@ export const authTemp = axios.create({
     'Accept': 'application/json',
   },
 });
+
+stripSensitiveResponses(authConfig);
+stripSensitiveResponses(authTemp);
 
 // Add interceptor
 authTemp.interceptors.request.use(async (config) => {

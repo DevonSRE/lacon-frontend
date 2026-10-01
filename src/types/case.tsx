@@ -25,6 +25,8 @@ export interface IUser {
 
 
 export interface ILawyerRequest {
+  // Not sent by the API yet; see BACKEND-ISSUES.md.
+  RequestedByRole?: string;
   ID: string;
   LawyerID:string;
   FirstName: string;

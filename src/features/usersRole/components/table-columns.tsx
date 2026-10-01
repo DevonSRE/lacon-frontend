@@ -88,7 +88,7 @@ export const createUserColumns = (
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Row actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
@@ -157,6 +157,11 @@ export const createLawyerRequestColumns = (
       cell: ({ row }) => <span>{row.original.RequestedName}</span>,
     },
     {
+      accessorKey: "RequestedByRole",
+      header: "Requester Role",
+      cell: ({ row }) => <span>{row.original.RequestedByRole ?? "-"}</span>,
+    },
+    {
       accessorKey: "Date",
       header: "Date",
       cell: ({ row }) => {
@@ -177,7 +182,7 @@ export const createLawyerRequestColumns = (
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
+              <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Row actions">
                 <MoreVertical className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>

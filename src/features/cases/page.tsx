@@ -42,13 +42,7 @@ export default function CasesPage() {
                 state: stateFilter === "all" ? "" : stateFilter,
                 status: statusFilter === "all" ? "" : statusFilter,
             };
-            const res = await fetch("/api/cases", {
-                method: "POST",
-                body: JSON.stringify(filters),
-            });
-            if (!res.ok) throw new Error("Failed to fetch cases");
-
-            return res.json();
+            return await GetCaseAction(filters);
         },
         staleTime: 100000,
     });
@@ -84,9 +78,9 @@ export default function CasesPage() {
 
     return (
         <div className="">
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
                 <h1 className="text-2xl font-semibold text-gray-900 mb-6">Cases</h1>
-                <div className="flex gap-4">
+                <div className="flex flex-wrap gap-4">
                     {(role === ROLES.OSCAR_UNIT_HEAD || role === ROLES.INTERNAL_PARALEGAL || role === ROLES.DECONGESTION_UNIT_HEAD || role === ROLES.PDSS || role === ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD) && (
                         <>
                             <BulkCaseUploadDialog />

@@ -77,7 +77,6 @@ export async function verifySession(): Promise<TSessionData | null> {
 
   // Validate session wrapper expiration
   if (session.expires && new Date(session.expires) < new Date()) {
-    console.log("Session wrapper has expired");
     await deleteSession();
     return null;
   }
@@ -89,7 +88,6 @@ export async function verifySession(): Promise<TSessionData | null> {
       const tokenExpiry = decodedToken.exp ? new Date(decodedToken.exp * 1000) : null;
 
       if (tokenExpiry && tokenExpiry < new Date()) {
-        console.log("Backend token has expired at:", tokenExpiry);
         await deleteSession();
         return null;
       }

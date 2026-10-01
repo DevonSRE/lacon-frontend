@@ -43,35 +43,6 @@ export default function CaseDistributionChart({ data, isLoading }: CaseDistribut
         show: false,
       },
     },
-    annotations: {
-      yaxis: [
-        {
-          y: 130,
-          borderColor: "#FF4560",
-          label: {
-            borderColor: "#FF4560",
-            style: {
-              color: "#fff",
-              background: "#FF4560",
-            },
-            text: "Target: 130",
-          },
-        },
-      ],
-      xaxis: [
-        {
-          x: "Criminal Justice",
-          borderColor: "#008FFB",
-          label: {
-            style: {
-              color: "#fff",
-              background: "#008FFB",
-            },
-            text: "Criminal Justice",
-          },
-        },
-      ],
-    },
     plotOptions: {
       bar: {
         horizontal: false,

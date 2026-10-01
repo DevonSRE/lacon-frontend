@@ -29,6 +29,18 @@ export interface ICase {
     };
     // Additional fields from JSON
     gender?: string;
+    department_name?: string;
+    forwarded_by?: string;
+    decongestion_unit?: {
+        offence_charged?: string;
+        offence_charged_description?: string;
+        remand_date?: string;
+        next_adjournment?: string;
+    };
+    perogative_of_mercy?: {
+        sentence_passed?: string;
+        reason_for_clemency?: string;
+    };
     permanent_address?: string;
     updated_by?: Array<{
         id: string;

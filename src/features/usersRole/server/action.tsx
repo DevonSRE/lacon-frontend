@@ -5,10 +5,8 @@ import UService from "./service";
 
 export async function AcceptRejectProbunoRequest(_prevState: unknown, formData: FormData) {
     const data = Object.fromEntries(formData);
-    console.log(data);
     try {
         const response = await UService.acceptReject(data, typeof data?.lawyer_id === "string" ? data.lawyer_id : "");
-        console.log(response.data);
         return {
             status: 200,
             message: "Success",
@@ -18,7 +16,6 @@ export async function AcceptRejectProbunoRequest(_prevState: unknown, formData: 
         };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
-        console.log("Error response:", error);
         if (error?.response) {
             return {
                 status: error.response.status,

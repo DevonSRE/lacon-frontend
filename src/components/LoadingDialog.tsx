@@ -1,6 +1,6 @@
 import { CheckCircle } from "lucide-react"
 import Image from "next/image";
-import { Dialog, DialogContent, } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 
 interface LoadingDialogProps {
@@ -19,6 +19,7 @@ export default function LoadingDialog({
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md p-6">
+                <DialogTitle className="sr-only">{title === "done" ? "Done" : title || "Loading"}</DialogTitle>
                 <Card className="border-none shadow-none">
                     <CardContent className="flex flex-col items-center space-y-6 p-0">
                         {(title.toLowerCase() === "loading") && (

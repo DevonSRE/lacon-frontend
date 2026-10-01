@@ -3,13 +3,13 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSidebar } from "../context/SidebarContext";
 import { Icons } from "@/icons/icons";
 import LogoutModal from "@/components/logout-modal";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
+import { ROUTE_ACCESS } from "@/lib/route-access";
 import { Dot } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, useSidebar } from "@/components/ui/sidebar";
 
 type NavItem = {
   name: string;
@@ -31,13 +31,13 @@ const navItems: NavItem[] = [
     icon: <Icons.home />,
     name: "Home",
     path: "/dashboard",
-    roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "PDSS", "PRO_BONO_LAWYER", "EXTERNAL PARALEGAL", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "INTERNAL PARALEGAL"],
+    roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "PDSS UNIT HEAD", "PRO_BONO_LAWYER", "EXTERNAL PARALEGAL", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD", "INTERNAL PARALEGAL"],
   },
   {
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO"],
+    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS UNIT HEAD", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD"],
   },
   {
     icon: <Icons.casesIcon />,
@@ -64,17 +64,17 @@ const navItems: NavItem[] = [
       {
         name: "Lawyers",
         path: "/users/lawyers",
-        roles: ["DECONGESTION UNIT HEAD"],
+        roles: ROUTE_ACCESS["/users/lawyers"],
       },
       {
         name: "Request",
         path: "/users/request",
-        roles: ["ADMIN", "DIRECTOR GENERAL"],
+        roles: ROUTE_ACCESS["/users/request"],
       },
       {
         name: "Request",
         path: "/users/probuno-request",
-        roles: ["DECONGESTION UNIT HEAD"],
+        roles: ROUTE_ACCESS["/users/probuno-request"],
       },
     ]
   },
@@ -82,19 +82,19 @@ const navItems: NavItem[] = [
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ZONAL DIRECTOR", "OSCAR UNIT HEAD", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PDSS"],
+    roles: ROUTE_ACCESS["/lawyers"],
   },
   {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",
-    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR GENERAL"],
+    roles: ROUTE_ACCESS["/reports"],
   },
   {
     name: "Settings",
     icon: <Icons.settings />,
     path: "/settings",
-    roles: ["ADMIN"],
+    roles: ROUTE_ACCESS["/settings"],
   },
 ];
 
@@ -170,8 +170,10 @@ const SubmenuItem = ({
 );
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const sidebarContext = useSidebar();
-  const { isExpanded = true, isMobileOpen = false, isHovered = false, setIsHovered } = sidebarContext || {};
+  // Follow the collapse state of the sidebar component itself.
+  const { state, openMobile: isMobileOpen } = useSidebar();
+  const isExpanded = state === "expanded";
+  const isHovered = false;
   const pathname = usePathname();
   const { data: user } = useAppSelector((state) => state.profile);
   const filteredNavItems = useMemo(() => {
@@ -394,7 +396,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="border-t border-gray-200 dark:border-gray-800">
+        <div className="border-t border-gray-200 dark:border-gray-800 group-data-[collapsible=icon]:hidden">
           <div className="p-4">
             <LogoutModal />
           </div>

@@ -50,11 +50,9 @@ export async function submitLawyersForm(
   prevState: unknown,
   formData: FormData
 ) {
-  console.log(formData);
 
   // Extract form data
   const data = Object.fromEntries(formData);
-  console.log("Raw form data:", data);
 
   try {
     // Parse the cases data from JSON
@@ -72,14 +70,11 @@ export async function submitLawyersForm(
       cases: casesData,
     };
 
-    console.log("Structured data for validation:", validationData);
 
     // Validate the structured data
     const result = probunoUpdateForm.safeParse(validationData);
-    console.log("Validation result:", result);
 
     if (!result.success) {
-      console.log("Validation errors:", result.error.flatten().fieldErrors);
       return {
         status: 400,
         errors: result.error.flatten().fieldErrors,
@@ -95,10 +90,8 @@ export async function submitLawyersForm(
       phone_number: result.data.phone_number,
       cases: result.data.cases,
     };
-    console.log(submissionData);
 
     const response = await ProbunoService.casesUpdate(submissionData);
-    console.log(JSON.stringify(response.data));
 
     return {
       status: 200,
@@ -108,7 +101,6 @@ export async function submitLawyersForm(
     };
   } catch (err) {
     if (err instanceof SyntaxError) {
-      console.log("JSON Parse error:", err);
       return {
         status: 400,
         errors: { cases: ["Invalid cases data format"] },
@@ -116,7 +108,6 @@ export async function submitLawyersForm(
       };
     } else {
       const error = err as ErrorResponse;
-      console.log("Error response:", error);
       return handleApiError(error);
     }
   }
@@ -146,7 +137,6 @@ async function handleFormSubmission(
 
   try {
     const response = await serviceMethod(result.data);
-    console.log("Form submission data:", result.data);
     return {
       status: 200,
       message: "Success",
@@ -155,7 +145,6 @@ async function handleFormSubmission(
     };
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
 
     if (error?.response) {
       return {
@@ -222,7 +211,6 @@ export async function submitProBonoCaseForm(
     const safeErrors = JSON.parse(
       JSON.stringify(result.error.flatten().fieldErrors)
     );
-    console.log(safeErrors);
     return {
       status: 400,
       errors: safeErrors,
@@ -230,7 +218,6 @@ export async function submitProBonoCaseForm(
       success: false,
     };
   }
-  console.log("result.data" + JSON.stringify(result.data));
   try {
     const response = await ProbunoService.cases(result.data);
     // console.log(JSON.stringify(response));
@@ -290,7 +277,6 @@ export async function submitProBonoForm(
         data[key] = value;
       }
     }
-    console.log("Form data:", JSON.stringify(data, null, 2));
 
     const result = proBonoSchema.safeParse(data);
 
@@ -309,7 +295,6 @@ export async function submitProBonoForm(
         success: false,
       };
     }
-    console.log("result.data => " + result.data);
     await ProbunoService.registration(result.data);
 
     return {
@@ -363,7 +348,6 @@ export async function submitDecongestionForm(
   formData: FormData
 ) {
   const data = Object.fromEntries(formData);
-  console.log("Raw form data:", data);
 
   try {
     // const result = DecongestionCaseFullSchema.safeParse(data);
@@ -425,7 +409,6 @@ export async function submitDecongestionForm(
       },
     };
     const response = await ProbunoService.casesDecongestionCase(data);
-    console.log(JSON.stringify(response.data));
     return {
       status: 200,
       message: response.data.message,
@@ -434,7 +417,6 @@ export async function submitDecongestionForm(
     };
   } catch (err) {
     if (err instanceof SyntaxError) {
-      console.log("JSON Parse error:", err);
       return {
         status: 400,
         errors: { cases: ["Invalid cases data format"] },
@@ -442,7 +424,6 @@ export async function submitDecongestionForm(
       };
     } else {
       const error = err as ErrorResponse;
-      console.log("Error response:", error);
       return handleApiError(error);
     }
   }
@@ -457,8 +438,6 @@ export async function submitMercyApplicationForm(
   try {
     const result = MercyApplicationCaseFullSchema.safeParse(rawData);
     if (!result.success) {
-      console.log("Validation errors:", result.error.flatten().fieldErrors);
-      console.log("Validation failed:", result.error);
       return {
         status: 400,
         errors: result.error.flatten().fieldErrors,
@@ -497,7 +476,6 @@ export async function submitMercyApplicationForm(
 
       const uploadResult = await uploadFile.json();
       disabilityProof = uploadResult?.data;
-      console.log("File uploaded successfully:", disabilityProof);
     }
 
     const data = {
@@ -520,7 +498,6 @@ export async function submitMercyApplicationForm(
         recommendations: "" ,
       },
     };
-    console.log("Parsed data:", data);
 
     // Prepare data for API call
     let uploadData = { ...data };
@@ -528,11 +505,9 @@ export async function submitMercyApplicationForm(
       data.perogative_of_mercy.recommendations = disabilityProof;
     }
 
-    console.log("Upload data:", uploadData);
     // Call the service method with the prepared data
 
     const response = await ProbunoService.casesPerogativeCase(uploadData);
-    console.log(JSON.stringify(response.data));
 
     return {
       status: 200,
@@ -542,7 +517,6 @@ export async function submitMercyApplicationForm(
     };
   } catch (err) {
     if (err instanceof SyntaxError) {
-      console.log("JSON Parse error:", err);
       return {
         status: 400,
         errors: { cases: ["Invalid cases data format"] },
@@ -550,7 +524,6 @@ export async function submitMercyApplicationForm(
       };
     } else {
       const error = err as ErrorResponse;
-      console.log("Error response:", error);
       return handleApiError(error);
     }
   }
@@ -562,7 +535,6 @@ export async function submitPublicCaseForm(
   formData: FormData
 ) {
   const data = Object.fromEntries(formData.entries());
-  console.log("Raw form data:", data);
   try {
     if (!data.case_type) {
       return {
@@ -593,7 +565,6 @@ export async function submitPublicCaseForm(
     let disabilityProof;
     const hasDisability = formData.get("disability_status") === "yes";
     const file = formData.get("disability_proof");
-    console.log("about to loaid");
     if (hasDisability && file instanceof Blob) {
       const fileFormData = new FormData();
       fileFormData.append("file", file);
@@ -624,7 +595,6 @@ export async function submitPublicCaseForm(
 
       const uploadResult = await uploadFile.json();
       disabilityProof = uploadResult?.data;
-      console.log("File uploaded successfully:", disabilityProof);
     }
 
     // Prepare data for API call
@@ -642,7 +612,6 @@ export async function submitPublicCaseForm(
         : await ProbunoService.casesPDSSCase(uploadData);
     }
 
-    console.log("API response:", response.data);
 
     return {
       status: 200,
@@ -651,7 +620,6 @@ export async function submitPublicCaseForm(
       data: response.data?.data,
     };
   } catch (err) {
-    console.log("Error caught:", err);
     if (err instanceof SyntaxError) {
       return {
         status: 400,
@@ -660,7 +628,6 @@ export async function submitPublicCaseForm(
       };
     } else {
       const error = err as ErrorResponse;
-      console.log("Error response:", error);
       return handleApiError(error);
     }
   }

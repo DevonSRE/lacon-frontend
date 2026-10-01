@@ -1,5 +1,6 @@
 import axios from "axios"
 import { NEXT_BASE_URL } from "../constants"
+import { stripSensitiveResponses } from "./sanitize"
 
 const userConfig = axios.create({
   baseURL: NEXT_BASE_URL,
@@ -9,6 +10,7 @@ const userConfig = axios.create({
   },
 })
 
+stripSensitiveResponses(userConfig)
 
 userConfig.interceptors.response.use(
   (res) => res,
