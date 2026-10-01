@@ -25,7 +25,6 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
   try {
     const res = await AuthService.loginUser(result.data);
     const data = res.data as LoginResponseData; //Cast to the expected type
-    console.log("Login response data:", data);
     const sessionData = {
       user: {
         id: data.ID,
@@ -46,7 +45,7 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
     await createSession(sessionData);
   } catch (err: unknown) {
     const error = err as ErrorResponse;
-    console.log("Error response:", error);
+    console.error("Login failed:", error?.response?.status);
     if (error?.response) {
       return {
         status: error.response.status,
@@ -105,12 +104,8 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
         otp: data.otp as string,
         email: data.email as string,
       });
-      console.log(response);
 
       const responseData = response.data as { token: string; id: string; role: ROLES };
-      console.log(responseData.token);
-      console.log(responseData.id);
-      console.log(responseData.role);
       (await cookies()).set("TempToken", responseData.token);
       (await cookies()).set("TempID", responseData.id);
       (await cookies()).set("TempRole", responseData.role);
@@ -166,7 +161,6 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
         },
         token: token,
       };
-      console.log(sessionData);
       await createSession(sessionData);
       (await cookies()).delete("TempToken");
     }
@@ -193,10 +187,8 @@ export async function ForgotPasswordAction(
       success: false,
     };
   }
-  console.log(result.data);
   try {
-    const response = await AuthService.forgotPassword(result.data);
-    console.log(response);
+    await AuthService.forgotPassword(result.data);
     (await cookies()).set("otpEmail", result.data.email);
   } catch (err: any) {
     if (err?.response) {
@@ -257,7 +249,6 @@ export async function verifyOTP(_prevState: unknown, formData: FormData) {
       otp: result.data.otp,
       email: email,
     });
-    console.log(res);
 
     const data = res.data as LoginResponseData;
     (await cookies()).set("TempToken", data.token);
@@ -338,9 +329,6 @@ export async function resetPassword(_prevState: unknown, formData: FormData) {
         success: false,
       };
     }
-    const token = (await cookies()).get("TempToken")?.value;
-    console.log("my temp toke" + token);
-
     await AuthService.resetPassword({
       new_password: result.data.newPassword,
       confirm_password: result.data.confirmPassword,
