@@ -121,15 +121,15 @@ export function AddLawyerSheet() {
                         EXTERNAL PARALEGAL
                       </SelectItem>
                     )}
-                    {role === ROLES.ZONAL_DIRECTOR ||
+                    {(role === ROLES.ZONAL_DIRECTOR ||
                       role === ROLES.STATE_COORDINATOR ||
                       role === ROLES.CENTRE_COORDINATOR ||
                       role === ROLES.CIVIL_JUSTICE_DEPT ||
-                      (role === ROLES.DIRECTOR_GENERAL && (
+                      role === ROLES.DIRECTOR_GENERAL) && (
                         <SelectItem value="INTERNAL PARALEGAL">
                           INTERNAL PARALEGAL
                         </SelectItem>
-                      ))}
+                      )}
 
                     {role != ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD && (
                       <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
