@@ -3,14 +3,13 @@ import React, { useEffect, useRef, useState, useCallback, useMemo } from "react"
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useSidebar } from "../context/SidebarContext";
 import { Icons } from "@/icons/icons";
 import LogoutModal from "@/components/logout-modal";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
 import { ROUTE_ACCESS } from "@/lib/route-access";
 import { Dot } from "lucide-react";
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, useSidebar } from "@/components/ui/sidebar";
 
 type NavItem = {
   name: string;
@@ -171,8 +170,10 @@ const SubmenuItem = ({
 );
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const sidebarContext = useSidebar();
-  const { isExpanded = true, isMobileOpen = false, isHovered = false, setIsHovered } = sidebarContext || {};
+  // Follow the collapse state of the sidebar component itself.
+  const { state, openMobile: isMobileOpen } = useSidebar();
+  const isExpanded = state === "expanded";
+  const isHovered = false;
   const pathname = usePathname();
   const { data: user } = useAppSelector((state) => state.profile);
   const filteredNavItems = useMemo(() => {
@@ -395,7 +396,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarContent>
 
       <SidebarFooter>
-        <div className="border-t border-gray-200 dark:border-gray-800">
+        <div className="border-t border-gray-200 dark:border-gray-800 group-data-[collapsible=icon]:hidden">
           <div className="p-4">
             <LogoutModal />
           </div>
