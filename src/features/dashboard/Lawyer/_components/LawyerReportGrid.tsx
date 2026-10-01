@@ -28,7 +28,7 @@ export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
                             </span>
                             <DropdownMenu >
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <Button variant="ghost" className="h-8 w-8 p-0" aria-label="Case actions">
                                         <MoreVertical size={16} className="text-black" />
                                     </Button>
                                 </DropdownMenuTrigger>
