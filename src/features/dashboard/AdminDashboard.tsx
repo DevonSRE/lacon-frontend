@@ -131,7 +131,7 @@ export default function AdminDashboard({ role }: { role: string }) {
                     <StatCard
                         title="New cases this week"
                         value={casesSummation.weeklyCivilAndCriminal}
-                        subtitle="Weekly Civil & Crimnal"
+                        subtitle="Weekly Civil & Criminal"
                     />
                 </div>
 
