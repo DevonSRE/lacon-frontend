@@ -8,6 +8,7 @@ import { Icons } from "@/icons/icons";
 import LogoutModal from "@/components/logout-modal";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
+import { ROUTE_ACCESS } from "@/lib/route-access";
 import { Dot } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 
@@ -64,17 +65,17 @@ const navItems: NavItem[] = [
       {
         name: "Lawyers",
         path: "/users/lawyers",
-        roles: ["DECONGESTION UNIT HEAD"],
+        roles: ROUTE_ACCESS["/users/lawyers"],
       },
       {
         name: "Request",
         path: "/users/request",
-        roles: ["ADMIN", "DIRECTOR GENERAL"],
+        roles: ROUTE_ACCESS["/users/request"],
       },
       {
         name: "Request",
         path: "/users/probuno-request",
-        roles: ["DECONGESTION UNIT HEAD"],
+        roles: ROUTE_ACCESS["/users/probuno-request"],
       },
     ]
   },
@@ -82,19 +83,19 @@ const navItems: NavItem[] = [
     icon: <Icons.lawyerIcons />,
     name: "Lawyers",
     path: "/lawyers",
-    roles: ["ZONAL DIRECTOR", "OSCAR UNIT HEAD", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO", "PDSS"],
+    roles: ROUTE_ACCESS["/lawyers"],
   },
   {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",
-    roles: ["ADMIN", "PLATFORM ADMIN", "DIRECTOR GENERAL"],
+    roles: ROUTE_ACCESS["/reports"],
   },
   {
     name: "Settings",
     icon: <Icons.settings />,
     path: "/settings",
-    roles: ["ADMIN"],
+    roles: ROUTE_ACCESS["/settings"],
   },
 ];
 

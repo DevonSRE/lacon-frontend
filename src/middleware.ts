@@ -7,6 +7,7 @@ import {
   authRoutes,
   publicRoutes,
 } from '@/routes'
+import { canAccessRoute } from "@/lib/route-access";
 
 export async function middleware(request: NextRequest) {
   const { nextUrl } = request;
@@ -55,10 +56,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(signInUrl);
   }
 
-  // 5. Role-based access control could be added here if needed
-  // if (pathname.startsWith('/admin') && user?.role !== 'ADMIN') {
-  //   return NextResponse.redirect(new URL('/unauthorized', nextUrl));
-  // }
+  // 5. Role-based access control
+  if (!canAccessRoute(user?.role, pathname)) {
+    return NextResponse.redirect(new URL('/dashboard', nextUrl));
+  }
 
   // Default: allow access
   return NextResponse.next();
