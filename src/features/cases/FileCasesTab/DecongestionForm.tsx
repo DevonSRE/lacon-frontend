@@ -5,7 +5,6 @@ import InputField from '@/components/form/input/InputField';
 import SelectField from '@/components/SelectField';
 import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
-import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
@@ -24,7 +23,6 @@ type CustomeSheetProps = {
 };
 
 export default function DecongestionForm({ currentStep = 1, openFileACase, setOpen, setCurrentStep = () => { }, }: CustomeSheetProps) {
-    const router = useRouter();
     const [errors, setErrors] = useState<Record<string, string>>({});
     // const [currentStep, setCurrentStep] = useState(1);
     const [selectedState, setSelectedState] = useState<string>("");
@@ -179,7 +177,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         if (currentStep > 1) {
             setCurrentStep(currentStep - 1)
         } else {
-            router.back();
+            // Close this form and return to the case-type picker.
+            setOpen(false);
         }
     }
     return (
@@ -809,7 +808,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                 )}
                 {currentStep === 3 && (
                     <CaseCreated setOpen={setOpen} openFileACase={openFileACase} details={{
-                        details: null
+                        details: state?.data ?? null
                     }} />
 
 

@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { Dispatch, SetStateAction, useActionState, useState } from "react";
 import { toast } from "sonner";
 import { CloudUpload } from "lucide-react";
@@ -27,7 +26,6 @@ export default function MercyApplication({
   openFileACase,
   setOpen,
 }: CustomeSheetProps) {
-  const router = useRouter();
 
   const [recommendationImage, setRecommendationImage] = useState<File | null>(
     null
@@ -196,7 +194,8 @@ export default function MercyApplication({
     if (currentStep > 1) {
       setCurrentStep((s) => s - 1);
     } else {
-      router.back();
+      // Close this form and return to the case-type picker.
+      setOpen(false);
     }
   };
 
@@ -432,9 +431,8 @@ export default function MercyApplication({
       <div className="mx-auto">
         {currentStep === 3 && (
           <CaseCreated setOpen={setOpen} openFileACase={openFileACase} details={{
-            details: null
+            details: state?.data ?? null
           }} />
-          //TODO :: Please continue from here... get casedetials from API after successful creating then populate here
 
         )}
 
