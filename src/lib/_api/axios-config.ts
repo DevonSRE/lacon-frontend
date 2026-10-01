@@ -80,8 +80,6 @@ axiosInstance.interceptors.request.use(async (config: any) => {
   console.log("🔵 Request [Auth]:", {
     url: config.url,
     method: config.method,
-    headers: config.headers,
-    data: config.data,
     params: config.params,
   });
 
@@ -93,7 +91,6 @@ axiosInstance.interceptors.response.use(
     console.log("🟢 Response [Auth]:", {
       url: response.config.url,
       status: response.status,
-      data: response.data,
     });
     return response;
   },
@@ -102,7 +99,8 @@ axiosInstance.interceptors.response.use(
       url: error?.config?.url,
       message: error.message,
       code: error.code,
-      response: error.response?.data,
+      status: error.response?.status,
+      apiMessage: error.response?.data?.message,
     });
 
     // Handle expired/invalid tokens
@@ -147,8 +145,6 @@ publicAxiosInstance.interceptors.request.use(async (config: any) => {
   console.log("🔵 Request [Public]:", {
     url: config.url,
     method: config.method,
-    headers: config.headers,
-    data: config.data,
     params: config.params,
   });
 
@@ -160,7 +156,6 @@ publicAxiosInstance.interceptors.response.use(
     console.log("🟢 Response [Public]:", {
       url: response.config.url,
       status: response.status,
-      data: response.data,
     });
     return response;
   },
@@ -169,7 +164,8 @@ publicAxiosInstance.interceptors.response.use(
       url: error?.config?.url,
       message: error.message,
       code: error.code,
-      response: error.response?.data,
+      status: error.response?.status,
+      apiMessage: error.response?.data?.message,
     });
 
     // Handle expired/invalid API keys
