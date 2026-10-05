@@ -19,6 +19,7 @@ import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import LoadingDialog from '@/components/LoadingDialog';
 import { useQueryClient } from '@tanstack/react-query';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface RecentCase {
     caseTitle: string;
     type: string;
@@ -251,7 +252,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
             )}
 
             {sheetType === "edit" && (
-                <form className="space-y-4 p-6 mt-5" action={dispatchAction}>
+                <form className="space-y-4 p-6 mt-5" onSubmit={submitWithoutReset(dispatchAction)}>
                     <h2 className="text-xl font-semibold">Edit Lawyer</h2>
 
                     {/* First Name */}

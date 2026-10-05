@@ -11,6 +11,7 @@ import { ICase } from "@/features/dashboard/Lawyer/_components/types";
 import { NextPage } from 'next';
 import { Input } from "@/components/ui/input";
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 // Define the form data type
 interface FormData {
   document_title: string;
@@ -168,7 +169,7 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
   return (
     <div className="max-w-md mx-auto">
       <h2 className="text-xl font-semibold mb-6">Upload Case Document</h2>
-      <form action={handleSubmit} className="space-y-6">
+      <form onSubmit={submitWithoutReset(handleSubmit)} className="space-y-6">
         <InputField
           label="Document Title"
           name="document_title"

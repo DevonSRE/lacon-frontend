@@ -12,6 +12,7 @@ import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { CaseUpdate } from '../server/caseAction';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 // Extended interface for form data with additional fields
 interface CaseProgressFormData extends Partial<ICase> {
   casefile_id?: string;
@@ -184,13 +185,14 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
   return (
     <div className="max-w-md mx-auto">
       <h1 className="text-xl font-semibold mb-4">Submit Case Progress Update</h1>
-      <form action={handleSubmit}>
+      <form onSubmit={submitWithoutReset(handleSubmit)}>
         <input type="hidden" value={caseDetails?.id} name="id" />
         <div className="mb-4">
           <InputField
             name='casefile_id'
-            label="Court ID"
+            label="Case ID"
             type="text"
+            readOnly
             value={formData.casefile_id || ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               updateField('casefile_id', e.target.value)

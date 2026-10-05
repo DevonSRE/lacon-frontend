@@ -14,6 +14,7 @@ import SelectField from '@/components/SelectField';
 import { FormDataProbunoUpdate, FormErrors, ProBonoCase } from '../server/probunoTypes';
 import CaseIntakeDialog from './CaseIntakeDialog';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 export default function LawyersAnnualCasesReviewForm() {
     const [state, formAction, isPending] = useActionState(submitLawyersForm, undefined);
     const [errors, setErrors] = useState<FormErrors>({})
@@ -121,7 +122,7 @@ export default function LawyersAnnualCasesReviewForm() {
                     </p>
                 </div>
 
-                <form action={handleSubmit} className="space-y-8">
+                <form onSubmit={submitWithoutReset(handleSubmit)} className="space-y-8">
                     {/* Hidden input to serialize cases data */}
                     <input type="hidden" name="cases_data" value={JSON.stringify(formData.cases)} />
 

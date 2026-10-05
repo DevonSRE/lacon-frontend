@@ -28,6 +28,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { GetInactiveState } from "@/components/get-inactive-state";
 import { GetZone } from "@/components/get-zone";
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 const defaultFormData: FormDataLawyer = {
   user_type: "",
   designation: "",
@@ -88,7 +89,7 @@ export function AddLawyerSheet() {
             <ArrowLeft onClick={() => setIsOpen(false)} />
           </span>
           <ScrollArea className="h-screen mt-4">
-            <form className="space-y-4 p-1" action={dispatch}>
+            <form className="space-y-4 p-1" onSubmit={submitWithoutReset(dispatch)}>
               <SheetTitle className="text-xl font-semibold">Add New Lawyer</SheetTitle>
 
               <div className="space-y-1">

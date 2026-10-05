@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { GetState } from '@/components/get-state';
 import SuccessDialog from '@/components/successDialog';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface FormData {
     first_name: string;
     last_name: string;
@@ -140,7 +141,7 @@ export default function ProBonoInventoryForm() {
                     </div>
                 </div>
                 <div className=" space-y-10">
-                    <form action={formAction} className="w-full space-y-6">
+                    <form onSubmit={submitWithoutReset(formAction)} className="w-full space-y-6">
                         {/* Section 1: Personal Details and Office Info */}
                         <section>
                             <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 1: Personal Details and Office Info</h2>
