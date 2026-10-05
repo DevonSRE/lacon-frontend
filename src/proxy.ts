@@ -9,7 +9,7 @@ import {
 } from '@/routes'
 import { canAccessRoute } from "@/lib/route-access";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { nextUrl } = request;
   const { pathname } = nextUrl;
 
