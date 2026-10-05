@@ -164,7 +164,7 @@ export const caseDetailsSchema = z.object({
     .optional(),
   average_income: z
     .string({
-      invalid_type_error: "Average income must be a number",
+      error: "Average income must be a number",
     })
     .optional(),
   legal_aid_reason: z
@@ -174,7 +174,7 @@ export const caseDetailsSchema = z.object({
   number_of_dependants: z
     .coerce
     .number({
-      invalid_type_error: "Number of dependants must be a number",
+      error: "Number of dependants must be a number",
     })
     .optional(),
   registration_number: z.string().optional(),
@@ -220,7 +220,7 @@ export const pdssCaseSchema = z.object({
     .string()
     .min(1, { message: "Client location is required" }),
   days_in_detention: z.coerce
-    .number({ invalid_type_error: "Days in detention must be a number" })
+    .number({ error: "Days in detention must be a number" })
     .nonnegative({ message: "Days in detention cannot be negative" }),
   counsel_designation: z
     .string()
