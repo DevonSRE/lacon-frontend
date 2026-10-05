@@ -122,7 +122,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
 
-                error.errors.forEach((err: any) => {
+                error.issues.forEach((err: any) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];

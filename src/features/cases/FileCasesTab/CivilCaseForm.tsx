@@ -121,7 +121,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
             console.log('Validation error:', error);
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
-                error.errors.forEach((err: any) => {
+                error.issues.forEach((err: any) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];

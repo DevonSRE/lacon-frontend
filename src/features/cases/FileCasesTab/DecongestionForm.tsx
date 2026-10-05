@@ -119,7 +119,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         } catch (error: any) {
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
-                error.errors.forEach((err: any) => {
+                error.issues.forEach((err: any) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];
