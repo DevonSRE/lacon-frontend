@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react'
 import { ArrowLeft, ChevronLeft, CloudUpload, Upload } from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
@@ -177,7 +177,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
             fd.append(key, String(v));
           }
         });
-        formAction(fd);
+        startTransition(() => formAction(fd));
       }
     }
   };
@@ -222,7 +222,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
             </div>
           </div>
         </div>
-        <form action={handleNext}>
+        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
           <input type="hidden" name="case_type" value="CRIMINAL CASE" />
           <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
           {(!isPublic && state_id != "") ? (

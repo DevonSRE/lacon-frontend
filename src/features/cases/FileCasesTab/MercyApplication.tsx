@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, SetStateAction, useActionState, useState } from "react";
+import { Dispatch, SetStateAction, useActionState, useState, startTransition } from "react";
 import { toast } from "sonner";
 import { CloudUpload } from "lucide-react";
 
@@ -187,7 +187,7 @@ export default function MercyApplication({
       fd.append("recommendations", recommendationImage);
     }
 
-    formAction(fd);
+    startTransition(() => formAction(fd));
   };
 
   const handleBack = () => {
@@ -467,7 +467,7 @@ export default function MercyApplication({
               noValidate
             > */}
 
-            <form action={submit}>
+            <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
               <div>
                 <Label>Case Type</Label>
                 <div className="bg-gray-100 p-2 rounded mt-1 text-gray-700">

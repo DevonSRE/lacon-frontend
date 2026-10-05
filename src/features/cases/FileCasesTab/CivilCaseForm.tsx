@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react';
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react';
 import { ArrowLeft, CloudUpload } from 'lucide-react';
 import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema';
 import InputField from '@/components/form/input/InputField';
@@ -172,7 +172,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                         fd.append(key, String(v));
                     }
                 });
-                formAction(fd);
+                startTransition(() => formAction(fd));
             }
         }
     };
@@ -212,7 +212,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                     </div>
                 </div>
 
-                <form action={handleNext}>
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                     <input type="hidden" name="case_type" value="CIVIL CASE" />
                     <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
                     {(!isPublic && state_id != "") ? (
