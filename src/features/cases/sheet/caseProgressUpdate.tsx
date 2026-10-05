@@ -77,7 +77,8 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
         ...prev,
         id: caseDetails.id,
         case_id: caseDetails.case_id || '',
-        casefile_id: caseDetails.case_id || '',
+        // The API expects the case's own ID here (case_id is never returned).
+        casefile_id: caseDetails.id || '',
         name: caseDetails.name || '',
         first_name: caseDetails.first_name || '',
         last_name: caseDetails.last_name || '',

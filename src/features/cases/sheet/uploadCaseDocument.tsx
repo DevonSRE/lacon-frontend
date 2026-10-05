@@ -191,6 +191,8 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
           required
           value={formData.update_type}
           onValueChange={(value) => handleSelectChange(value, 'update_type')}
+          error={!!errors.update_type}
+          errorMessage={errors.update_type}
         />
 
         <div>
@@ -207,6 +209,8 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
             required
             value={formData.document_type}
             onValueChange={(value) => handleSelectChange(value, 'document_type')}
+          error={!!errors.document_type}
+          errorMessage={errors.document_type}
           />
           <span className="text-xs text-gray-500">
             Common types: Pleadings, Evidence, Motions, Court Orders
