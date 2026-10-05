@@ -14,6 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface DecisionData {
     decision: string;
     reason: string;
@@ -200,7 +201,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
 
             {/* Decision Section */}
             <div className="mt-8 bg-white p-6 rounded-lg border-[1px] border-gray-200">
-                <form action={dispatchAction} className="w-full space-y-6">
+                <form onSubmit={submitWithoutReset(dispatchAction)} className="w-full space-y-6">
                     <input type="hidden" name="decision" value={decisionData.decision} />
                     <input type="hidden" name="lawyer_id" value={user?.ID} />
                     <div className='mb-4'>

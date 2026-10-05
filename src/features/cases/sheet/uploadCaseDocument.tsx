@@ -11,6 +11,7 @@ import { ICase } from "@/features/dashboard/Lawyer/_components/types";
 import { NextPage } from 'next';
 import { Input } from "@/components/ui/input";
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 // Define the form data type
 interface FormData {
   document_title: string;
@@ -168,7 +169,7 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
   return (
     <div className="max-w-md mx-auto">
       <h2 className="text-xl font-semibold mb-6">Upload Case Document</h2>
-      <form action={handleSubmit} className="space-y-6">
+      <form onSubmit={submitWithoutReset(handleSubmit)} className="space-y-6">
         <InputField
           label="Document Title"
           name="document_title"
@@ -190,6 +191,8 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
           required
           value={formData.update_type}
           onValueChange={(value) => handleSelectChange(value, 'update_type')}
+          error={!!errors.update_type}
+          errorMessage={errors.update_type}
         />
 
         <div>
@@ -206,6 +209,8 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
             required
             value={formData.document_type}
             onValueChange={(value) => handleSelectChange(value, 'document_type')}
+          error={!!errors.document_type}
+          errorMessage={errors.document_type}
           />
           <span className="text-xs text-gray-500">
             Common types: Pleadings, Evidence, Motions, Court Orders

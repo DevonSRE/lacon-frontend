@@ -61,7 +61,7 @@
 
 
 import axios from "axios";
-import { NEXT_BASE_URL, NEXT_PUBLIC_CASE_API_KEY } from "../constants";
+import { NEXT_BASE_URL } from "../constants";
 import { getToken } from "@/server/auth";
 import { stripSensitiveResponses } from "./sanitize";
 
@@ -139,7 +139,9 @@ const publicAxiosInstance = axios.create({
 stripSensitiveResponses(publicAxiosInstance);
 
 publicAxiosInstance.interceptors.request.use(async (config: any) => {
-  const token = NEXT_PUBLIC_CASE_API_KEY;
+  // Server-only key for the public case-filing API. Deliberately not
+  // NEXT_PUBLIC_*, which would ship it to every browser.
+  const token = process.env.CASE_API_KEY;
   if (token) {
     config.headers.Authorization = token;
   }

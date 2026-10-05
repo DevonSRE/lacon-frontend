@@ -11,6 +11,7 @@ import { SubmitButton } from '@/components/submit-button';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import SuccessDialog from '@/components/successDialog';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface FormData {
   first_name: string;
   last_name: string;
@@ -152,7 +153,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
         </div>
         <hr />
 
-        <form ref={formRef} action={formAction} className='pb-32 space-y-12'>
+        <form ref={formRef} onSubmit={submitWithoutReset(formAction)} className='pb-32 space-y-12'>
           {/* SECTION 1: Personal Details */}
           <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
           <section className="space-y-4">

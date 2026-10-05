@@ -32,6 +32,7 @@ import { CLIENT_ERROR_STATUS } from "@/lib/constants";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 const LAWYER_TYPES = ["LACON LAWYER", "PRO BONO LAWYER", "NYSC LAWYER"];
 
 // Department and unit heads assign to lawyers and can forward to another head.
@@ -200,7 +201,7 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
       </div>
 
       {/* Form */}
-      <form action={dispatchAction} className="w-full space-y-6">
+      <form onSubmit={submitWithoutReset(dispatchAction)} className="w-full space-y-6">
         <input type="hidden" name="casefile_id" value={details?.id ?? ""} />
         <input type="hidden" name="is_reassigned" value={type === "ReAssign" ? "true" : "false"} />
 
@@ -257,6 +258,7 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
         <div className="mt-14">
           <SubmitButton
             value="Submit"
+            loading={isPending}
             pendingValue="Processing..."
             className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded mt-2"
           />

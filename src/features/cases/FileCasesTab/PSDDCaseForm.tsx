@@ -1,6 +1,6 @@
 'use client'
 
-import React, { Dispatch, SetStateAction, useActionState, useEffect, useState } from 'react'
+import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react'
 import { ArrowLeft} from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
@@ -122,7 +122,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
 
-                error.errors.forEach((err: any) => {
+                error.issues.forEach((err: any) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];
@@ -178,7 +178,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                         fd.append(key, String(v));
                     }
                 });
-                formAction(fd);
+                startTransition(() => formAction(fd));
             }
         }
     };
@@ -221,7 +221,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                         </div>
                     </div>
                 </div>
-                <form action={handleNext}>
+                <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                     {(type === "pdss-instation") && (
                         <input type="hidden" name="case_type" value="PDSS STATION" />
                     )}

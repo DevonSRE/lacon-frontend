@@ -30,6 +30,7 @@ import { GetActiveUser } from "@/components/get-active-users";
 import { GetInactiveState } from "@/components/get-inactive-state";
 import { GetInActiveUser } from "@/components/get-inactive-users";
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 const defaultFormData: FormDataUser = {
   user_type: "",
   designation: "",
@@ -107,7 +108,7 @@ export function AddUserSheet() {
         title={openLoadingDialog.title}
       />
       <CustomeSheet open={isOpen} setOpen={setIsOpen} className="sm:w-[600px]">
-        <form className="space-y-6" action={dispatchAction}>
+        <form className="space-y-6" onSubmit={submitWithoutReset(dispatchAction)}>
           <h2 className="text-xl font-semibold">Add New User</h2>
           <div className="space-y-1">
             <Label>User Role</Label>

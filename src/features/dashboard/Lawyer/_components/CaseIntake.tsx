@@ -11,6 +11,7 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import SuccessDialog from '@/components/successDialog';
 import { submitCaseIntake } from '../server/caseIntak';
 
+import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface FormData {
     lawyer_name: string;
     principal_name: string;
@@ -151,7 +152,7 @@ export default function CaseIntakeForm({ isPublic = false, setDialogOpen = () =>
                     <h1 className="text-lg font-semibold">Online Pro Bono Lawyer Registration Form</h1>
                 </div>
 
-                <form ref={formRef} action={formAction} className='space-y-8'>
+                <form ref={formRef} onSubmit={submitWithoutReset(formAction)} className='space-y-8'>
                     {/* SECTION 1: Personal Details */}
                     <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
                     <section className="space-y-4">

@@ -13,10 +13,11 @@ Each item says what happens, how to reproduce it, what we expect, and whether th
 | 5 | **P1** | Analytics numbers contradict each other |
 | 6 | **P1** | Missing endpoint: lawyer rejects / returns a case |
 | 7 | P2 | Missing field: requester's role on role requests |
-| 8 | P2 | Public case API key is visible to every browser |
+| 8 | **P0** | Online case filing is down: no API key is configured |
 | 9 | P2 | Invite email does not match the approved template |
 | 10 | P2 | Test accounts that don't work or are mislabelled |
 | 11 | P3 | `defendant_address` holds an email |
+| 12 | **P1** | Lawyers can't update case progress: `LaconCaseType` required |
 
 ---
 
@@ -107,15 +108,15 @@ From your QA report: on DG/Admin → Users → Request, there's no way to tell w
 
 **Needed:** add `RequestedByRole` (the requester's `UserType`, e.g. `"CIVIL JUSTICE DEPT. HEAD"`). The frontend already has a **Requester Role** column reading that exact field; it shows "-" until the API sends it.
 
-## 8. Public case API key is visible to every browser (P2, backend + devops)
+## 8. Online case filing is down: no API key is configured (P0)
 
-Online filing (`POST /casefile/create-public-case`) authenticates with `NEXT_PUBLIC_CASE_API_KEY`. Anything prefixed `NEXT_PUBLIC_` is compiled into the browser JavaScript, so the key is public.
+`POST /casefile/create-public-case` (the public website's "File a Case") answers `401 {"error":"API key required"}`. The frontend had no key to send: it read `NEXT_PUBLIC_CASE_API_KEY`, which isn't set in `.env`, and production uses the same environment. So every online filing from the website currently fails with "Something went wrong".
 
-**Suggested:**
-- Treat that key as non-secret and protect the endpoint with rate limiting / CAPTCHA.
-- Or issue a server-only key (`CASE_API_KEY`) that the frontend reads only on the server. That needs a small frontend change and an env change on Vercel.
+**Needed from backend:** the API key for the public case-filing endpoint.
 
-Note: the local `.env` has no `NEXT_PUBLIC_CASE_API_KEY`, so online filing returns `401` in local development. QA should verify online filing → DG on the deployed environment.
+**Then set it** as `CASE_API_KEY` in `.env` and in Vercel. The frontend now reads that **server-only** variable, so the key is never sent to browsers. The old `NEXT_PUBLIC_` name would have been compiled into the public JavaScript.
+
+**Also recommended:** rate limiting / CAPTCHA on this endpoint, since anyone can submit to it through the website.
 
 ## 9. Invite email does not match the approved template (P2)
 
@@ -150,3 +151,20 @@ Listed here so they're tracked:
 - **Disability fields:** this branch removed `disability_status` / `disability_proof` from the Civil and PDSS forms; the PRD requires "Disability (if yes, upload proof)".
 - **Public filing "Who is filing?" step** (Pro bono lawyer / Nigerian / PDSS LaCoN Lawyer / PDSS Organisation) from the PRD isn't built. It needs an API field to store the answer.
 - **Paralegal onboarding by unit heads:** Civil Head, State/Centre Coordinators, Zonal Director and DG can now add Internal Paralegals, and DIO can add External Paralegals. Decide whether Criminal Justice, Mercy, OSCAR, PDSS and Decongestion heads should too.
+
+## 12. Lawyers can't update case progress: `LaconCaseType` required (P1)
+
+**Repro:** as a LACON Lawyer (`jolajames@`), open an assigned case → **Edit Case** → fill Court Progress, Next Steps and Status → **Update**.
+
+```
+POST /admin/casefile/{id}/case-update
+{ "id": "<case id>", "casefile_id": "<case id>", "court_progress": "...",
+  "next_step": "...", "current_status": "In Progress" }
+→ 400 {"message":"Validation Failed","data":{"LaconCaseType":"This field is required"}}
+```
+
+We tried sending `lacon_case_type`, `LaconCaseType`, `laconCaseType` and `case_type` (with the case's type as the value); all were still rejected.
+
+**Needed:** the JSON key and allowed values for `LaconCaseType`, or make it optional / derive it from the case. Until then no lawyer can record progress (PRD §4, "Lawyer: I want to update case progress").
+
+(Fixed on the frontend: the form used to send whatever the lawyer typed as "Court ID" in `casefile_id`, which caused `400 "Error Parsing Request"`. It now sends the case's ID automatically.)

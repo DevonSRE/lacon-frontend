@@ -1,5 +1,5 @@
 
-import React, { Dispatch, SetStateAction, useActionState, useState } from 'react';
+import React, { Dispatch, SetStateAction, useActionState, useState, startTransition } from 'react';
 import { decongestionCaseDetails, FormDataDEcongestionCase, personalDecongestionInfoSchema, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema';
 import InputField from '@/components/form/input/InputField';
 import SelectField from '@/components/SelectField';
@@ -119,7 +119,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         } catch (error: any) {
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
-                error.errors.forEach((err: any) => {
+                error.issues.forEach((err: any) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];
@@ -168,7 +168,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                         );
                     }
                 });
-                formAction(fd);
+                startTransition(() => formAction(fd));
             }
         }
     };
@@ -202,7 +202,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                 </div>
                             </div>
                         </div>
-                        <form action={handleNext}>
+                        <form onSubmit={(e) => { e.preventDefault(); handleNext(); }}>
                             <input type="hidden" name="case_type" value="DECONGESTION" />
                             <div className="w-full mb-10">
                                 {/* Step 1: Personal Information */}
