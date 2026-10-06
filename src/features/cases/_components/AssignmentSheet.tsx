@@ -133,7 +133,6 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
 
   // Handle success or error response
   useEffectAfterMount(() => {
-    console.log(state);
 
     if (!state) return;
 
@@ -153,7 +152,6 @@ export function AssignmentSheet({ details, setOpen, type }: AssignmentSheetProps
         title: "done",
         details: "Case Assigned successfully!",
       });
-      console.log("am here");
 
       queryClient.invalidateQueries({ queryKey: ["getCases"] });
 

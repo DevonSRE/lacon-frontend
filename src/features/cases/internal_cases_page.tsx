@@ -49,7 +49,6 @@ export default function InternalCasesPage() {
     });
 
     const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
-        console.log("type" + type);
         setCaseDetails(user);
         setType(type);
         if (type == "viewCase") {
@@ -65,7 +64,6 @@ export default function InternalCasesPage() {
         refetch();
     };
 
-    console.log(data);
 
     const columns = useMemo(
         () => InternalCaseColumns(user?.role as ROLES,

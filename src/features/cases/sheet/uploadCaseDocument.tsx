@@ -92,7 +92,6 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
 
   // Select change handler
   const handleSelectChange = (value: string, name: keyof FormData) => {
-    console.log('Select changed:', name, value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -129,7 +128,6 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
       }
     });
 
-    console.log("Submitting form data:", Object.fromEntries(fd.entries()));
     formAction(fd);
   };
 

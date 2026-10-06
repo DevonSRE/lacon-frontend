@@ -82,7 +82,6 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
 export async function invitationAction(_prevState: unknown, formData: FormData) {
   // Extract form data
   const data = Object.fromEntries(formData.entries());
-  console.log(JSON.stringify(data));
 
   const result = InvitationFormSchema.safeParse(data);
   if (!result.success) {
@@ -120,7 +119,6 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
 
   try {
     const url = `${NEXT_BASE_URL}/users/${id}`;
-    console.log("Updating user with ID:", url);
     const datax = {
       password: data.password as string,
       confirm_password: data.confirm_password as string,

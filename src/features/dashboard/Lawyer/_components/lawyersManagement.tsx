@@ -46,7 +46,6 @@ export default function Lawyers() {
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
     const handleOpenSheet = useCallback((user: ILawyerManagement, type: "view" | "edit" | "suspend" | "delete") => {
-        console.log('Handler called with type:', type);
         setSheetUser(user);
         setSheetType(type);
 

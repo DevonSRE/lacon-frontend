@@ -79,11 +79,6 @@ export default function StateCordinatorDashboard({ role }: { role: string }) {
         staleTime: 100000,
     }) as { data?: ApiResponse; isLoading: boolean };
 
-    if (!isLoading && data?.data) {
-        console.log("Dashboard data:", data.data);
-        console.log("Cases summation:", data.data.department_case_summary);
-        console.log("Case distributions:", data.data.case_distributions);
-    }
 
     // Safe data access with fallbacks using the actual API structure
     const casesSummation = data?.data?.department_case_summary || {
