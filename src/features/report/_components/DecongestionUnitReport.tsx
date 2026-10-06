@@ -46,7 +46,7 @@ export default function DecongestionUnitReport() {
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
-                centre: selectedCentreId,
+                center: selectedCentreId,
             };
             return await GetAllUnit(filters);
         },

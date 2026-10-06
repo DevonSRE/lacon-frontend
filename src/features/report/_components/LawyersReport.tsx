@@ -68,7 +68,7 @@ export default function LawyersReport() {
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
-                centre: selectedCentreId,
+                center: selectedCentreId,
             };
             return await GetReportAdminLawyer(filters);
         },

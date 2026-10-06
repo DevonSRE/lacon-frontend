@@ -100,7 +100,7 @@ export default function CaseTypeReports() {
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
-                centre: selectedCentreId,
+                center: selectedCentreId,
             };
 
             return await GetReportCaseType(filters);

@@ -558,6 +558,27 @@ export async function submitMercyApplicationForm(
   }
 }
 
+// The API reads PDSS details from a nested `pdss` object under its own field
+// names (CasefileRequest.PdssStation); sent flat, they were dropped.
+function withPdssDetails(data: Record<string, unknown>) {
+  return {
+    ...data,
+    pdss: {
+      offence: data.offence,
+      client_location: data.client_location,
+      days_in_detention: Number(data.days_in_detention) || 0,
+      counsel_or_paralegal: data.counsel_paralegal,
+      counsel_designation: data.counsel_designation,
+      counsel_firm_or_org_id: data.name_of_counsel_or_firm_or_organisation_id,
+      nature_of_legal_service: data.nature_of_legal_service_provided,
+      case_status: data.case_status,
+      bail_status: data.bail_status,
+      date_trial_ended: data.date_trial_ended,
+      case_outcome: data.case_outcome,
+    },
+  };
+}
+
 // Public case submission functions
 export async function submitPublicCaseForm(
   prevState: unknown,
@@ -630,8 +651,11 @@ export async function submitPublicCaseForm(
     }
 
     // Prepare data for API call
-    let uploadData = { ...result.data };
-  
+    let uploadData: Record<string, unknown> = { ...result.data };
+    if (data.case_type !== "CIVIL CASE" && data.case_type !== "CRIMINAL CASE") {
+      uploadData = withPdssDetails(uploadData);
+    }
+
     let response;
     const isPublic = data.isPublic === "true";
     if (data.case_type === "CIVIL CASE" || data.case_type === "CRIMINAL CASE") {

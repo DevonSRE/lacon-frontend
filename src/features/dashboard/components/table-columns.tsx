@@ -70,7 +70,8 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <Link
-          href={`/cases?search=${encodeURIComponent(clientName(row.original))}`}
+          // The API matches search against one column at a time, so "First Last" never matches.
+          href={`/cases?search=${encodeURIComponent(row.original.first_name ?? "")}`}
           className="text-red-600 hover:underline text-sm font-medium"
         >
           Open case

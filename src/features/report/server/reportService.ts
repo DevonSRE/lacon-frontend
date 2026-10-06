@@ -51,7 +51,7 @@ const reportServices = {
         });
     },
     async exportCaseType(filters: Ipage) {
-        return await axiosInstance.get("export/casetypes", {
+        return await axiosInstance.get("export/admin-casetypes", {
             params: filters,
             responseType: 'arraybuffer',
         });

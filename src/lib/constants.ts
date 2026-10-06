@@ -17,6 +17,7 @@ export interface Ipage {
     keyword?: string;
     state?: string;
     centre?: string;
+    center?: string;
     status?: string;
     duration?: string
     user_type?: string

@@ -19,11 +19,16 @@ import { Download } from 'lucide-react';
 import { ExportAdminOverview, ExportCaseType } from '../server/reportAction';
 import { useAction } from '@/context/ActionContext';
 import { toast } from 'sonner';
+import { useAppSelector } from '@/hooks/redux';
+import { ROLES } from '@/types/auth';
 
 export default function SheetReport() {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isDownloading, setIsDownloading] = useState(false);
     const { selectedZoneId, selectedStateId, selectedDuration, selectedCentreId } = useAction();
+    const { data: user } = useAppSelector((state) => state.profile);
+    // The export API only allows these two roles; everyone else gets 401.
+    const canExport = user?.role === ROLES.DIRECTOR_GENERAL || user?.role === ROLES.PLATFORM_ADMIN;
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -62,7 +67,7 @@ export default function SheetReport() {
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
-                centre: selectedCentreId,
+                center: selectedCentreId,
             };
             const result = activeTab === 'Case Types'
                 ? await ExportCaseType(filters)
@@ -110,7 +115,7 @@ export default function SheetReport() {
             <div className="flex justify-between items-center ">
                 <h1 className="text-2xl font-bold text-gray-900">Report</h1>
                 <div className="flex gap-3">
-                    {(activeTab === 'Overview' || activeTab === 'Case Types') && (
+                    {canExport && (activeTab === 'Overview' || activeTab === 'Case Types') && (
 
                     <Button
                         onClick={downloadOverviewReportWithServerAction}

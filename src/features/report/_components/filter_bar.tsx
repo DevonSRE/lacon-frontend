@@ -46,7 +46,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
         setSelectedZoneId('');
         setSeletedStateId('');
         setselectedDuration('');
-        setselectedCentreId('All Center');
+        setselectedCentreId(''); // empty = all centres (the API defaults to "all")
         setSelectedUnit('');
         setSelectedZone('');
         setSelectesState('');

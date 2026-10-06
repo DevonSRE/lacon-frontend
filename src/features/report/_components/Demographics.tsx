@@ -82,7 +82,7 @@ export default function Demographics() {
                 zone: selectedZoneId,
                 state: selectedStateId,
                 duration: selectedDuration,
-                centre: selectedCentreId,
+                center: selectedCentreId,
             };
             return await GetReportDemography(filters);
         },
