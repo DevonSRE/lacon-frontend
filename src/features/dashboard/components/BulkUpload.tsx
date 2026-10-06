@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { toast } from "sonner";
 import { Upload, FileText, CircleFadingArrowUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -39,17 +40,14 @@ export default function BulkCaseUploadDialog() {
     fileInputRef.current?.click();
   };
 
+  // Bulk upload has no API yet: say so instead of closing as if it worked.
   const handleDownloadTemplate = () => {
-    // Template download logic would go here
-    console.log('Downloading template...');
+    toast.info('The upload template is not available yet');
   };
 
   const handleUpload = () => {
     if (selectedFile) {
-      // Upload logic would go here
-      console.log('Uploading file:', selectedFile);
-      setIsOpen(false);
-      setSelectedFile(null);
+      toast.info('Bulk upload is not available yet', { description: 'This feature is not available yet. Nothing was saved.' });
     }
   };
 

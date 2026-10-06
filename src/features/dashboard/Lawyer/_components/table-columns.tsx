@@ -47,14 +47,12 @@ const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
   );
 };
 
-// Suspend / Delete Handlers
-const handleSuspendUser = (user: IUser) => {
-  console.log("Suspending", user);
-};
+// Suspend / Delete Handlers: stubs, not wired to the API yet.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const handleSuspendUser = (_user: IUser) => { };
 
-const handleDeleteUser = (user: IUser) => {
-  console.log("Deleting", user);
-};
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const handleDeleteUser = (_user: IUser) => { };
 
 export const createLawyersColumns = (
   userRole: ROLES,

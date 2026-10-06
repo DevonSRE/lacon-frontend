@@ -1,4 +1,5 @@
 import { ILawyerManagement } from '@/types/case';
+import { toast } from "sonner";
 import React, { Dispatch, SetStateAction, useState } from 'react';
 
 
@@ -24,25 +25,13 @@ export default function SuspensionForm({ lawyer : lawyerInfo, setOpen: OpenSheet
             return;
         }
 
-        setIsSubmitting(true);
-
-        // Simulate API call
-        try {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('Suspension submitted:', { reason, lawyer: lawyerInfo });
-            alert('Suspension request submitted successfully');
-            setReason('');
-        } catch (error) {
-            alert('Error submitting suspension request');
-        } finally {
-            setIsSubmitting(false);
-        }
+        // No suspension API is wired up yet; this used to fake a success after a delay.
+        toast.info('Suspending lawyers is not available yet', { description: 'This feature is not available yet. Nothing was saved.' });
     };
 
     const handleCancel = () => {
         setReason('');
         // In a real app, you might navigate back or close a modal
-        console.log('Suspension request cancelled');
     };
 
     return (

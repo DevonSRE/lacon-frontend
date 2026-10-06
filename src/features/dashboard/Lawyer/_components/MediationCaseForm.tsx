@@ -1,4 +1,5 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
+import { toast } from "sonner";
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -164,8 +165,8 @@ export default function MediationCaseForm({ isPublic = false, setDialogOpen = ()
             alert('Please agree to the terms before submitting.');
             return;
         }
-        console.log('Form submitted:', formData);
-        alert('Form submitted successfully!');
+        // No mediation API is wired up yet; don't report a submission that never happened.
+        toast.info('Mediation requests are not available yet', { description: 'This feature is not available yet. Nothing was saved.' });
     };
 
     const clientFields = [
