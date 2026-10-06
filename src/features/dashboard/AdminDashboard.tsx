@@ -62,11 +62,6 @@ export default function AdminDashboard({ role }: { role: string }) {
         staleTime: 100000,
     }) as { data?: ApiResponse; isLoading: boolean };
 
-    if (!isLoading && data?.data) {
-        console.log("Dashboard data:", data.data);
-        console.log("Cases summation:", data.data.cases_summation);
-        console.log("Case distributions:", data.data.case_distributions);
-    }
 
     // Safe data access with fallbacks using the actual API structure
     const casesSummation = data?.data?.cases_summation || {
@@ -126,7 +121,7 @@ export default function AdminDashboard({ role }: { role: string }) {
                     <StatCard
                         title="Pro Bono Applications"
                         value={casesSummation.probonoApplications}
-                        subtitle={casesSummation.probonoApplications > 0 ? "Review needed" : "Review needed"}
+                        subtitle="Awaiting Decongestion review (view-only)"
                     />
                     <StatCard
                         title="New cases this week"

@@ -12,6 +12,7 @@ import SuccessDialog from '@/components/successDialog';
 import { submitCaseIntake } from '../server/caseIntak';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { COURT_PREFERENCE_OPTIONS, EXPERIENCE_OPTIONS, PRO_BONO_UNDERTAKING } from '@/lib/form-options';
 interface FormData {
     lawyer_name: string;
     principal_name: string;
@@ -134,9 +135,7 @@ export default function CaseIntakeForm({ isPublic = false, setDialogOpen = () =>
         { label: 'NBA Branch Membership', name: 'nba_member_ship', type: 'input', required: true },
     ];
 
-    const experienceOptions = ['Below 2 years', '2-5 years', '5-10 years', 'Above 10 years'];
     const capacityOptions = ['1', '2', '3', '4', '5'];
-    const courtOptions = ['Appellate Courts', 'High Courts', 'Magistrate Courts', 'Customary Court', 'Sharia Court', 'Area Court'];
 
     return (
         <>
@@ -198,7 +197,7 @@ export default function CaseIntakeForm({ isPublic = false, setDialogOpen = () =>
                         <h2 className="font-semibold text-sm bg-gray-100 p-2 rounded">SECTION 2: Experience in Criminal Law Practice</h2>
                         <p className="text-sm text-gray-700">How many years of experience do you have?</p>
                         <div className="space-y-2">
-                            {experienceOptions.map(option => (
+                            {EXPERIENCE_OPTIONS.map(option => (
                                 <label key={option} className="flex items-center space-x-2">
                                     <input
                                         type="radio"
@@ -242,7 +241,7 @@ export default function CaseIntakeForm({ isPublic = false, setDialogOpen = () =>
                         <h2 className="font-semibold text-sm bg-gray-100 p-2 rounded">SECTION 4: Criminal Matters Preference</h2>
                         <p className="text-sm text-gray-700">Which courts do you prefer handling criminal matters in?</p>
                         <div className="space-y-2">
-                            {courtOptions.map(option => (
+                            {COURT_PREFERENCE_OPTIONS.map(option => (
                                 <label key={option} className="flex items-center space-x-2">
                                     <input
                                         type="radio"
@@ -261,9 +260,7 @@ export default function CaseIntakeForm({ isPublic = false, setDialogOpen = () =>
                     {/* SECTION 5: Agreement */}
                     <section className="space-y-4">
                         <h2 className="font-semibold text-sm bg-gray-100 p-2 rounded">SECTION 5: Acknowledgement & Undertaking</h2>
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                            By submitting this form, I certify that the information provided is true and accurate. I undertake to render free legal services with the same professional standards as paid services, and understand that LACOM may withdraw my assigned cases if I fail to diligently perform my duties.
-                        </p>
+                        <p className="text-sm text-gray-700 leading-relaxed">{PRO_BONO_UNDERTAKING}</p>
                         <label className="flex items-start space-x-2">
                             <input
                                 type="checkbox"

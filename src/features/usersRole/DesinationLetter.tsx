@@ -1,34 +1,32 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { ParamValue } from "next/dist/server/request/params";
 import { getProbunoLawyersRequestSingleAction } from "./userRoleAction";
 
 const DesinationLetter = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
-  
-  // Early return if id is undefined
-  if (!id || id === null) {
-    router.back();
-    return null; // Add return to prevent further execution
-  }
 
-  const { data, isLoading } = useQuery({
+  // Hooks must run on every render, so the query comes before any early return.
+  const { data } = useQuery({
     queryKey: ["getProbunoLawyersRequestSingle", id],
     queryFn: async () => {
-      return await getProbunoLawyersRequestSingleAction(id.toString());
+      return await getProbunoLawyersRequestSingleAction(String(id));
     },
     staleTime: 100000,
-    enabled: !!id, // Only run query if id exists
+    enabled: !!id,
   });
-  
-  if (!isLoading) {
-    console.log(data);
-  }
+
+  useEffect(() => {
+    if (!id) router.back();
+  }, [id, router]);
+
+  if (!id) return null;
+
+  const courts = data?.data?.criminal_courts_preference;
 
   return (
     <div className="max-w-4xl mx-auto bg-gray-100 p-8 ">
@@ -104,12 +102,13 @@ const DesinationLetter = () => {
             <div className="text-sm">
               {data?.data.first_name} {data?.data.last_name}
             </div>
-            <div className="text-sm">{data?.data.client_base || "-"}</div>
+            {/* client_base is the lawyer's client categories, not the firm. The API has no firm-name field yet (backend-issues #14). */}
+            <div className="text-sm">{data?.data.name_of_law_firm_organization || "-"}</div>
             <div className="text-sm">
               {data?.data.experience_in_criminal_law || "-"}
             </div>
             <div className="text-sm">
-              {data?.data.criminal_courts_preference || "-"}
+              {Array.isArray(courts) ? courts.join(", ") || "-" : courts || "-"}
             </div>
             <div className="text-sm">{data?.data.pro_bono_capacity || "-"}</div>
           </div>

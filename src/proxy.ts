@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
   const isApiAuthRoute = pathname.startsWith(apiAuthPrefix);
   const isApiRoute = pathname.startsWith(apiPrefix);
   const isAuthRoute = authRoutes.includes(pathname);
-  const isProbunoRoute = pathname.startsWith("/probuno");
+  const isProbunoRoute = pathname.startsWith("/probono");
 
   const isPublicRoute = isProbunoRoute || publicRoutes.some(route => {
     if (route === '/') return pathname === '/';
@@ -93,7 +93,7 @@ export const config = {
 //   const isAuthRoute = authRoutes.includes(pathname);
 
 
-//   const isProbunoRoute = pathname.startsWith("/probuno");
+//   const isProbunoRoute = pathname.startsWith("/probono");
 
 //   const isPublicRoute = isProbunoRoute || publicRoutes.some(route => {
 //     if (route === '/') return pathname === '/';

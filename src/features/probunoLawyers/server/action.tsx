@@ -11,11 +11,13 @@ import {
   probunoUpdateForm,
   PublicCivilCaseSchema,
   PublicCriminalCaseSchema,
+  publicContactSchema,
 } from "@/features/probunoLawyers/server/probonoSchema";
 import { z } from "zod";
 import ProbunoService from "./service";
 import { handleApiError } from "@/lib/utils";
 import { NEXT_BASE_URL } from "@/lib/constants";
+import { OTHER_OPTION } from "@/lib/form-options";
 
 // Define the structure of the form data
 export type LawyersFormData = {
@@ -196,21 +198,36 @@ export async function submitProBonoCaseForm(
   // Safely extract raw data from form
   const rawData = Object.fromEntries(formData.entries());
 
+  // "Other" is sent as "Other: <what the lawyer typed>"; it must not be blank.
+  const otherErrors: Record<string, string[]> = {};
+  const withOtherText = (field: string) =>
+    formData.getAll(field).map((value) => {
+      if (value !== OTHER_OPTION) return value;
+      const text = String(formData.get(`${field}_other`) ?? "").trim();
+      if (!text) otherErrors[field] = ["Please specify \"Other\""];
+      return `${OTHER_OPTION}: ${text}`;
+    });
+
   // Use getAll for multi-select fields (always returns an array)
   const parsedData = {
     ...rawData,
     lawyers_count_in_firm: Number(rawData.lawyers_count_in_firm),
+    // The API takes areas_covered as one string; the form now picks states from a list.
+    areas_covered: formData.getAll("areas_covered").join(", "),
     preferred_courts: formData.getAll("preferred_courts"),
-    client_types: formData.getAll("client_types"),
-    referral_sources: formData.getAll("referral_sources"),
+    client_types: withOtherText("client_types"),
+    referral_sources: withOtherText("referral_sources"),
   };
 
   const result = probunoInventoryCaseformSchema.safeParse(parsedData);
 
-  if (!result.success) {
-    const safeErrors = JSON.parse(
-      JSON.stringify(result.error.flatten().fieldErrors)
-    );
+  if (!result.success || Object.keys(otherErrors).length > 0) {
+    const safeErrors = {
+      ...(result.success
+        ? {}
+        : JSON.parse(JSON.stringify(result.error.flatten().fieldErrors))),
+      ...otherErrors,
+    };
     return {
       status: 400,
       errors: safeErrors,
@@ -219,7 +236,15 @@ export async function submitProBonoCaseForm(
     };
   }
   try {
-    const response = await ProbunoService.cases(result.data);
+    // The API's names for these fields (lacon-shared/openapi.yml,
+    // ProbonoLawyerRegistrationRequest); under the form's names they were dropped.
+    const { preferred_courts, client_types, referral_sources, ...rest } = result.data;
+    const response = await ProbunoService.cases({
+      ...rest,
+      criminal_courts_preference: preferred_courts,
+      client_base: client_types.join(", "),
+      source_of_clients: referral_sources.join(", "),
+    });
     // console.log(JSON.stringify(response));
     return {
       status: 200,
@@ -295,7 +320,11 @@ export async function submitProBonoForm(
         success: false,
       };
     }
-    await ProbunoService.registration(result.data);
+    // The form calls it law_firm_organization_address; the API field is law_firm_address.
+    await ProbunoService.registration({
+      ...result.data,
+      law_firm_address: result.data.law_firm_address ?? result.data.law_firm_organization_address,
+    });
 
     return {
       status: 200,
@@ -544,14 +573,17 @@ export async function submitPublicCaseForm(
       };
     }
 
-    let result;
-    if (data.case_type === "CIVIL CASE") {
-      result = PublicCivilCaseSchema.safeParse(data);
-    } else if (data.case_type === "CRIMINAL CASE") {
-      result = PublicCriminalCaseSchema.safeParse(data);
-    } else {
-      result = PDSSCaseFullSchema.safeParse(data);
-    }
+    const baseSchema =
+      data.case_type === "CIVIL CASE"
+        ? PublicCivilCaseSchema
+        : data.case_type === "CRIMINAL CASE"
+          ? PublicCriminalCaseSchema
+          : PDSSCaseFullSchema;
+    const schema =
+      data.isPublic === "true"
+        ? baseSchema.extend(publicContactSchema.shape)
+        : baseSchema;
+    const result = schema.safeParse(data);
 
     if (!result.success) {
       return {

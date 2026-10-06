@@ -51,6 +51,7 @@ export function AddLawyerSheet() {
   const [formData, setFormData] = useState<FormDataLawyer>(defaultFormData);
   const [dailogOpen, setDialogOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<string>("");
+  const [selectedZone, setSelectedZone] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const { data: user } = useAppSelector((state) => state.profile);
   const role = user?.role;
@@ -73,6 +74,8 @@ export function AddLawyerSheet() {
       toast.success("User invited successfully!");
       setIsOpen(false);
       setFormData(defaultFormData); // ✅ Reset form on success
+      setSelectedZone("");
+      setSelectedState("");
     }
   }, [state]);
 
@@ -144,14 +147,18 @@ export function AddLawyerSheet() {
                 )}
               </div>
 
+              {/* Zonal Directors and State Coordinators create within their own zone. */}
+              {(role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR) && (
+                <input type="hidden" name="zone_id" value={user?.zone_id ?? ""} />
+              )}
               {(role !== ROLES.ZONAL_DIRECTOR && role != ROLES.STATE_COORDINATOR) && (
                 <div className="space-y-1">
                   <Label>
                     Zone Selection <span className="text-red-500">*</span>
                   </Label>
                   <GetZone
-                    value={selectedState}
-                    onValueChange={(val: string) => setSelectedState(val)}
+                    value={selectedZone}
+                    onValueChange={(val: string) => setSelectedZone(val)}
                     placeholder="Select your zone"
                     onLoadingChange={(loading) => setLoading(loading)}
                   />

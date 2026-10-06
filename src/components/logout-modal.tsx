@@ -12,21 +12,18 @@ import {
 import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
-import { LoaderCircle, LogOut, ArrowRight } from "lucide-react";
-import { redirect, useRouter } from "next/navigation";
+import { LoaderCircle, LogOut } from "lucide-react";
 import { useState } from "react";
 
 export default function LogoutModal() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const handleLogout = async (e: any) => {
-    console.log("Logout button clicked");
+  const handleLogout = async () => {
     setLoading(true);
     try {
       await deleteSession();
       localStorage.clear();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      redirect("/signin");
+      // redirect() is not allowed in event handlers; a full load also clears in-memory query/redux state.
+      window.location.href = "/signin";
     } catch (error) {
       console.error("Logout failed:", error);
       setLoading(false); // Reset loading state on error
@@ -43,17 +40,9 @@ export default function LogoutModal() {
             "text-red-400 hover:text-red-700 hover:bg-red-50"
           )}
         >
-          <span className="relative block text-xs">
-            <span className="gap-4 flex  group-hover:hidden items-center">
-              <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
-              Log out
-            </span>
-            <span className="hidden items-center group-hover:block  flex-row">
-              <div className="flex gap-2 items-center">
-                Yes log me out
-                <ArrowRight className="w-4 h-4 transition-colors group-hover:text-red-700" />
-              </div>
-            </span>
+          <span className="flex gap-4 items-center text-xs">
+            <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
+            Log out
           </span>
         </Button>
       </DialogTrigger>

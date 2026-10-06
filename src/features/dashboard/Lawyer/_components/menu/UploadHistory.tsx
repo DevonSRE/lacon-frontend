@@ -25,9 +25,7 @@ export default function UploadHistory() {
         },
         staleTime: 100000,
     });
-    console.log(userId);
     
-    console.log(data);
     return (
         <div>
             <DataTable columns={uploadHistoryColumns} loading={isLoading} data={data?.data} />

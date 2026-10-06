@@ -82,52 +82,49 @@ export async function GetLACONLAWYER(filters: Ipage) {
 }
 
 
-export async function ExportAdminOverview() {
+const XLSX_TYPE = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+// Turns an export response into something a client component can save.
+// The API answers errors with a JSON envelope, so a JSON body is never a file.
+function toDownload(response: { data: ArrayBuffer; headers: Record<string, unknown> }, fallbackName: string) {
+    const contentType = String(response.headers['content-type'] ?? XLSX_TYPE);
+    const buffer = Buffer.from(response.data);
+    if (contentType.includes('application/json')) {
+        let message = 'The report could not be exported.';
+        try {
+            message = JSON.parse(buffer.toString('utf8'))?.message || message;
+        } catch { }
+        return { success: false as const, status: 500, message };
+    }
+    const disposition = String(response.headers['content-disposition'] ?? '');
+    const filename = /filename="?([^";]+)"?/i.exec(disposition)?.[1] ?? fallbackName;
+    return {
+        success: true as const,
+        data: buffer.toString('base64'),
+        filename,
+        contentType,
+    };
+}
+
+export async function ExportAdminOverview(filters: Ipage) {
     try {
-        const response = await reportServices.exportAdminOverview();
-        const base64Data = Buffer.from(response.data).toString('base64');
-        return { 
-            success: true, 
-            data: base64Data,
-            filename: 'admin-overview-report.xlsx',
-            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        };
+        return toDownload(await reportServices.exportAdminOverview(filters), 'admin-overview-report.xlsx');
     } catch (err) {
         const error = err as ErrorResponse;
         return handleApiError(error);
     }
 }
-export async function ExportCaseType() {
+export async function ExportCaseType(filters: Ipage) {
     try {
-        const response = await reportServices.exportCaseType();
-        const base64Data = Buffer.from(response.data).toString('base64');
-        return { 
-            success: true, 
-            data: base64Data,
-            filename: 'case-type-report.xlsx',
-            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        };
+        return toDownload(await reportServices.exportCaseType(filters), 'case-type-report.xlsx');
     } catch (err) {
         const error = err as ErrorResponse;
         return handleApiError(error);
     }
 }
-
-
-// export async function ExportCaseType() {
-//     try {
-//         const response = await reportServices.exportCaseType();
-//         console.log(response);
-//         return { data: response?.data.data, success: true };
-//     } catch (err: unknown) {
-//         const error = err as ErrorResponse;
-//         return handleApiError(error);
-//     }
-// }
 export async function ExportAdminUnit(filters: Ipage) {
     try {
-        const response = await reportServices.exportAdminUnit(filters);
-        return { data: response?.data.data, success: true };
+        return toDownload(await reportServices.exportAdminUnit(filters), 'unit-report.xlsx');
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);

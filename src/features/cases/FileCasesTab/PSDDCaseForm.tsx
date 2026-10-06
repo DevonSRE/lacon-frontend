@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { stateOptions } from '@/lib/types'
 import { Label } from '@/components/ui/label'
-import { FormDataPDSSCase, pdssCaseSchema, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema'
+import { FormDataPDSSCase, pdssCaseSchema, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema'
+import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
 import { useAction } from '@/context/ActionContext'
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
@@ -68,7 +69,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         middle_name: '',
         gender: '',
         permanent_address: '',
-        age: 0,
+        age: '',
         phone_number: '',
         marital_status: '',
         email: '',
@@ -89,7 +90,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     })
 
     const handleSelectChange = (value: string, name: keyof FormDataPDSSCase) => {
-        console.log('Select changed:', name, value); // Debug log
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -111,14 +111,13 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     const validateStep = (step: number) => {
         try {
             if (step === 1) {
-                personalInfoSchema.parse(formData);
+                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : personalInfoSchema).parse(formData);
             } else if (step === 2) {
                 pdssCaseSchema.parse(formData);
             }
             setErrors({});
             return true;
         } catch (error: any) {
-            console.log('Validation error:', error); // Dsle.log(error);
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
 
@@ -189,7 +188,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             setCurrentStep(currentStep - 1)
         } else {
             if (!isPublic) {
-                console.log('handleCloseCaseType');
                 handleCloseCaseType(false);
             } else {
                 router.back();
@@ -311,7 +309,8 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                         type="number"
                                         label='Age'
                                         name='age'
-                                        min='0'
+                                        min='1'
+                                        max='120'
                                         required
                                         placeholder="Enter Age"
                                         value={formData.age}
@@ -333,15 +332,19 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                    <InputField
-                                        type="email"
-                                        name="email"
-                                        label=' Email Address (Optional)'
-                                        placeholder="Enter Email Address"
-                                        value={formData.email}
-                                        onChange={(e) => updateField('email', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    />
+                                    <div>
+                                        <InputField
+                                            type="email"
+                                            name="email"
+                                            label={isPublic ? 'Email Address' : 'Email Address (Optional)'}
+                                            required={isPublic}
+                                            placeholder="Enter Email Address"
+                                            value={formData.email}
+                                            onChange={(e) => updateField('email', e.target.value)}
+                                            className={` ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                        />
+                                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                    </div>
                                     <InputField
                                         type="tel"
                                         label='Phone Number'
@@ -511,10 +514,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     name="case_status"
                                     label="Case Status"
                                     placeholder="Case Status"
-                                    options={[
-                                        { value: 'Mediation / Interphase', label: 'Mediation / Interphase' },
-                                        { value: 'Legal Advice', label: 'Legal Advice' },
-                                    ]}
+                                    options={COURT_STAGE_OPTIONS}
                                     required
                                     value={formData.case_status} // Add value prop
                                     onValueChange={(value) => handleSelectChange(value, 'case_status')}
@@ -535,8 +535,8 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     <InputField
                                         label="Date trial ended"
                                         name='date_trial_ended'
-                                        required
                                         type="date"
+                                        max={todayISO()}
                                         value={formData.date_trial_ended}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_trial_ended', e.target.value)}
                                         className={`${errors.date_trial_ended ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}

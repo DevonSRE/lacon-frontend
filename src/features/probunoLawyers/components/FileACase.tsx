@@ -55,7 +55,7 @@ export default function FileACase() {
         setTimeout(() => {
             setLoading(false);
             const slug = caseType.trim().toLowerCase().replace(/\s+/g, "-");
-            router.push(`/probuno/cases/${slug}`);
+            router.push(`/probono/cases/${slug}`);
         }, 100);
     };
 
@@ -105,7 +105,7 @@ export default function FileACase() {
                         <button ref={dialogCloseRef} className="hidden" />
                     </DialogClose>
                     <Button
-                        disabled={loading}
+                        disabled={loading || !selectedState || !caseType}
                         className="w-full h-11 bg-red-500"
                         onClick={handleProceed}
                     >

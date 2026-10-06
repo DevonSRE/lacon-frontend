@@ -45,7 +45,7 @@ export default function MercyApplication({
     middle_name: "",
     last_name: "",
     gender: "",
-    age: 0,
+    age: '',
     correctional_facility: "",
     offence: "",
     case_type: "MERCY APPLICATION",

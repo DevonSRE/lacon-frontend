@@ -3,7 +3,7 @@
 **Date:** 2026-10-01
 **Scope:** frontend QA of `feat/demo` against the PRD and the earlier QA report, using every test account from the credentials sheet.
 **Branch:** all work committed locally (one commit per fix). Push pending.
-**Backend issues:** see [BACKEND-ISSUES.md](BACKEND-ISSUES.md).
+**Backend issues:** see [backend-issues](../lacon-shared/backend-issues/README.md).
 
 ## Done: frontend fixes
 
@@ -15,10 +15,10 @@
 | 2. PDSS, Civil Justice, DIO unit-head pages don't load | **Fixed.** The app expected the role names "PDSS" / "DIO", but the API sends "PDSS UNIT HEAD" / "DIO UNIT HEAD". Civil Justice was the Cases-page bug above. |
 | 2. DIO can't create a paralegal | **Fixed.** DIO can add External Paralegals. Civil Head, State/Centre Coordinators and Zonal Director can now add Internal Paralegals (a logic bug had hidden the option). |
 | 3. Users tab: search by email, role filter | **Fixed.** Search matches email; the role filter no longer keeps applying an old search. |
-| 3. Role-request tab missing the requester's role | **Column added.** It fills in once the backend sends the role (BACKEND-ISSUES #7). |
+| 3. Role-request tab missing the requester's role | **Column added.** It fills in once the backend sends the role (backend-issues #7). |
 | 3. Unit heads can't request/add roles | **Partly.** See "paralegal" above; which other heads may add paralegals is a product decision. |
 | 4. T&C link goes nowhere | **Pending:** needs T&C text or a URL from LACON. |
-| 4. Invite email doesn't match template | **Backend** (BACKEND-ISSUES #9). |
+| 4. Invite email doesn't match template | **Backend** (backend-issues #9). |
 
 ### Security
 - **Pages restricted by role.** Previously any logged-in user could open any page by URL (e.g. a lawyer could see all users and lawyers' phone numbers).
@@ -37,7 +37,7 @@
 
 ## Pending
 
-### Backend team (details in BACKEND-ISSUES.md)
+### Backend team (details in lacon-shared/backend-issues)
 1. **P0:** user endpoints return password hashes and live one-time codes.
 2. **P0:** the API doesn't check roles.
 3. **P1:** forwarding a case to another head never arrives.

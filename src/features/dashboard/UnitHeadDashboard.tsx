@@ -78,10 +78,6 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
         return <AdminDashboardSkeleton />;
     }
 
-    if (!isLoading) {
-        console.log(data?.data);
-        console.log(data?.data?.length);
-    }
 
     // Helper function to process case stats data
     const processCaseStatsData = (caseStats: CaseStatsSummary[]) => {
@@ -128,7 +124,6 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
     };
 
     const handleCaseSubmitted = () => {
-        console.log("Case submitted from dashboard, refreshing stats...");
     };
 
     // Safe data access with fallbacks

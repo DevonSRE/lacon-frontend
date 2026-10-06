@@ -58,7 +58,8 @@ export interface ProBonoCase {
     suit_number: string;
     status_of_case: string;
     last_date_of_appearance: string;
-    is_client_in_custody: boolean;
+    // '' until the lawyer picks Yes or No; the schema turns it into a boolean.
+    is_client_in_custody: '' | 'true' | 'false';
 }
 export interface FormErrors {
     [key: string]: string

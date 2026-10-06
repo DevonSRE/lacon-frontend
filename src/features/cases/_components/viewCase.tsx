@@ -14,7 +14,6 @@ export default function ViewCase(details: { details: ICase | null },) {
     const [viewAssignment, setViewAssignment] = useState(false);
 
     const handleOpenSheet = (user: ICase | null, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
-        console.log("type" + type);
         setCaseDetails(user);
         setType(type);
 
@@ -23,7 +22,6 @@ export default function ViewCase(details: { details: ICase | null },) {
         }
     };
 
-    console.log(details);
 
     return (
         <div className="h-screen w-full">

@@ -9,7 +9,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { stateOptions } from '@/lib/types'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
-import { caseDetailsSchema, FormDataCivilCase, legalAidFormSchema, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema'
+import { FormDataCivilCase, legalAidFormSchema, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema'
+import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { toast } from 'sonner'
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
@@ -67,7 +68,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
     last_name: '',
     gender: '',
     permanent_address: '',
-    age: 0,
+    age: '',
     phone_number: '',
     marital_status: '',
     email: '',
@@ -94,7 +95,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   })
 
   const handleSelectChange = (value: string, name: keyof FormDataCivilCase) => {
-    console.log('Select changed:', name, value); // Debug log
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -115,14 +115,13 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   const validateStep = (step: number) => {
     try {
       if (step === 1) {
-        personalInfoSchema.parse(formData);
+        (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : personalInfoSchema).parse(formData);
       } else if (step === 2) {
         legalAidFormSchema.parse(formData);
       }
       setErrors({});
       return true;
     } catch (error: any) {
-      console.log('Validation error:', error);
 
       if (error.name === 'ZodError') {
         const formattedErrors: Record<string, string[]> = {};
@@ -188,7 +187,6 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       setCurrentStep(currentStep - 1)
     } else {
       if (!isPublic) {
-        console.log('handleCloseCaseType');
         handleCloseCaseType(false);
       } else {
         router.back();
@@ -291,15 +289,19 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-                    <InputField
-                      type="email"
-                      name="email"
-                      label=' Email Address (Optional)'
-                      placeholder="Enter Email Address"
-                      value={formData.email}
-                      onChange={(e) => updateField('email', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                    />
+                    <div>
+                      <InputField
+                        type="email"
+                        name="email"
+                        label={isPublic ? 'Email Address' : 'Email Address (Optional)'}
+                        required={isPublic}
+                        placeholder="Enter Email Address"
+                        value={formData.email}
+                        onChange={(e) => updateField('email', e.target.value)}
+                        className={` ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    </div>
 
 
                     <div>
@@ -307,7 +309,8 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                         type="number"
                         label='Age'
                         name='age'
-                        min='0'
+                        min='1'
+                        max='120'
                         required
                         placeholder="Enter Age"
                         value={formData.age}
@@ -432,23 +435,32 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('client_location', e.target.value)}
                     className={`${errors.client_location ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                   />
+                  {errors.client_location && <p className="text-red-500 text-xs -mt-4">{errors.client_location}</p>}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <InputField
-                      label="Date of Admission in custody"
-                      type="date"
-                      value={formData.date_of_admission}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_of_admission', e.target.value)}
-                      className="border-gray-300"
-                    />
+                    <div>
+                      <InputField
+                        label="Date of Admission in custody"
+                        type="date"
+                        max={todayISO()}
+                        value={formData.date_of_admission}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_of_admission', e.target.value)}
+                        className={`${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.date_of_admission && <p className="text-red-500 text-xs mt-1">{errors.date_of_admission}</p>}
+                    </div>
 
-                    <InputField
-                      label="Average income per month"
-                      type="number"
-                      value={formData.average_income}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('average_income', e.target.value)}
-                      className="border-gray-300"
-                    />
+                    <div>
+                      <InputField
+                        label="Average income per month"
+                        type="number"
+                        min='0'
+                        value={formData.average_income}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('average_income', e.target.value)}
+                        className={`${errors.average_income ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.average_income && <p className="text-red-500 text-xs mt-1">{errors.average_income}</p>}
+                    </div>
                   </div>
 
                   <TextAreaField
@@ -468,12 +480,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       name="case_status"
                       label="Case Status"
                       placeholder="Case Status"
-                      options={[
-                        { value: 'For Arraignment', label: 'For Arraignment' },
-                        { value: 'Plea Taken', label: 'Plea Taken' },
-                        { value: 'Hearing/Trial', label: 'Hearing/Trial' },
-                        { value: 'Judgement.', label: 'Judgement' }
-                      ]}
+                      options={COURT_STAGE_OPTIONS}
                       required
                       value={formData.case_status} // Add value prop
                       onValueChange={(value) => handleSelectChange(value, 'case_status')}
@@ -493,8 +500,8 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                     <InputField
                       label="Court /Case No (If this exist, add it)"
                       type="text"
-                      value={formData.court_location}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('court_location', e.target.value)}
+                      value={formData.case_number}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('case_number', e.target.value)}
                       className="border-gray-300"
                     />
 
@@ -516,14 +523,17 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       className="border-gray-300"
                     />
 
-                    <InputField
-                      label="Prosecuting Agency"
-                      required
-                      type="text"
-                      value={formData.prosecuting_agency}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('prosecuting_agency', e.target.value)}
-                      className={`${errors.prosecuting_agency ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                    />
+                    <div>
+                      <InputField
+                        label="Prosecuting Agency"
+                        required
+                        type="text"
+                        value={formData.prosecuting_agency}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('prosecuting_agency', e.target.value)}
+                        className={`${errors.prosecuting_agency ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                      />
+                      {errors.prosecuting_agency && <p className="text-red-500 text-xs mt-1">{errors.prosecuting_agency}</p>}
+                    </div>
                   </div>
                 </div>
               )}

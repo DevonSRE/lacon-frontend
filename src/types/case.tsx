@@ -25,7 +25,7 @@ export interface IUser {
 
 
 export interface ILawyerRequest {
-  // Not sent by the API yet; see BACKEND-ISSUES.md.
+  // Not sent by the API yet; see lacon-shared/backend-issues.
   RequestedByRole?: string;
   ID: string;
   LawyerID:string;

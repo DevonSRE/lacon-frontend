@@ -11,6 +11,17 @@ import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
 import { GetState } from '@/components/get-state';
 import SuccessDialog from '@/components/successDialog';
+import { states, stateOptions } from '@/lib/types';
+import {
+    ALL_CATEGORIES,
+    CAPACITY_OPTIONS,
+    CLIENT_TYPE_OPTIONS,
+    COURT_PREFERENCE_OPTIONS,
+    EXPERIENCE_OPTIONS,
+    OTHER_OPTION,
+    PRO_BONO_UNDERTAKING,
+    REFERRAL_SOURCE_OPTIONS,
+} from '@/lib/form-options';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface FormData {
@@ -25,10 +36,14 @@ interface FormData {
     experience_in_criminal_law: string;
     pro_bono_capacity: string;
     preferred_courts: string[];
-    areas_covered: string;
+    areas_covered: string[];
     client_types: string[];
     referral_sources: string[];
+    client_types_other: string;
+    referral_sources_other: string;
 }
+
+const RequiredMark = () => <span className="text-red-500 text-xs">*</span>;
 
 export default function ProBonoInventoryForm() {
     const [state, formAction, isPending] = useActionState(submitProBonoCaseForm, undefined);
@@ -49,9 +64,11 @@ export default function ProBonoInventoryForm() {
         experience_in_criminal_law: '',
         pro_bono_capacity: '',
         preferred_courts: [],
-        areas_covered: '',
+        areas_covered: [],
         client_types: [],
-        referral_sources: []
+        referral_sources: [],
+        client_types_other: '',
+        referral_sources_other: ''
     });
 
     const handleInputChange = (name: string, value: string) => {
@@ -65,6 +82,15 @@ export default function ProBonoInventoryForm() {
                 ? [...(prev[name as keyof FormData] as string[]), value]
                 : (prev[name as keyof FormData] as string[]).filter(item => item !== value)
         }));
+    };
+
+    // "All Categories" stands for every option, so it clears and disables the rest.
+    const handleCategoryChange = (name: 'client_types' | 'referral_sources', value: string, checked: boolean) => {
+        if (value === ALL_CATEGORIES) {
+            setFormData(prev => ({ ...prev, [name]: checked ? [ALL_CATEGORIES] : [] }));
+            return;
+        }
+        handleCheckboxChange(name, value, checked);
     };
 
     const handleRadioChange = (name: string, value: string) => {
@@ -84,9 +110,11 @@ export default function ProBonoInventoryForm() {
             experience_in_criminal_law: '',
             pro_bono_capacity: '',
             preferred_courts: [],
-            areas_covered: '',
+            areas_covered: [],
             client_types: [],
-            referral_sources: []
+            referral_sources: [],
+            client_types_other: '',
+            referral_sources_other: ''
         });
         setSelectedState("");
         setAgreementChange(false);
@@ -146,7 +174,7 @@ export default function ProBonoInventoryForm() {
                         <section>
                             <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 1: Personal Details and Office Info</h2>
                             <div className="space-y-4">
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputField
                                         type="text"
                                         label="First Name"
@@ -165,7 +193,7 @@ export default function ProBonoInventoryForm() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputField
                                         type="tel"
                                         label='Mobile Phone Number'
@@ -185,7 +213,7 @@ export default function ProBonoInventoryForm() {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputField
                                         type="email"
                                         label='Email Address'
@@ -196,18 +224,16 @@ export default function ProBonoInventoryForm() {
                                         onChange={(e) => handleInputChange('email', e.target.value)}
                                     />
                                     <div className="space-y-6">
-                                        <Label htmlFor="state-select">State</Label>
+                                        <Label htmlFor="state-select">State <RequiredMark /></Label>
                                         <GetState
                                             value={selectedState}
                                             onValueChange={(val: string) => setSelectedState(val)}
                                             placeholder="Select your state"
                                         />
-                                        {/* Hidden input to submit state value */}
-                                        <input type="hidden" name="state_id" value={selectedState} />
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <InputField
                                         type="number"
                                         name='lawyers_count_in_firm'
@@ -219,7 +245,8 @@ export default function ProBonoInventoryForm() {
                                     <InputField
                                         type="text"
                                         name='year_of_call'
-                                        label='Year of Call to Bar / Call No'
+                                        required
+                                        label='Year of Call to Bar'
                                         placeholder="Year of Call to Bar / Call No"
                                         value={formData.year_of_call}
                                         onChange={(e) => handleInputChange('year_of_call', e.target.value)}
@@ -239,12 +266,12 @@ export default function ProBonoInventoryForm() {
 
                         {/* Section 2: Experience in Criminal Law Practice */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 2: Experience in Criminal Law Practice</h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 2: Experience in Criminal Law Practice <RequiredMark /></h2>
 
                             <div>
                                 <p className="text-sm text-gray-700 mb-4">How many years of experience do you have?</p>
                                 <div className="space-y-3">
-                                    {['Below 2 years', '3-5 years', '6-10 years', 'Above 10 years'].map((option) => (
+                                    {EXPERIENCE_OPTIONS.map((option) => (
                                         <label key={option} className="flex items-center">
                                             <input
                                                 type="radio"
@@ -263,17 +290,12 @@ export default function ProBonoInventoryForm() {
 
                         {/* Section 3: Pro Bono Case Handling Capacity */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 3: Pro Bono Case Handling Capacity</h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 3: Pro Bono Case Handling Capacity <RequiredMark /></h2>
 
                             <div>
                                 <p className="text-sm text-gray-700 mb-4">How many pro-bono cases can you handle at a time?</p>
                                 <div className="space-y-3">
-                                    {[
-                                        '1 case at a time',
-                                        '2 cases at a time',
-                                        '3-5 cases at a time',
-                                        '6 or more cases at a time'
-                                    ].map((option) => (
+                                    {CAPACITY_OPTIONS.map((option) => (
                                         <label key={option} className="flex items-center">
                                             <input
                                                 type="radio"
@@ -292,19 +314,12 @@ export default function ProBonoInventoryForm() {
 
                         {/* Section 4: Criminal Matters Preference */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 4: Criminal Matters Preference</h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 4: Criminal Matters Preference <RequiredMark /></h2>
 
                             <div>
                                 <p className="text-sm text-gray-700 mb-4">Which courts do you prefer handling criminal matters in?</p>
                                 <div className="space-y-3">
-                                    {[
-                                        'Appellate Courts',
-                                        'High Courts',
-                                        'Magistrate Courts',
-                                        'Customary Court',
-                                        'Sharia Court',
-                                        'Area Court'
-                                    ].map((court) => (
+                                    {COURT_PREFERENCE_OPTIONS.map((court) => (
                                         <label key={court} className="flex items-center">
                                             <input
                                                 type="checkbox"
@@ -318,80 +333,102 @@ export default function ProBonoInventoryForm() {
                                         </label>
                                     ))}
                                 </div>
-                                <p className="text-xs text-gray-500 mt-4">List the Scope Coverage Area/Location of Service</p>
-                                <InputField
-                                    type="text"
-                                    name="areas_covered"
-                                    placeholder="e.g Kaduna, Lagos, Kano, Anambra"
-                                    className="w-full px-3 py-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    value={formData.areas_covered}
-                                    onChange={(e) => handleInputChange('areas_covered', e.target.value)}
-                                />
+                                <p className="text-sm text-gray-700 mt-6 mb-3">Scope Coverage Area/Location of Service (select all states you cover) <RequiredMark /></p>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 max-h-64 overflow-y-auto border border-gray-200 rounded-md p-3">
+                                    {stateOptions.map((option) => (
+                                        <label key={option.value} className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                name="areas_covered"
+                                                value={option.value}
+                                                checked={formData.areas_covered.includes(option.value)}
+                                                onChange={(e) => handleCheckboxChange('areas_covered', option.value, e.target.checked)}
+                                                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                                            />
+                                            <span className="ml-2 text-sm text-gray-700">{option.label}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <p className="text-xs text-gray-500 mt-1">{formData.areas_covered.length} of {states.length} selected</p>
                             </div>
                         </section>
 
                         {/* Section 5: Describe Who your Clients are */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 5: Describe Who your Clients are (Select as applicable)</h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 5: Describe Who your Clients are (Select as applicable) <RequiredMark /></h2>
 
                             <div className="space-y-3">
-                                {[
-                                    'Children',
-                                    'Women',
-                                    'Men',
-                                    'Police Detainees',
-                                    'Awaiting Trial Officers and Prisoners in Custody',
-                                    'Prison On-SAR',
-                                    'Others(State)',
-                                    'All Categories'
-                                ].map((client) => (
-                                    <label key={client} className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            name="client_types"
-                                            value={client}
-                                            checked={formData.client_types.includes(client)}
-                                            onChange={(e) => handleCheckboxChange('client_types', client, e.target.checked)}
-                                            className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-700">{client}</span>
-                                    </label>
-                                ))}
+                                {CLIENT_TYPE_OPTIONS.map((option) => {
+                                    const allSelected = formData.client_types.includes(ALL_CATEGORIES);
+                                    const disabled = allSelected && option !== ALL_CATEGORIES;
+                                    return (
+                                        <label key={option} className={`flex items-center ${disabled ? 'opacity-50' : ''}`}>
+                                            <input
+                                                type="checkbox"
+                                                name="client_types"
+                                                value={option}
+                                                disabled={disabled}
+                                                checked={formData.client_types.includes(option)}
+                                                onChange={(e) => handleCategoryChange('client_types', option, e.target.checked)}
+                                                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                                            />
+                                            <span className="ml-3 text-sm text-gray-700">{option === OTHER_OPTION ? 'Other (please specify)' : option}</span>
+                                        </label>
+                                    );
+                                })}
+                                {formData.client_types.includes(OTHER_OPTION) && (
+                                    <InputField
+                                        type="text"
+                                        name="client_types_other"
+                                        required
+                                        placeholder="Please specify"
+                                        value={formData.client_types_other}
+                                        onChange={(e) => handleInputChange('client_types_other', e.target.value)}
+                                    />
+                                )}
                             </div>
                         </section>
 
                         {/* Section 6: How Do You Source your Clients */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 6: How Do You Source your Clients</h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 6: How Do You Source your Clients <RequiredMark /></h2>
 
                             <div className="space-y-3">
-                                {[
-                                    'Walk-in referrals',
-                                    'Referrals by the Police',
-                                    'Referrals by the Prison',
-                                    'Referrals by the Court',
-                                    'Referrals by/SGO',
-                                    'Referrals by faith-based Organizations',
-                                    'Others(State)',
-                                    'All Categories'
-                                ].map((source) => (
-                                    <label key={source} className="flex items-center">
-                                        <input
-                                            type="checkbox"
-                                            name="referral_sources"
-                                            value={source}
-                                            checked={formData.referral_sources.includes(source)}
-                                            onChange={(e) => handleCheckboxChange('referral_sources', source, e.target.checked)}
-                                            className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                                        />
-                                        <span className="ml-3 text-sm text-gray-700">{source}</span>
-                                    </label>
-                                ))}
+                                {REFERRAL_SOURCE_OPTIONS.map((option) => {
+                                    const allSelected = formData.referral_sources.includes(ALL_CATEGORIES);
+                                    const disabled = allSelected && option !== ALL_CATEGORIES;
+                                    return (
+                                        <label key={option} className={`flex items-center ${disabled ? 'opacity-50' : ''}`}>
+                                            <input
+                                                type="checkbox"
+                                                name="referral_sources"
+                                                value={option}
+                                                disabled={disabled}
+                                                checked={formData.referral_sources.includes(option)}
+                                                onChange={(e) => handleCategoryChange('referral_sources', option, e.target.checked)}
+                                                className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                                            />
+                                            <span className="ml-3 text-sm text-gray-700">{option === OTHER_OPTION ? 'Other (please specify)' : option}</span>
+                                        </label>
+                                    );
+                                })}
+                                {formData.referral_sources.includes(OTHER_OPTION) && (
+                                    <InputField
+                                        type="text"
+                                        name="referral_sources_other"
+                                        required
+                                        placeholder="Please specify"
+                                        value={formData.referral_sources_other}
+                                        onChange={(e) => handleInputChange('referral_sources_other', e.target.value)}
+                                    />
+                                )}
                             </div>
                         </section>
 
                         {/* Agreement Checkbox */}
-                        <div className="pt-6 border-t">
+                        <div className="pt-6 border-t space-y-4">
+                            <h2 className="text-base font-semibold text-gray-900">Acknowledgement & Undertaking <RequiredMark /></h2>
+                            <p className="text-sm text-gray-700 max-w-5xl">{PRO_BONO_UNDERTAKING}</p>
                             <label className="flex items-start">
                                 <input
                                     type="checkbox"

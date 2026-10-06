@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
-import { LoaderCircle, LogOut, ArrowRight } from "lucide-react";
+import { LoaderCircle, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
@@ -38,12 +38,10 @@ export default function UserDropdown() {
   const handleLogout = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log("Logout button clicked");
     setLoading(true);
 
     try {
       await deleteSession();
-      console.log("Session deleted successfully");
       localStorage.clear();
 
       // Small delay to show the loading state
@@ -113,17 +111,9 @@ export default function UserDropdown() {
             "text-red-400 hover:text-red-700 hover:bg-red-50"
           )}
         >
-          <span className="relative block text-xs">
-            <span className="gap-4 flex group-hover:hidden items-center">
-              <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
-              Log out
-            </span>
-            <span className="hidden items-center group-hover:block flex-row">
-              <div className="flex gap-2 items-center">
-                Yes log me out
-                <ArrowRight className="w-4 h-4 transition-colors group-hover:text-red-700" />
-              </div>
-            </span>
+          <span className="flex gap-4 items-center text-xs">
+            <LogOut className="w-4 h-4 transition-colors group-hover:text-red-700" />
+            Log out
           </span>
         </Button>
 

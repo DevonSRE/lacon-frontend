@@ -45,7 +45,6 @@ export default function AssignedCases() {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
             };
-            console.log(UserID);
 
             return await GetEventsAction(filters, UserID as string);
         },

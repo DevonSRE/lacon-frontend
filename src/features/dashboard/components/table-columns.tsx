@@ -1,8 +1,37 @@
 import { CaseOverview } from "@/types/case";
 import { ColumnDef } from "@tanstack/react-table";
+import Link from "next/link";
 import React from "react";
 
+// The overview rows are raw casefiles; the date field name varies with the API model.
+const filedOn = (row: CaseOverview & { created_at?: string; CreatedAt?: string }) => {
+  const raw = row.created_at ?? row.CreatedAt;
+  const date = raw ? new Date(raw) : null;
+  return date && !isNaN(date.getTime()) ? date.toLocaleDateString("en-GB") : "-";
+};
+const clientName = (row: CaseOverview) =>
+  [row.first_name, row.last_name].filter(Boolean).join(" ");
+
 export const mainColumns: ColumnDef<CaseOverview>[] = [
+  {
+    accessorKey: "id",
+    header: () => <div className="text-left font-semibold text-base">Case ID</div>,
+    cell: ({ row }) => (
+      <div className="text-left font-mono text-xs" title={row.original.id}>
+        {row.original.id?.slice(0, 8) ?? "-"}
+      </div>
+    ),
+  },
+  {
+    id: "client",
+    header: () => <div className="text-left font-semibold text-base">Client</div>,
+    cell: ({ row }) => <div className="text-left">{clientName(row.original) || "-"}</div>,
+  },
+  {
+    id: "filed_on",
+    header: () => <div className="text-left font-semibold text-base">Date Filed</div>,
+    cell: ({ row }) => <div className="text-left">{filedOn(row.original)}</div>,
+  },
   {
     accessorKey: "case_type",
     header: () => <div className="text-left font-semibold text-base">Case Type</div>,
@@ -34,5 +63,19 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
         </div>
       );
     },
+  },
+  {
+    id: "action",
+    header: () => <div className="text-center text-base">Action</div>,
+    cell: ({ row }) => (
+      <div className="flex justify-center">
+        <Link
+          href={`/cases?search=${encodeURIComponent(clientName(row.original))}`}
+          className="text-red-600 hover:underline text-sm font-medium"
+        >
+          Open case
+        </Link>
+      </div>
+    ),
   },
 ];

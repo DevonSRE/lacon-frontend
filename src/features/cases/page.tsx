@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import SearchFilterSection from './_components/SearchFilterSection';
 import { AssignmentSheet } from './_components/AssignmentSheet';
 import { createCaseColumns, ICase } from './_components/table-columns';
@@ -31,6 +31,14 @@ export default function CasesPage() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
 
+    // Links such as the DG dashboard's "Open case" arrive as /cases?search=<client name>.
+    // Read after mount: useSearchParams would need a Suspense boundary on this page.
+    useEffect(() => {
+        const search = new URLSearchParams(window.location.search).get('search');
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- one-time sync from the URL
+        if (search) setClientNameSearch(search);
+    }, []);
+
     const { data, isLoading, refetch } = useQuery({
         queryKey: ["getCases", currentPage, caseTypeFilter, stateFilter, statusFilter, debouncedSearchTerm],
         queryFn: async () => {
@@ -49,7 +57,6 @@ export default function CasesPage() {
 
 
     const handleOpenSheet = (user: ICase, type: "Assign" | "ReAssign" | "Review" | "viewCase" | "suspend") => {
-        console.log("type" + type);
         setCaseDetails(user);
         setType(type);
         if (type == "viewCase") {
