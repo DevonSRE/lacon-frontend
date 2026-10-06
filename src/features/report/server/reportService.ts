@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/_api/axios-config";
+import { Ipage } from "@/lib/constants";
 
 const reportServices = {
     async getOverview(filters: any) {
@@ -41,17 +42,24 @@ const reportServices = {
             params: filters,
         });
     },
-    async exportAdminOverview() {
+    // These run in server actions (Node): only 'arraybuffer' keeps the file's bytes.
+    // 'blob' or the default decodes the .xlsx as UTF-8 text and corrupts it.
+    async exportAdminOverview(filters: Ipage) {
         return await axiosInstance.get("export/admin-overview", {
-            responseType: 'blob' // Important for file downloads
+            params: filters,
+            responseType: 'arraybuffer',
         });
     },
-    async exportCaseType() {
-        return await axiosInstance.get("export/casetypes");
+    async exportCaseType(filters: Ipage) {
+        return await axiosInstance.get("export/casetypes", {
+            params: filters,
+            responseType: 'arraybuffer',
+        });
     },
     async exportAdminUnit(filters: any) {
         return await axiosInstance.get("export/admin-unit", {
             params: filters,
+            responseType: 'arraybuffer',
         });
     },
 }

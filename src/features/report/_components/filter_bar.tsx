@@ -53,7 +53,6 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
     };
 
     const handleDivisionChange = (newValue: string) => {
-        console.log("Selected Zone ID:", newValue);
         if (newValue === "all") {
             setSelectedZoneId?.("all");
             setSeletedStateId?.('');
@@ -65,7 +64,6 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
         // ✅ Find and store the selected zone title
         const selectedZone = data?.data?.data?.find((zone: any) => zone.id === newValue);
         if (selectedZone) {
-            console.log("Selected Zone Title:", selectedZone.title);
             setSelectedZone?.(selectedZone.title); // <- use a state setter for the title
         }
     };
@@ -75,7 +73,6 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
 
         const selectedState = selectedZoneStates?.find((zone: any) => zone.id === stateId);
         if (selectedState) {
-            console.log("Selected Zone Title:", selectedState.title);
             setSelectesState?.(selectedState.title); // <- use a state setter for the title
         }
     };

@@ -17,10 +17,13 @@ import PDSSReport from './PDSSReport';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
 import { ExportAdminOverview, ExportCaseType } from '../server/reportAction';
+import { useAction } from '@/context/ActionContext';
+import { toast } from 'sonner';
 
 export default function SheetReport() {
     const [activeTab, setActiveTab] = useState('Overview');
     const [isDownloading, setIsDownloading] = useState(false);
+    const { selectedZoneId, selectedStateId, selectedDuration, selectedCentreId } = useAction();
 
     const renderTabContent = () => {
         switch (activeTab) {
@@ -54,11 +57,16 @@ export default function SheetReport() {
     const downloadOverviewReportWithServerAction = async () => {
         try {
             setIsDownloading(true);
-            let result;
-                result = await ExportAdminOverview();
-            if (activeTab === 'Case Types') {
-                result = await ExportCaseType();
-            }
+            // Same filters as the report on screen, so the file matches what the user sees.
+            const filters = {
+                zone: selectedZoneId,
+                state: selectedStateId,
+                duration: selectedDuration,
+                centre: selectedCentreId,
+            };
+            const result = activeTab === 'Case Types'
+                ? await ExportCaseType(filters)
+                : await ExportAdminOverview(filters);
             if (
                 result.success &&
                 typeof result.data === 'string' &&
@@ -84,9 +92,14 @@ export default function SheetReport() {
                 link.click();
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
+            } else {
+                toast.error('Export failed', {
+                    description: 'message' in result && result.message ? String(result.message) : 'The report could not be exported.',
+                });
             }
         } catch (error) {
             console.error('Download failed:', error);
+            toast.error('Export failed', { description: 'Please try again.' });
         } finally {
             setIsDownloading(false);
         }
