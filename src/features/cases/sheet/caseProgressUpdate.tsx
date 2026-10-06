@@ -13,9 +13,11 @@ import { toast } from 'sonner';
 import { CaseUpdate } from '../server/caseAction';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { CASE_UPDATE_TYPE_OPTIONS } from '@/lib/form-options';
 // Extended interface for form data with additional fields
 interface CaseProgressFormData extends Partial<ICase> {
   casefile_id?: string;
+  case_update_type?: string;
   next_step?: string;
   current_status?: string;
   court_progress?: string;
@@ -25,6 +27,7 @@ interface CaseProgressFormData extends Partial<ICase> {
 // Error state interface
 interface FormErrors {
   casefile_id?: string;
+  case_update_type?: string;
   next_step?: string;
   current_status?: string;
   court_progress?: string;
@@ -48,6 +51,7 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
     casefile_id: '',
     next_step: '',
     current_status: 'In Progress',
+    case_update_type: 'CASE IN COURT',
     court_progress: '',
     supporting_documents: null,
   });
@@ -96,7 +100,6 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
   };
 
   const handleSelectChange = (value: string, name: keyof CaseProgressFormData) => {
-    console.log('Select changed:', name, value);
     setFormData(prev => ({
       ...prev,
       [name]: value
@@ -148,6 +151,10 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
 
     if (!formData.current_status) {
       newErrors.current_status = 'Current Case Status is required';
+    }
+
+    if (!formData.case_update_type) {
+      newErrors.case_update_type = 'Type of update is required';
     }
 
     if (!formData.court_progress?.trim()) {
@@ -209,6 +216,20 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
             readOnly
             value={getLastUpdated()}
             className="border-gray-300 bg-gray-50"
+          />
+        </div>
+
+        <div className="mb-4">
+          <SelectField
+            name="case_update_type"
+            label="Type of Update"
+            placeholder="Select type of update"
+            options={CASE_UPDATE_TYPE_OPTIONS}
+            required
+            value={formData.case_update_type || ''}
+            onValueChange={(value) => handleSelectChange(value, 'case_update_type')}
+            error={!!errors.case_update_type}
+            errorMessage={errors.case_update_type}
           />
         </div>
 

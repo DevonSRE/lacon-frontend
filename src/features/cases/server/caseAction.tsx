@@ -5,6 +5,7 @@ import { Ipage, NEXT_BASE_URL } from "@/lib/constants";
 import { handleApiError } from "@/lib/utils";
 import casesServices from "./caseService";
 import z from "zod";
+import { CASE_UPDATE_TYPES } from "@/lib/form-options";
 
 const assigncase = z.object({
     casefile_id: z.string().min(1, { message: "Please select case file" }),
@@ -18,6 +19,8 @@ const updateCase = z.object({
     court_progress: z.string().min(1, { message: "Please select Court Progress" }),
     next_step: z.string().min(1, { message: "Please select next step" }),
     current_status: z.string().min(1, { message: "Please select current status" }),
+    // Required by the API (reported as "LaconCaseType", its Go field name); see backend-issues #12.
+    case_update_type: z.enum(CASE_UPDATE_TYPES, { error: "Please select the type of update" }),
     supporting_documents: z.any().optional(),
 });
 
