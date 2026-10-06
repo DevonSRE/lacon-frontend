@@ -15,6 +15,7 @@ import { FormDataProbunoUpdate, FormErrors, ProBonoCase } from '../server/probun
 import CaseIntakeDialog from './CaseIntakeDialog';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options';
 export default function LawyersAnnualCasesReviewForm() {
     const [state, formAction, isPending] = useActionState(submitLawyersForm, undefined);
     const [errors, setErrors] = useState<FormErrors>({})
@@ -51,7 +52,7 @@ export default function LawyersAnnualCasesReviewForm() {
             suit_number: '',
             status_of_case: '',
             last_date_of_appearance: '',
-            is_client_in_custody: false
+            is_client_in_custody: ''
         }]
     });
 
@@ -70,7 +71,7 @@ export default function LawyersAnnualCasesReviewForm() {
             suit_number: '',
             status_of_case: '',
             last_date_of_appearance: '',
-            is_client_in_custody: false
+            is_client_in_custody: ''
         };
 
         setFormData(prev => ({
@@ -99,9 +100,6 @@ export default function LawyersAnnualCasesReviewForm() {
 
     // Custom form submission handler
     const handleSubmit = (formData: FormData) => {
-        // Add cases data to FormData
-        formData.set('cases', JSON.stringify(formData));
-        console.log(formData);
         // Call the original form action
         formAction(formData);
     };
@@ -118,7 +116,7 @@ export default function LawyersAnnualCasesReviewForm() {
                         Lawyers Annual Cases Review Form List Of Cases
                     </h1>
                     <p className="text-center text-sm text-gray-600">
-                        *This information would be treated as confidential in line with the SRA Guide/Rules
+                        *This information will be treated as confidential in line with the Rules of Professional Conduct for Legal Practitioners
                     </p>
                 </div>
 
@@ -133,7 +131,7 @@ export default function LawyersAnnualCasesReviewForm() {
                         </h2>
 
                         <div className="space-y-6">
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField
                                     label="First Name"
                                     required
@@ -156,7 +154,7 @@ export default function LawyersAnnualCasesReviewForm() {
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <InputField
                                     label="Email"
                                     required
@@ -227,7 +225,7 @@ export default function LawyersAnnualCasesReviewForm() {
 
                                     <SelectField
                                         name={`cases[${index}].sex`}
-                                        label="Sex"
+                                        label="Gender"
                                         placeholder="Select Gender"
                                         options={[
                                             { value: 'male', label: 'Male' },
@@ -242,6 +240,7 @@ export default function LawyersAnnualCasesReviewForm() {
                                         label="Date/Year you took the case"
                                         required
                                         name={`cases[${index}].date_case_taken`}
+                                        max={todayISO()}
                                         type="date"
                                         value={case_.date_case_taken}
                                         onChange={(e) => updateProBonoCase(case_.id, 'date_case_taken', e.target.value)}
@@ -278,14 +277,14 @@ export default function LawyersAnnualCasesReviewForm() {
                                         placeholder="XX/XXXX/XX"
                                     />
 
-                                    <InputField
-                                        type="text"
-                                        label="Status of the case"
-                                        required
+                                    <SelectField
                                         name={`cases[${index}].status_of_case`}
+                                        label="Status of the case"
+                                        placeholder="Select court stage"
+                                        options={COURT_STAGE_OPTIONS}
+                                        required
                                         value={case_.status_of_case}
-                                        onChange={(e) => updateProBonoCase(case_.id, 'status_of_case', e.target.value)}
-                                        placeholder="Enter here"
+                                        onValueChange={(value) => handleCaseSelectChange(case_.id, 'status_of_case', value)}
                                     />
 
                                     <InputField
@@ -293,6 +292,7 @@ export default function LawyersAnnualCasesReviewForm() {
                                         type="date"
                                         required
                                         name={`cases[${index}].last_date_of_appearance`}
+                                        max={todayISO()}
                                         value={case_.last_date_of_appearance}
                                         onChange={(e) => updateProBonoCase(case_.id, 'last_date_of_appearance', e.target.value)}
                                         placeholder="Enter here"
@@ -307,7 +307,7 @@ export default function LawyersAnnualCasesReviewForm() {
                                             { value: 'false', label: 'No' },
                                         ]}
                                         required
-                                        value={case_.is_client_in_custody ? 'true' : 'false'}
+                                        value={case_.is_client_in_custody}
                                         onValueChange={(value) =>
                                             handleCaseSelectChange(
                                                 case_.id,
@@ -328,7 +328,7 @@ export default function LawyersAnnualCasesReviewForm() {
                         className="flex w-full items-center gap-2 px-4 py-2 bg-gray-700 text-white rounded-xs hover:bg-gray-800 transition-colors text-left"
                     >
                         <span className="text-xl">+</span>
-                        <span className="flex-1 text-left">Add Another Section</span>
+                        <span className="flex-1 text-left">Add Another Case</span>
                     </Button>
 
 

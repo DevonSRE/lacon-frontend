@@ -1,4 +1,42 @@
 import { z } from "zod";
+import {
+  CAPACITY_OPTIONS,
+  COURT_STAGES,
+  EXPERIENCE_OPTIONS,
+  todayISO,
+} from "@/lib/form-options";
+
+const courtStage = z.enum(COURT_STAGES, { error: "Case status is required" });
+
+const optionalNotAfterToday = (label: string) =>
+  z
+    .string()
+    .optional()
+    .refine((v) => !v || v <= todayISO(), {
+      message: `${label} cannot be in the future`,
+    });
+
+const optionalNonNegative = (label: string) =>
+  z
+    .string()
+    .optional()
+    .refine((v) => !v || (!isNaN(Number(v)) && Number(v) >= 0), {
+      message: `${label} must be 0 or more`,
+    });
+
+const age = z.coerce
+  .number({ error: "Age is required" })
+  .min(1, { message: "Age must be at least 1" })
+  .max(120, { message: "Age must be 120 or less" });
+
+// Public forms require email as well as phone (PM ruling, checklist section 3).
+export const publicContactSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .min(1, { message: "Email is required" })
+    .email({ message: "Enter a valid email address" }),
+});
 
 
 
@@ -15,18 +53,8 @@ export const proBonoSchema = z.object({
   alternate_number: z.string(),
   year_of_call: z.string().min(4).max(4).optional(),
   nba_branch: z.string().min(1).optional(),
-  experience_in_criminal_law: z.enum([
-    "Below 2 years",
-    "2-5 years",
-    "5-10 years",
-    "Above 10 years",
-  ]),
-  pro_bono_capacity: z.enum([
-    "1 case at a time",
-    "2 cases at a time",
-    "3-4 cases at a time",
-    "5 or more cases at a time",
-  ]),
+  experience_in_criminal_law: z.enum(EXPERIENCE_OPTIONS),
+  pro_bono_capacity: z.enum(CAPACITY_OPTIONS),
   criminal_courts_preference: z.array(
     z.enum([
       "Appellate Courts",
@@ -54,12 +82,12 @@ export const probunoInventoryCaseformSchema = z.object({
   alternate_number: z.string().optional(),
   state_id: z.string(),
   year_of_call: z.string().min(4).max(4),
-  experience_in_criminal_law: z.string().min(1),
-  pro_bono_capacity: z.string().min(1),
-  areas_covered: z.string().min(1),
-  preferred_courts: z.array(z.string()),
-  client_types: z.array(z.string()),
-  referral_sources: z.array(z.string()),
+  experience_in_criminal_law: z.enum(EXPERIENCE_OPTIONS, { error: "Select your experience" }),
+  pro_bono_capacity: z.enum(CAPACITY_OPTIONS, { error: "Select your capacity" }),
+  areas_covered: z.string().min(1, { message: "Select at least one state" }),
+  preferred_courts: z.array(z.string()).min(1, { message: "Select at least one court" }),
+  client_types: z.array(z.string()).min(1, { message: "Select at least one client category" }),
+  referral_sources: z.array(z.string()).min(1, { message: "Select at least one client source" }),
 });
 
 export type TProbunoInventoryCaseform = z.infer<
@@ -67,21 +95,30 @@ export type TProbunoInventoryCaseform = z.infer<
 >;
 
 const CaseSchema = z.object({
-  client_name: z.string(),
-  sex: z.enum(["male", "female"]),
-  date_case_taken: z.string().refine((date) => !isNaN(Date.parse(date)), {
-    message: "Invalid date format for date_case_taken",
-  }),
-  nature_of_service: z.string(),
-  offering_charge: z.string(),
-  suit_number: z.string(),
-  status_of_case: z.string(),
+  client_name: z.string().min(1, { message: "Client name is required" }),
+  sex: z.enum(["male", "female"], { error: "Gender is required" }),
+  date_case_taken: z
+    .string()
+    .min(1, { message: "Date you took the case is required" })
+    .refine((v) => v <= todayISO(), { message: "Date you took the case cannot be in the future" }),
+  nature_of_service: z.string().min(1, { message: "Nature of services is required" }),
+  offering_charge: z.string().min(1, { message: "Offering/charge is required" }),
+  // Loose check: slash-separated segments, e.g. AB/1234/26 or FHC/L/CS/12/2020. Raw string is stored.
+  suit_number: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]+(\/[A-Za-z0-9]+){2,}$/, {
+      message: "Suit number should look like AB/1234/26",
+    }),
+  status_of_case: courtStage,
   last_date_of_appearance: z
     .string()
-    .refine((date) => !isNaN(Date.parse(date)), {
-      message: "Invalid date format for last_date_of_appearance",
-    }),
-  is_client_in_custody: z.boolean(),
+    .min(1, { message: "Last date of appearance is required" })
+    .refine((v) => v <= todayISO(), { message: "Last date of appearance cannot be in the future" }),
+  // The select posts "true"/"false"; z.coerce.boolean() turned "false" into true.
+  is_client_in_custody: z
+    .enum(["true", "false"], { error: "Say whether the client is in custody" })
+    .transform((v) => v === "true"),
 });
 
 export const caseUpdateSchema = z.object({
@@ -143,7 +180,7 @@ export const personalInfoSchema = z.object({
   permanent_address: z
     .string()
     .min(10, { message: "Address must be at least 10 characters" }),
-  age: z.coerce.number().min(1, { message: "Age must be greater than 0" }),
+  age,
   phone_number: z
     .string()
     .min(10, { message: "Phone number must be at least 10 digits" }),
@@ -162,15 +199,12 @@ export const caseDetailsSchema = z.object({
     .string()
     .min(5, { message: "Complaint must be at least 5 characters" })
     .optional(),
-  average_income: z
-    .string({
-      error: "Average income must be a number",
-    })
-    .optional(),
+  average_income: optionalNonNegative("Average income"),
   legal_aid_reason: z
     .string()
     .min(5, { message: "Legal aid reason must be at least 5 characters" })
     .optional(),
+  case_status: courtStage,
   number_of_dependants: z
     .coerce
     .number({
@@ -198,14 +232,12 @@ export const legalAidFormSchema = z.object({
   client_location: z
     .string()
     .min(1, { message: "Client location is required" }),
-  date_of_admission: z
-    .string()
-    .min(1, { message: "Date of admission is required" }),
-  average_income: z.string().min(1, { message: "Average income is required" }),
+  date_of_admission: optionalNotAfterToday("Date of admission"),
+  average_income: optionalNonNegative("Average income"),
   legal_aid_reason: z
     .string()
     .min(1, { message: "Reason for legal aid is required" }),
-  case_status: z.string().min(1, { message: "Case status is required" }),
+  case_status: courtStage,
   case_number: z.string().optional(),
   bail_status: z.string().optional(),
   court_of_trial: z.string().optional(),
@@ -235,9 +267,9 @@ export const pdssCaseSchema = z.object({
     .optional(),
   nature_of_legal_service_provided: z.string().optional(),
   organisation: z.string().optional(),
-  case_status: z.string().optional(),
+  case_status: courtStage,
   bail_status: z.string().optional(),
-  date_trial_ended: z.string().optional(),
+  date_trial_ended: optionalNotAfterToday("Date trial ended"),
   case_outcome: z.string().optional(),
 });
 
@@ -266,7 +298,7 @@ export type FormDataCivilCase = {
   last_name: string;
   gender: string;
   permanent_address: string;
-  age: number;
+  age: number | '';
   phone_number: string;
   marital_status: string;
   email: string;
@@ -306,7 +338,7 @@ export type FormDataPDSSCase = {
   last_name: string;
   gender: string;
   permanent_address: string;
-  age: number;
+  age: number | '';
   phone_number: string;
   marital_status: string;
   email: string;
@@ -331,7 +363,7 @@ export interface FormDataDEcongestionCase {
   middle_name: string;
   last_name: string;
   gender: string;
-  age: number;
+  age: number | '';
   last_address: string;
   marital_status: string;
   have_a_lawyer: string;
@@ -393,7 +425,7 @@ export const personalDecongestionInfoSchema = z.object({
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
-  age: z.coerce.number().min(1, "Age must be greater than 0"),
+  age,
   last_address: z.string().min(1, "Last address is required"),
   marital_status: z.string().min(1, "Marital status is required"),
   have_a_lawyer: z.string().min(1, "Have a lawyer is required"),
@@ -452,7 +484,7 @@ export interface FormDataMercyCase {
   middle_name?: string;
   last_name: string;
   gender: string;
-  age: number;
+  age: number | '';
   offence: string;
   sentence_passed?: string;
   date_of_sentence?: string;
@@ -472,7 +504,7 @@ export const MercyApplicationCaseFullSchema = z.object({
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
   gender: z.string().min(1, "Gender is required"),
-  age: z.coerce.number().min(1, "Age must be greater than 0"),
+  age,
   offence: z.string().min(1, "Offense description is required"),
   sentence_passed: z.string().optional(),
   date_of_sentence: z.string().optional(),
@@ -483,20 +515,30 @@ export const MercyApplicationCaseFullSchema = z.object({
 }) satisfies z.ZodType<FormDataMercyCase>;
 
 export const caseSchema = z.object({
-  client_name: z.string(),
-  sex: z.enum(["male", "female"]),
+  client_name: z.string().min(1, { message: "Client name is required" }),
+  sex: z.enum(["male", "female"], { error: "Gender is required" }),
   date_case_taken: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
-  nature_of_service: z.string(),
-  offering_charge: z.string(),
-  suit_number: z.string(),
-  status_of_case: z.string(),
-
+    .min(1, { message: "Date you took the case is required" })
+    .refine((v) => v <= todayISO(), { message: "Date you took the case cannot be in the future" }),
+  nature_of_service: z.string().min(1, { message: "Nature of services is required" }),
+  offering_charge: z.string().min(1, { message: "Offering/charge is required" }),
+  // Loose check: slash-separated segments, e.g. AB/1234/26 or FHC/L/CS/12/2020. Raw string is stored.
+  suit_number: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]+(\/[A-Za-z0-9]+){2,}$/, {
+      message: "Suit number should look like AB/1234/26",
+    }),
+  status_of_case: courtStage,
   last_date_of_appearance: z
     .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
-  is_client_in_custody: z.coerce.boolean(),
+    .min(1, { message: "Last date of appearance is required" })
+    .refine((v) => v <= todayISO(), { message: "Last date of appearance cannot be in the future" }),
+  // The select posts "true"/"false"; z.coerce.boolean() turned "false" into true.
+  is_client_in_custody: z
+    .enum(["true", "false"], { error: "Say whether the client is in custody" })
+    .transform((v) => v === "true"),
 });
 
 export const probunoUpdateForm = z.object({

@@ -1,6 +1,7 @@
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react';
 import { ArrowLeft, CloudUpload } from 'lucide-react';
-import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema } from '../../probunoLawyers/server/probonoSchema';
+import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema';
+import { COURT_STAGE_OPTIONS } from '@/lib/form-options';
 import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
 import SelectField from '@/components/SelectField';
@@ -62,7 +63,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         last_name: '',
         gender: '',
         permanent_address: '',
-        age: 0,
+        age: '',
         phone_number: '',
         marital_status: '',
         email: '',
@@ -89,7 +90,6 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
     });
 
     const handleSelectChange = (value: string, name: keyof FormDataCivilCase) => {
-        console.log('Select changed:', name, value); // Debug log
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -111,14 +111,13 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
     const validateStep = (step: number) => {
         try {
             if (step === 1) {
-                personalInfoSchema.parse(formData);
+                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : personalInfoSchema).parse(formData);
             } else if (step === 2) {
                 caseDetailsSchema.parse(formData);
             }
             setErrors({});
             return true;
         } catch (error: any) {
-            console.log('Validation error:', error);
             if (error.name === 'ZodError') {
                 const formattedErrors: Record<string, string[]> = {};
                 error.issues.forEach((err: any) => {
@@ -298,7 +297,8 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         <InputField
                                             type="number"
                                             label='Age'
-                                            min='0'
+                                            min='1'
+                                            max='120'
                                             name='age'
                                             required
                                             placeholder="Enter Age"
@@ -334,15 +334,19 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         className={` ${errors.phone_number ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                     />
                                     {errors.phone_number && <p className="text-red-500 text-xs mt-1">{errors.phone_number}</p>}
-                                    <InputField
-                                        type="email"
-                                        name="email"
-                                        label=' Email Address (Optional)'
-                                        placeholder="Enter Email Address"
-                                        value={formData.email}
-                                        onChange={(e) => updateField('email', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                                    />
+                                    <div>
+                                        <InputField
+                                            type="email"
+                                            name="email"
+                                            label={isPublic ? 'Email Address' : 'Email Address (Optional)'}
+                                            required={isPublic}
+                                            placeholder="Enter Email Address"
+                                            value={formData.email}
+                                            onChange={(e) => updateField('email', e.target.value)}
+                                            className={` ${errors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                        />
+                                        {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                                    </div>
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -410,10 +414,10 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                                     <div>
                                         <InputField
-                                            label='Average Income '
+                                            label='Average Income (per month)'
                                             name="average_income"
                                             type="number"
-                                            required
+                                            min='0'
                                             placeholder="N 00,000,000.00"
                                             value={formData.average_income}
                                             onChange={(e) => updateField('average_income', e.target.value)}
@@ -454,11 +458,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         name="case_status"
                                         label="Case Status"
                                         placeholder="Case Status"
-                                        options={[
-                                            { value: 'For mention', label: 'For mention' },
-                                            { value: 'Hearing', label: 'Hearing' },
-                                            { value: 'Judgement.', label: 'Judgement' }
-                                        ]}
+                                        options={COURT_STAGE_OPTIONS}
                                         required
                                         value={formData.case_status} // Add value prop
                                         onValueChange={(value) => handleSelectChange(value, 'case_status')}

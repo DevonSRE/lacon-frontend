@@ -51,7 +51,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         middle_name: '',
         last_name: '',
         gender: '',
-        age: 0,
+        age: '',
         last_address: '',
         marital_status: '',
         have_a_lawyer: '',
@@ -89,7 +89,6 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
 
 
     const handleSelectChange = (value: string, name: keyof FormDataDEcongestionCase) => {
-        console.log('Select changed:', name, value);
         setFormData(prev => ({
             ...prev,
             [name]: value
@@ -148,7 +147,6 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
     };
 
     const handleNext = () => {
-        console.log(validateStep(currentStep ?? 1));
         if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {

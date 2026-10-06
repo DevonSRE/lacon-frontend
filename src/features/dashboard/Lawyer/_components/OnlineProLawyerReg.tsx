@@ -12,6 +12,7 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import SuccessDialog from '@/components/successDialog';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { CAPACITY_OPTIONS, COURT_PREFERENCE_OPTIONS, EXPERIENCE_OPTIONS, PRO_BONO_UNDERTAKING } from '@/lib/form-options';
 interface FormData {
   first_name: string;
   last_name: string;
@@ -134,10 +135,6 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
     { label: 'Most Contactable Call No', name: 'most_contactable_call_no', type: 'input', required: true }
   ];
 
-  const experienceOptions = ['Below 2 years', '2-5 years', '5-10 years', 'Above 10 years'];
-  const capacityOptions = ['1 case at a time', '2 cases at a time', '3-4 cases at a time', '5 or more cases at a time'];
-  const courtOptions = ['Appellate Courts', 'High Courts', 'Magistrate Courts', 'Customary Court', 'Sharia Court', 'Area Court'];
-
   return (
     <>
       <SuccessDialog
@@ -159,7 +156,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
           <section className="space-y-4">
             <h2 className="font-semibold text-lg">SECTION 1: Personal Details and Office Info</h2>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {personalFields.map(field => (
                 <div key={field.name}>
                   {field.type === 'input' ? (
@@ -183,7 +180,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
               ))}
 
               <div className="space-y-6">
-                <Label htmlFor="state-select">State of Practice</Label>
+                <Label htmlFor="state-select">State of Practice <span className="text-red-500 text-xs">*</span></Label>
                 <GetState
                   value={selectedState}
                   onValueChange={setSelectedState}
@@ -199,7 +196,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
             <h2 className="font-semibold text-lg">SECTION 2: Experience in Criminal Law Practice</h2>
             <p className="text-sm text-gray-700 mb-4">How many years of experience do you have?</p>
             <div className="space-y-3">
-              {experienceOptions.map(option => (
+              {EXPERIENCE_OPTIONS.map(option => (
                 <label key={option} className="flex items-center space-x-2">
                   <input
                     type="radio"
@@ -221,7 +218,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
             <h2 className="font-semibold text-lg">SECTION 3: Pro Bono Case Handling Capacity</h2>
             <p className="text-sm text-gray-700 mb-4">How many pro-bono cases can you handle at a time?</p>
             <div className="space-y-3">
-              {capacityOptions.map(option => (
+              {CAPACITY_OPTIONS.map(option => (
                 <label key={option} className="flex items-center space-x-2">
                   <input
                     type="radio"
@@ -243,7 +240,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
             <h2 className="font-semibold text-lg">SECTION 4: Criminal Matters Preference</h2>
             <p className="text-sm text-gray-700 mb-4">Which courts do you prefer handling criminal matters in?</p>
             <div className="space-y-3">
-              {courtOptions.map(option => (
+              {COURT_PREFERENCE_OPTIONS.map(option => (
                 <label key={option} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
@@ -262,9 +259,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
           {/* SECTION 5: Agreement */}
           <section className="space-y-4">
             <h2 className="font-semibold text-lg">SECTION 5: Acknowledgement & Undertaking</h2>
-            <p className="text-md text-gray-700 max-w-5xl">
-              By submitting this form, I certify that the information provided is true and accurate. I undertake to render free legal services with the same professional standards as paid services, and understand that LACOM may withdraw my assigned cases if I fail to diligently perform my duties.
-            </p>
+            <p className="text-md text-gray-700 max-w-5xl">{PRO_BONO_UNDERTAKING}</p>
             <label className="flex items-start space-x-2">
               <input
                 type="checkbox"
