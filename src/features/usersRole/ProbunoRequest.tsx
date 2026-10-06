@@ -66,7 +66,6 @@ export default function ProbunoRequest() {
 
     const handleActionType = (role: any) => {
         setSelectedRole(role);
-        console.log("Filtering users by role:", role);
     };
 
     return (
@@ -97,7 +96,7 @@ export default function ProbunoRequest() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
                             {actionType.map((tab) => (
-                                <DropdownMenuCheckboxItem checked={selectedRole === tab} onClick={() => handleActionType(tab)}>
+                                <DropdownMenuCheckboxItem key={tab} checked={selectedRole === tab} onClick={() => handleActionType(tab)}>
                                     {tab}
                                 </DropdownMenuCheckboxItem>
                             ))}

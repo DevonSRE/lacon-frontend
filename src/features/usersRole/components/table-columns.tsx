@@ -148,7 +148,7 @@ export const createLawyerRequestColumns = (
     },
     {
       accessorKey: "LawyerName",
-      header: "Lawyer Name",
+      header: "User Name",
       cell: ({ row }) => <span>{row.original.LawyerName}</span>,
     },
     {

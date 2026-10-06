@@ -143,7 +143,6 @@ export default function LawyersRequest() {
 
   const dispatchAction = (type: "approve" | "reject") => {
     startTransition(() => {
-      console.log(String(selectedUser?.ID));
       const formData = new FormData();
       formData.append("id", String(selectedUser?.LawyerID));
       formData.append("type", String(type));
@@ -196,6 +195,7 @@ export default function LawyersRequest() {
                 </DropdownMenuCheckboxItem>
                 {actionType.map((tab) => (
                   <DropdownMenuCheckboxItem
+                    key={tab}
                     checked={Actiontype === tab}
                     onClick={() => handleActionType(tab)}
                   >
@@ -235,7 +235,7 @@ export default function LawyersRequest() {
                 value={selectedUser?.Action ?? ""}
               />
               <DetailItem
-                label="Lawyer Name:"
+                label="User Name:"
                 value={selectedUser?.LawyerName ?? ""}
               />
               <DetailItem

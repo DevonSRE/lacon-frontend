@@ -27,6 +27,18 @@ type CustomeDialigProps = {
     user: ILawyerRequest | null,
 };
 
+// Defined outside the component so it isn't recreated (and remounted) on every render.
+const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
+    <div className="flex justify-between items-start py-2 border-gray-200 last:border-b-0">
+        <span className="text-xs font-medium text-gray-600 min-w-0 flex-shrink-0 mr-4">
+            {label}:
+        </span>
+        <span className="text-xs text-gray-800 text-right">
+            {value}
+        </span>
+    </div>
+);
+
 export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProps) {
     const [state, dispatch, isPending] = useActionState(AcceptRejectProbunoRequest, undefined);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -57,7 +69,6 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
         }
     }, [isPending]);
     useEffectAfterMount(() => {
-        console.log(state);
         if (!state) return;
         if (CLIENT_ERROR_STATUS.includes(state.status)) {
             setDialogState({ open: false, title: "", details: "" });
@@ -79,7 +90,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
             setTimeout(() => {
                 setDialogState({ open: false, title: "", details: "" });
                 if (decisionData.decision === "approved") {
-                    router.push(`/users/desination-letter/'${user?.ID}'`);
+                    router.push(`/users/desination-letter/${user?.ID}`);
                 }
                 setOpen(false);
             }, 2000);
@@ -94,19 +105,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
         setOpen(false);
     };
 
-    const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
-        <div className="flex justify-between items-start py-2 border-gray-200 last:border-b-0">
-            <span className="text-xs font-medium text-gray-600 min-w-0 flex-shrink-0 mr-4">
-                {label}:
-            </span>
-            <span className="text-xs text-gray-800 text-right">
-                {value}
-            </span>
-        </div>
-    );
-
     const handleSelectChange = (value: string, name: keyof ReviewProbuno) => {
-        console.log('Select changed:', name, value); // Debug log
         setDecisionData(prev => ({
             ...prev,
             [name]: value
