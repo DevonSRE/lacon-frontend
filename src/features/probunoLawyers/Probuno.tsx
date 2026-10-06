@@ -14,19 +14,19 @@ export default function Navbar() {
             title: 'New Registration',
             description: 'To Register With the Council for ProBono Cases Click on the Button Below',
             buttonText: 'Click Me',
-            link: '/probuno/registeration',
+            link: '/probono/registration',
         },
         {
             title: 'Already Handling Probono Cases',
             description: 'If You are Already Handling Probono cases and wish to register with the council Click on the Button Below',
             buttonText: 'Click Me',
-            link: '/probuno/cases',
+            link: '/probono/cases',
         },
         {
             title: 'Update Case',
             description: 'If You are Already Registered with the council and wish to update your cases, click on the Button below for the Annual Case review Form.',
             buttonText: 'Click Me',
-            link: '/probuno/update',
+            link: '/probono/update',
         },
     ];
 

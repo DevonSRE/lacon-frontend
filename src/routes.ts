@@ -19,7 +19,7 @@ export const authRoutes = [
 export const publicRoutes = [
   "/welcome",
   "/",
-  "probuno",
+  "/probono",
   "/invitation",
   "/password/forgot",
   "/password/password-otp",
