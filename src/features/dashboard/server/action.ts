@@ -67,6 +67,15 @@ export async function InviteLawyer(_prevState: unknown, formData: FormData) {
       message: "Invalid field found",
     };
   }
+  // Lawyers were being created with blank zone/state (checklist B-15).
+  if (result.data.user_type.toUpperCase().includes("LAWYER")) {
+    const scopeErrors: Record<string, string[]> = {};
+    if (!result.data.zone_id) scopeErrors.zone_id = ["Zone is required"];
+    if (!result.data.state_id) scopeErrors.state_id = ["State is required"];
+    if (Object.keys(scopeErrors).length > 0) {
+      return { status: 400, errors: scopeErrors, message: "Invalid field found" };
+    }
+  }
   try {
     const response = await UserService.inviteUser(result.data);
     return {
