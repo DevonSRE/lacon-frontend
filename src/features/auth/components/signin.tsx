@@ -58,7 +58,9 @@ export default function SigninForm() {
     <div className="flex h-screen bg-white">
       {/* Left side with logo */}
       <div className="hidden lg:flex w-1/2 bg-gray-900 m-8 rounded-xl items-center justify-center">
-        <Image src="/logo.png" alt="Logo" width={150} height={150} />
+        <Link href="/" aria-label="Go to home page">
+            <Image src="/logo.png" alt="Logo" width={150} height={150} />
+        </Link>
       </div>
       {/* Right side with form */}
       <div className="flex items-center lg:w-1/2 w-full justify-center px-4">

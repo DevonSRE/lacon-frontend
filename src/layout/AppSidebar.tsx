@@ -349,7 +349,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar collapsible="icon" {...props} className="bg-white">
       <SidebarHeader>
         <div className="py-4 flex justify-center">
-          <Link href="/" aria-label="Go to homepage">
+          <Link href="/dashboard" aria-label="Go to dashboard">
             {isExpanded || isHovered || isMobileOpen ? (
               <div className="flex justify-center items-center w-full">
                 <Image

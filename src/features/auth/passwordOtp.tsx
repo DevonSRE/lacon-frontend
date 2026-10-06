@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import Link from 'next/link';
 import { useFormState } from "react-dom";
 import { toast } from "sonner";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
@@ -66,7 +67,9 @@ export default function PASSWORDOTPCOMPONENT({ email }: { email: string }) {
         <div className="flex h-screen bg-white">
             {/* Left side with logo */}
             <div className="hidden lg:flex w-1/2 bg-gray-900 m-8 rounded-xl items-center justify-center">
-                <Image src="/logo.png" alt="Logo" width={150} height={150} />
+                <Link href="/" aria-label="Go to home page">
+                    <Image src="/logo.png" alt="Logo" width={150} height={150} />
+                </Link>
             </div>
             {/* Right side with form */}
             <div className="flex flex-col items-center lg:w-1/2 w-full justify-center px-4">
