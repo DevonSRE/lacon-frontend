@@ -116,7 +116,7 @@ export default function AdminDashboard({ role }: { role: string }) {
                     <StatCard
                         title="Pending Assignments"
                         value={casesSummation.pendingAssignments}
-                        subtitle="Awaiting department routing"
+                        subtitle="Awaiting review, routing or lawyer assignment"
                     />
                     <StatCard
                         title="Pro Bono Applications"

@@ -57,13 +57,7 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
     };
 
  
-    const canFileCase = [
-        ROLES.OSCAR_UNIT_HEAD,
-        ROLES.INTERNAL_PARALEGAL,
-        ROLES.DECONGESTION_UNIT_HEAD,
-        ROLES.PDSS,
-        ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD
-    ].includes(userRole);
+    const canFileCase = ["INTERNAL PARALEGAL"].includes(userRole);
 
     if (!canFileCase) {
         return null;
