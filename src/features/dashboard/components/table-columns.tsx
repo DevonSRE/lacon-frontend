@@ -2,6 +2,7 @@ import { CaseOverview } from "@/types/case";
 import { ColumnDef } from "@tanstack/react-table";
 import Link from "next/link";
 import React from "react";
+import { statusLabel, caseReference } from "@/features/cases/domain";
 
 // The overview rows are raw casefiles; the date field name varies with the API model.
 const filedOn = (row: CaseOverview & { created_at?: string; CreatedAt?: string }) => {
@@ -18,7 +19,7 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     header: () => <div className="text-left font-semibold text-base">Case ID</div>,
     cell: ({ row }) => (
       <div className="text-left font-mono text-xs" title={row.original.id}>
-        {row.original.id?.slice(0, 8) ?? "-"}
+        {caseReference(row.original as CaseOverview & { case_id?: string })}
       </div>
     ),
   },
@@ -38,9 +39,12 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     cell: ({ getValue }) => <div className="text-left">{getValue() as string}</div>,
   },
   {
-    accessorKey: "department_name",
+    id: "filing_actor",
     header: () => <div className="text-center font-semibold  text-base">Forwarded by</div>,
-    cell: ({ getValue }) => <div className="text-center">{getValue() as string}</div>,
+    cell: ({ row }) => {
+      const filing = row.original as CaseOverview & { filing_actor?: { name: string }; forwarded_by?: string; origin_channel?: string; filed_level?: string };
+      return <div className="text-center">{filing.filing_actor?.name || filing.forwarded_by || "—"}<p className="text-xs text-gray-500">{filing.origin_channel} · {filing.filed_level}</p></div>;
+    },
   },
   {
     accessorKey: "status",
@@ -48,17 +52,17 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     cell: ({ row }) => {
       const status = row.original.status || "Unknown";
       const statusColors: Record<string, string> = {
-        Active: "bg-green-50 text-green-700 border border-green-200",
-        Pending: "bg-blue-50 text-blue-600 border border-blue-200",
-        Inactive: "bg-red-50 text-red-700 border border-red-200",
+        ASSIGNED: "bg-green-50 text-green-700 border border-green-200",
+        SUBMITTED: "bg-blue-50 text-blue-600 border border-blue-200",
+        DENIED: "bg-red-50 text-red-700 border border-red-200",
         Unknown: "bg-gray-50 text-gray-700 border border-gray-200",
       };
       return (
         <div className="flex justify-center">
           <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}
+            className={`px-3 py-1 rounded-full text-xs font-medium ${statusColors[status] || statusColors.Unknown}`}
           >
-            {status}
+            {statusLabel(status)}
           </span>
         </div>
       );
@@ -70,8 +74,7 @@ export const mainColumns: ColumnDef<CaseOverview>[] = [
     cell: ({ row }) => (
       <div className="flex justify-center">
         <Link
-          // The API matches search against one column at a time, so "First Last" never matches.
-          href={`/cases?search=${encodeURIComponent(row.original.first_name ?? "")}`}
+          href={`/cases/${row.original.id}`}
           className="text-red-600 hover:underline text-sm font-medium"
         >
           Open case

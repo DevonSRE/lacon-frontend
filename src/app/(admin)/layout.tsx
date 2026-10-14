@@ -23,10 +23,10 @@ export default function AdminLayout({ children, }: { children: React.ReactNode; 
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         {/* <Backdrop /> */}
         <AppHeader />
-        <div className="flex flex-1 flex-col gap-4 p-8 ">
+        <div className="flex min-w-0 flex-1 flex-col gap-4 p-4 sm:p-8">
           {children}
         </div>
       </SidebarInset>

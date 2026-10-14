@@ -4,6 +4,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   reactStrictMode: true,
 
+  experimental: {
+    serverActions: {
+      // One 10 MB document plus multipart/Server Action overhead.
+      bodySizeLimit: "11mb",
+    },
+  },
+
   // Old misspelt pro bono URLs, kept working for shared links and bookmarks.
   async redirects() {
     return [

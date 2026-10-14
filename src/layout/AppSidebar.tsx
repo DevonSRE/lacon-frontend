@@ -37,7 +37,7 @@ const navItems: NavItem[] = [
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ["ADMIN", "PRO_BONO_LAWYER", "DECONGESTION UNIT HEAD", "PDSS UNIT HEAD", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD"],
+    roles: ROUTE_ACCESS["/cases"].filter(role => role !== "INTERNAL PARALEGAL"),
   },
   {
     icon: <Icons.casesIcon />,
