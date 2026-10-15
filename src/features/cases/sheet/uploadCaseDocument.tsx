@@ -55,12 +55,14 @@ const UploadCaseDocument: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
 
   // Set casefile_id when caseDetails is available
   useEffect(() => {
-    if (caseDetails?.id) {
+    if (!caseDetails?.id) return;
+    const timer = window.setTimeout(() => {
       setFormData(prev => ({
         ...prev,
         casefile_id: caseDetails.id
       }));
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [caseDetails]);
 
   useEffectAfterMount(() => {

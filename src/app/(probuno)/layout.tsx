@@ -32,7 +32,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="max-w-7xl w-full mx-auto px-4 py-3 flex justify-between items-center">
             {/* Signed-out users land on sign-in; the proxy sends signed-in users on to their dashboard. */}
             <Link href="/signin" className="flex items-center gap-2 text-xl font-bold text-red-600 flex-shrink-0">
-              <Image src="/logo.png" alt="" width={36} height={36} />
+              <Image src="/logo.png" alt="LACON" width={36} height={36} loading="eager" />
               LACON
             </Link>
 

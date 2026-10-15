@@ -11,16 +11,24 @@ export function decodeToken(token: string) {
   return decoded;
 }
 
-export const handleApiError = (error: any) => {
-  if (error?.response) {
+type ApiErrorLike = {
+  response?: { data?: { message?: string; data?: unknown } | string; status?: number };
+  request?: unknown;
+  message?: string;
+};
+
+export const handleApiError = (value: unknown) => {
+  const error = (typeof value === "object" && value !== null ? value : {}) as ApiErrorLike;
+  if (error.response) {
+    const responseData = error.response.data;
     return {
-      data: error.response.data,
-      status: error.response.status,
+      data: responseData,
+      status: error.response.status ?? 500,
       message:
-        error.response.data?.message ||
-        error.response.data ||
+        (typeof responseData === "object" && responseData !== null ? responseData.message : undefined) ||
+        (typeof responseData === "string" ? responseData : undefined) ||
         "An error occurred.",
-      errors: error.response.data?.data || null,
+      errors: typeof responseData === "object" && responseData !== null ? responseData.data ?? null : null,
       success: false,
     };
   }

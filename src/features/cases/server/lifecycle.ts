@@ -55,7 +55,7 @@ export async function getAssignees(id: string, page = 1, keyword = ""): Promise<
   return read("/users/assignable-lawyers", { case_id: id, page, size: 20, keyword });
 }
 export async function getRouteTargets(role: string, page = 1, keyword = ""): Promise<Result<PageResult<DirectoryUser>>> {
-  return read("/users", { user_type: role, status: "ACTIVE", page, size: 20, keyword: keyword || "all" });
+  return read("/users", { user_type: role, status: "ACTIVE", page, size: 20, keyword });
 }
 export async function moveCase(id: string, command: MovementCommand): Promise<Result<CaseRecord | null>> {
   try {

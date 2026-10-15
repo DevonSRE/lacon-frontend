@@ -29,7 +29,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, bgColor = "text-black
     );
 };
 
-const ErrorMessage = ({ error }: { error: any }) => (
+const ErrorMessage = ({ error }: { error: Error }) => (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
         <div className="text-red-800">Error loading data: {error.message}</div>
     </div>

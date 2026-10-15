@@ -49,13 +49,19 @@ interface ChartData {
     }>;
 }
 
-const ErrorMessage = ({ error }: { error: any }) => (
+type MonthlyOverview = {
+    month: string;
+    cases_received?: number;
+    persons_bailed?: number;
+};
+
+const ErrorMessage = ({ error }: { error: Error }) => (
     <div className="bg-red-50 border border-red-200 rounded-lg p-4 ">
         <div className="text-red-800">Error loading data: {error.message}</div>
     </div>
 );
 
-function transformMonthlyOverviewData(data: any[]): ChartData {
+function transformMonthlyOverviewData(data: MonthlyOverview[]): ChartData {
     const categories = data.map(item => item.month);
     const casesReceived = data.map(item => item.cases_received || 0);
     const personsBailed = data.map(item => item.persons_bailed || 0);
@@ -103,12 +109,12 @@ export default function DIOReport() {
     const pdssBail = data?.data?.pdss_bail ?? [];
 
     // Calculate total cases received from monthly overview
-    const totalCasesReceived = pdssOverview.reduce((total: number, month: any) => {
+    const totalCasesReceived = pdssOverview.reduce((total: number, month: MonthlyOverview) => {
         return total + (month.cases_received || 0);
     }, 0);
 
     // Calculate total persons bailed from monthly overview
-    const totalPersonsBailed = pdssOverview.reduce((total: number, month: any) => {
+    const totalPersonsBailed = pdssOverview.reduce((total: number, month: MonthlyOverview) => {
         return total + (month.persons_bailed || 0);
     }, 0);
 

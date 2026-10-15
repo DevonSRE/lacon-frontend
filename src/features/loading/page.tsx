@@ -40,7 +40,7 @@ export default function LoadingPage() {
       <div className="flex flex-col items-center justify-center h-screen  text-center">
         {/* Logo & Title */}
         <div className="absolute top-16 flex items-center gap-2">
-          <img src="/logo.png" alt="LACON Logo" className="h-8 w-8" />
+          <Image src="/logo.png" alt="LACON Logo" width={32} height={32} className="h-8 w-8" />
           <span className="font-semibold text-lg text-gray-700">
             LACON Case Management System
           </span>

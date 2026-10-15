@@ -1,22 +1,14 @@
 
 'use client';
 import { Eye, EyeOff } from "lucide-react";
-import { Label } from "./ui/label";
 import Input from "./form/input/InputField";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 
-const PasswordValidation = ({ resetValidation }: { resetValidation: boolean }) => {
+const PasswordValidation = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-
-    useEffect(() => {
-    if (resetValidation) {
-      setPassword("");
-      setConfirmPassword("");
-    }
-  }, [resetValidation]);
 
   // Password strength calculation
   const passwordStrength = useMemo(() => {
@@ -46,15 +38,6 @@ const PasswordValidation = ({ resetValidation }: { resetValidation: boolean }) =
     };
   }, [password]);
 
-  // Password requirements
-  const requirements = [
-    { label: "At least 8 characters", met: password.length >= 8 },
-    { label: "Contains a number", met: /\d/.test(password) },
-    { label: "Contains an uppercase letter", met: /[A-Z]/.test(password) },
-    { label: "Contains a lowercase letter", met: /[a-z]/.test(password) },
-    { label: "Contains a special character", met: /[\W_]/.test(password) },
-  ];
-
   const passwordsMatch = password && confirmPassword && password === confirmPassword;
   const confirmPasswordError = confirmPassword && password !== confirmPassword;
 
@@ -62,12 +45,13 @@ const PasswordValidation = ({ resetValidation }: { resetValidation: boolean }) =
     <div className="mx-auto bg-white rounded-lg">
       {/* Create Password */}
       <div className="mb-4">
-        <Label className="">Create Password</Label>
         <div className="relative">
           <Input
             type={showPassword ? "text" : "password"}
             // value={password}
             name="password"
+            label="Create Password"
+            required
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg dark:focus:border-brand-800 focus:outline-none text-lg pr-12"
             placeholder="••••••••••••••••••••••••"
@@ -110,11 +94,12 @@ const PasswordValidation = ({ resetValidation }: { resetValidation: boolean }) =
 
       {/* Confirm Password */}
       <div className="mb-6">
-        <Label className=""> Confirm Password</Label>
         <div className="relative">
           <Input
             type="password"
             name="confirm_password"
+            label="Confirm Password"
+            required
             // value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none text-lg ${confirmPasswordError

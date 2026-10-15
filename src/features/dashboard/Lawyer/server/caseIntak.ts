@@ -19,7 +19,7 @@ export async function GetCaseInTake(params: Ipage) {
 
 
 export async function submitCaseIntake(_prevState: unknown, formData: FormData) {
-    const data: Record<string, any> = {};
+    const data: Record<string, FormDataEntryValue> = {};
     // const multiValueFields = ['criminal_matter_preference'];
     try {
         for (const [key, value] of formData.entries()) {

@@ -11,6 +11,12 @@ import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { GetCaseAction, GetEventsAction } from "@/features/cases/server/caseAction";
 import CaseManagementDemo from "./components/skeletonLoader";
 
+type UpcomingEvent = {
+    event_date?: string;
+    event_type?: string;
+    case_title?: string;
+};
+
 
 export default function AssignedCases() {
     const [statusFilter, setStatusFilter] = useState('');
@@ -107,7 +113,7 @@ export default function AssignedCases() {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {eventData?.data?.map((event: any, idx: number) => (
+                        {eventData?.data?.map((event: UpcomingEvent, idx: number) => (
                             <div key={idx} className="flex items-center space-x-2 border p-3 rounded-lg shadow-sm">
                                 <input type="checkbox" />
                                 <p className="text-sm">

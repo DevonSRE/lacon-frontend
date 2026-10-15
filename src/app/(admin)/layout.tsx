@@ -18,7 +18,7 @@ export default function AdminLayout({ children, }: { children: React.ReactNode; 
         dispatch(setProfile(userData));
       }
     });
-  }, []);
+  }, [dispatch]);
 
   return (
     <SidebarProvider>

@@ -1,5 +1,6 @@
-import { UserType, Zone } from "@/lib/types";
+import { Zone } from "@/lib/types";
 import { z } from "zod";
+import { invitationScope } from "@/lib/user-invitation-options";
 
 export interface FormDataUser {
   user_type: string;
@@ -37,13 +38,15 @@ export const zones: Zone[] = [
 ];
 
 // Zod Schema for form validation
+const optionalLocationId = z.preprocess(value => value === "" ? undefined : value, z.uuid("Choose a valid location").optional());
+
 export const createUserSchema = z
   .object({
     user_type: z.string().min(1, "User type is required"),
     designation: z.string().optional(),
-    state_id: z.string().optional(),
-    zone_id: z.string().optional(),
-    center_id: z.string().optional(),
+    state_id: optionalLocationId,
+    zone_id: optionalLocationId,
+    center_id: optionalLocationId,
     role: z.string().optional(),
     status: z.string().optional(),
     first_name: z
@@ -64,10 +67,8 @@ export const createUserSchema = z
       .regex(/^[\+]?[\d\s\-\(\)]{10,}$/, "Please enter a valid phone number"),
   })
   .superRefine((data, ctx) => {
-    if (
-      (data.user_type === "LacON Lawyer" || data.user_type === "Paralegal") &&
-      !data.designation
-    ) {
+    const scope = invitationScope(data.user_type, data.designation);
+    if (scope.designation && !data.designation) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Designation is required for this user type",
@@ -76,30 +77,24 @@ export const createUserSchema = z
     }
 
     // Conditional validation for state
-    const needsState =
-      data.user_type === "State Coordinator" ||
-      data.user_type === "Centre Coordinator" ||
-      data.designation === "State Lawyer" ||
-      data.designation === "State Office";
-    if (needsState && !data.state_id) {
+    if (scope.state && !data.state_id) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "State selection is required",
-        path: ["state"],
+        path: ["state_id"],
       });
     }
 
     // Conditional validation for zone
-    const needsZone =
-      data.user_type === "Zonal Director" ||
-      data.designation === "Centre Lawyer" ||
-      data.designation === "Zonal Office";
-    if (needsZone && !data.zone_id) {
+    if (scope.zone && !data.zone_id) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Zone selection is required",
-        path: ["zone"],
+        path: ["zone_id"],
       });
+    }
+    if (scope.center && !data.center_id) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Centre selection is required", path: ["center_id"] });
     }
   });
 export type CreateUserFormData = z.infer<typeof createUserSchema>;

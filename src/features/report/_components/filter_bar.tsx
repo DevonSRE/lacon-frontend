@@ -9,6 +9,9 @@ import { GetZones } from '@/server/actions/GetDetails';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useState, useMemo } from "react";
 
+type StateOption = { id: string; title: string };
+type ZoneOption = StateOption & { states?: StateOption[] };
+
 export default function FilterBar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
     const tabs = ["Overview", "Case Types", "Lawyers", "Demographics"];
     const { data, isLoading: loading } = useQuery({
@@ -38,7 +41,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
     const selectedZoneStates = useMemo(() => {
         if (!selectedZoneId || !data?.data?.data) return [];
 
-        const selectedZone = data.data.data.find((zone: any) => zone.id === selectedZoneId);
+        const selectedZone = data.data.data.find((zone: ZoneOption) => zone.id === selectedZoneId);
         return selectedZone?.states || [];
     }, [selectedZoneId, data]);
 
@@ -62,7 +65,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
         setSeletedStateId?.('');
 
         // ✅ Find and store the selected zone title
-        const selectedZone = data?.data?.data?.find((zone: any) => zone.id === newValue);
+        const selectedZone = data?.data?.data?.find((zone: ZoneOption) => zone.id === newValue);
         if (selectedZone) {
             setSelectedZone?.(selectedZone.title); // <- use a state setter for the title
         }
@@ -71,7 +74,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
     const handleStateChange = (stateId: string) => {
         setSeletedStateId?.(stateId);
 
-        const selectedState = selectedZoneStates?.find((zone: any) => zone.id === stateId);
+        const selectedState = selectedZoneStates?.find((zone: StateOption) => zone.id === stateId);
         if (selectedState) {
             setSelectesState?.(selectedState.title); // <- use a state setter for the title
         }
@@ -115,7 +118,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                                 All Zones
                             </SelectItem>
                             {data?.data?.data?.length > 0 ? (
-                                data?.data?.data.map((location: any) => (
+                                data?.data?.data.map((location: ZoneOption) => (
                                     <SelectItem key={location.id} value={location.id} className="py-2">
                                         {location.title}
                                     </SelectItem>
@@ -146,7 +149,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                                     All States
                                 </SelectItem>
                                 {selectedZoneStates.length > 0 ? (
-                                    selectedZoneStates.map((state: any) => (
+                                    selectedZoneStates.map((state: StateOption) => (
                                         <SelectItem key={state.id} value={state.id} className="py-2">
                                             {state.title}
                                         </SelectItem>

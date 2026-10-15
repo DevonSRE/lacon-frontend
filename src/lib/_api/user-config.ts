@@ -21,7 +21,7 @@ userConfig.interceptors.response.use(
       originalRequest._retry = true
 
       if (typeof window !== 'undefined') {
-        window.location.href = '/login'
+        window.location.replace('/signin')
       }
 
       return Promise.reject(error)

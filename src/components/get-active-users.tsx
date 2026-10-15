@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { GetActiveUsers, GetInActiveUsers } from "@/server/actions/GetDetails";
+import { GetActiveUsers } from "@/server/actions/GetDetails";
 
 export const GetActiveUser = ({
   placeholder,
@@ -88,7 +88,7 @@ export const GetActiveUser = ({
           </div>
         ) : (
           users
-            .filter((title: any) => typeof title === "string")
+            .filter((title: unknown): title is string => typeof title === "string")
             .sort((a: string, b: string) => a.localeCompare(b))
             .map((title: string) => (
               <SelectItem key={title} value={title} className="py-2">

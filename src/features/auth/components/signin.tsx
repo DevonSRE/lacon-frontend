@@ -1,38 +1,28 @@
 
 'use client'
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { Icons } from '@/icons/icons';
-import Button from '@/components/ui/button/Button';
 import { SignInAction } from '../server/actions';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
-import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from "sonner";
-import { isFieldErrorObject, ROLES } from '@/types/auth';
+import { isFieldErrorObject } from '@/types/auth';
 import { LoginPasswordField } from '@/components/passwordField';
 import { SubmitButton } from '@/components/submit-button';
 import InputField from '@/components/form/input/InputField';
 import Link from 'next/link';
+import { submitWithoutReset } from '@/lib/submit-without-reset';
 
 
 export default function SigninForm() {
-  const [showPassword, setShowPassword] = useState(false);
   const [state, dispatch, isPending] = useActionState(SignInAction, undefined);
-  const [formDisabled, setFormDisabled] = useState(false);
-  const [email, setEmail] = useState("");
-  const router = useRouter();
 
   const errors = isFieldErrorObject(state?.errors)
     ? state.errors
     : {} as Record<string, string[]>;
 
-  useEffect(() => {
-    router.refresh(); // Forces Next.js to refresh the page
-  }, []);
   // Handle errors
   useEffectAfterMount(() => {
-    if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+    if (state && state.status >= 400) {
       toast.error(state?.message, {
         description: typeof state?.errors === "string"
           ? state.errors
@@ -40,13 +30,6 @@ export default function SigninForm() {
             ? Object.values(state.errors).flat().join(", ")
             : undefined,
       });
-    }
-  }, [state]);
-
-  // Reset form when logging out
-  useEffect(() => {
-    if (!state) {
-      setFormDisabled(false);
     }
   }, [state]);
 
@@ -70,11 +53,16 @@ export default function SigninForm() {
             Enter your credentials to access your dashboard.
           </p>
           {/* <form className="space-y-4"> */}
-          <form action={dispatch} className="w-full space-y-6">
+          <form onSubmit={submitWithoutReset(dispatch)} className="w-full space-y-6">
+            {!isPending && state && state.status >= 400 && <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              <p>{state.message}</p>
+              {state.errors && <p>{typeof state.errors === "string" ? state.errors : Object.values(state.errors).flat().join(". ")}</p>}
+            </div>}
             <InputField
               type="email"
               name='email'
               label='Email Address'
+              required
               className="w-full px-4 py-2"
               placeholder="example@email.com"
             />

@@ -60,7 +60,7 @@
 
 
 
-import axios from "axios";
+import axios, { InternalAxiosRequestConfig } from "axios";
 import { NEXT_BASE_URL } from "../constants";
 import { getToken } from "@/server/auth";
 import { stripSensitiveResponses } from "./sanitize";
@@ -72,7 +72,7 @@ const axiosInstance = axios.create({
   timeout: DEFAULT_TIMEOUT,
 });
 
-axiosInstance.interceptors.request.use(async (config: any) => {
+axiosInstance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const token = await getToken();
   if (token) {
     config.headers.Authorization = token;
@@ -138,7 +138,7 @@ const publicAxiosInstance = axios.create({
 });
 stripSensitiveResponses(publicAxiosInstance);
 
-publicAxiosInstance.interceptors.request.use(async (config: any) => {
+publicAxiosInstance.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   // Server-only key for the public case-filing API. Deliberately not
   // NEXT_PUBLIC_*, which would ship it to every browser.
   const token = process.env.CASE_API_KEY;

@@ -2,6 +2,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import {
   ColumnDef,
+  Row,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -28,7 +29,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 
 
 // Clickable Row
-const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
+const ClickableRow: React.FC<{ row: Row<IUser> }> = ({ row }) => {
   const router = useRouter();
 
   return (
@@ -38,7 +39,7 @@ const ClickableRow: React.FC<{ row: any }> = ({ row }) => {
         router.push(`/cases/view/${encodeURIComponent(row.original.user_id)}`)
       }
     >
-      {row.getVisibleCells().map((cell: any) => (
+      {row.getVisibleCells().map((cell) => (
         <td key={cell.id} className="px-4 py-2 border">
           {flexRender(cell.column.columnDef.cell, cell.getContext())}
         </td>

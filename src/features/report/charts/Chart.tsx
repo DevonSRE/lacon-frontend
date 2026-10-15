@@ -18,7 +18,7 @@ type ChartProps = {
 const Chart: React.FC<ChartProps> = ({ categories, series, colors, columnWidth = "70%" }) => {
     const options: ApexOptions = {
         chart: {
-            type: "bar" as "bar",
+            type: "bar" as const,
             stacked: false,
         },
         plotOptions: {

@@ -14,6 +14,7 @@ import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { Label } from '@/components/ui/label';
 import { GetState } from '@/components/get-state';
 import CaseCreated from '../_components/CaseCreated';
+import { ZodError } from 'zod';
 
 type CustomeSheetProps = {
     currentStep?: number;
@@ -115,10 +116,10 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
             }
             setErrors({});
             return true;
-        } catch (error: any) {
-            if (error.name === 'ZodError') {
+        } catch (error: unknown) {
+            if (error instanceof ZodError) {
                 const formattedErrors: Record<string, string[]> = {};
-                error.issues.forEach((err: any) => {
+                error.issues.forEach((err) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];

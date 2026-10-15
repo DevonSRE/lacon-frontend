@@ -7,7 +7,13 @@ import rootReducer from "./slices";
 const persistConfig = {
   key: "root",
   storage,
-  version: 1,
+  version: 2,
+  whitelist: ["profile"],
+  migrate: async (state: import("redux-persist").PersistedState) => {
+    if (!state) return state;
+    const persisted = state as typeof state & { profile?: unknown };
+    return { _persist: state._persist, profile: persisted.profile } as typeof state;
+  },
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

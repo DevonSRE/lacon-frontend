@@ -1,4 +1,4 @@
-import React, { Dispatch, ReactNode, SetStateAction, startTransition, useActionState, useEffect, useState } from 'react';
+import React, { Dispatch, ReactNode, SetStateAction, startTransition, useActionState, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import SelectField from '@/components/SelectField';
 import { ReviewProbuno } from '@/features/probunoLawyers/server/probonoSchema';
@@ -59,15 +59,6 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
             dispatch(formData);
         });
     };
-    useEffect(() => {
-        if (isPending) {
-            setDialogState({
-                open: true,
-                title: "loading",
-                details: "Approving Request...",
-            });
-        }
-    }, [isPending]);
     useEffectAfterMount(() => {
         if (!state) return;
         if (CLIENT_ERROR_STATUS.includes(state.status)) {
@@ -190,12 +181,12 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
 
 
             <LoadingDialog
-                open={dialogState.open}
+                open={isPending || dialogState.open}
                 onOpenChange={(open) =>
                     setDialogState((prev) => ({ ...prev, open }))
                 }
-                details={dialogState.details}
-                title={dialogState.title}
+                details={isPending ? "Approving Request..." : dialogState.details}
+                title={isPending ? "loading" : dialogState.title}
             />
 
             {/* Decision Section */}

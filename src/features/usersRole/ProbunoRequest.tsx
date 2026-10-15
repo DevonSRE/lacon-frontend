@@ -27,7 +27,7 @@ export default function ProbunoRequest() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const { setIsOpen } = useAction();
-    const [selectedRole, setSelectedRole] = useState<ROLES | undefined>(undefined);
+    const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
     const { data: user } = useAppSelector((state) => state.profile);
     const [selectedUser, setSelectedUser] = useState<ILawyerRequest | null>(null);
@@ -64,7 +64,7 @@ export default function ProbunoRequest() {
         "active", "inactive", "Deleted"
     ];
 
-    const handleActionType = (role: any) => {
+    const handleActionType = (role: string) => {
         setSelectedRole(role);
     };
 

@@ -6,33 +6,33 @@ const ProbunoService = {
     async registration(payload: TProbunoFormPayload) {
         return await userConfig.post("/users/probono-lawyers", payload);
     },
-    async cases(payload: any) {
+    async cases(payload: unknown) {
         return await userConfig.post("/users/probono-lawyers-with-case", payload);
     },
-    async casesUpdate(payload: any) {
+    async casesUpdate(payload: TProbunoCaseUpdatePayload) {
         return await userConfig.post("/users/probono-lawyers-update-case", payload);
     },
-    async casesCase(payload: any) {
+    async casesCase(payload: unknown) {
         return await axiosInstance.post("/casefile", payload);
     },
-    async casesPDSSCase(payload: any) {
+    async casesPDSSCase(payload: unknown) {
         return await axiosInstance.post("/casefile/create-pdss-case", payload);
     },
 
-    async casesDecongestionCase(payload: any) {
+    async casesDecongestionCase(payload: unknown) {
         return await axiosInstance.post("/casefile/create-decongestion-case", payload);
     },
 
-    async casesPerogativeCase(payload: any) {
+    async casesPerogativeCase(payload: unknown) {
         return await axiosInstance.post("/casefile/create-perogative-case", payload);
     },
 
 
     // PUBLICK API KEY
-    async casesPublicCase(payload: any) {
+    async casesPublicCase(payload: unknown) {
         return await publicAxiosInstance.post("/casefile/create-public-case", payload);
     },
-    async casesPublicPDSSCase(payload: any) {
+    async casesPublicPDSSCase(payload: unknown) {
         return await publicAxiosInstance.post("/casefile/create-public-pdss-case" , payload);
     },
 

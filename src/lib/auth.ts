@@ -14,6 +14,7 @@ export type ErrorResponse = {
       message: string;
       data?: { error?: string };
       error: string;
+      errors?: unknown;
     };
   };
   request?: unknown;

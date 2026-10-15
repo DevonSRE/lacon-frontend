@@ -75,8 +75,8 @@ export default function SheetReport() {
             if (
                 result.success &&
                 typeof result.data === 'string' &&
-                typeof (result as any).filename === 'string' &&
-                typeof (result as any).contentType === 'string'
+                'filename' in result && typeof result.filename === 'string' &&
+                'contentType' in result && typeof result.contentType === 'string'
             ) {
                 // Convert base64 back to blob
                 const byteCharacters = atob(result.data);
@@ -85,13 +85,13 @@ export default function SheetReport() {
                     byteNumbers[i] = byteCharacters.charCodeAt(i);
                 }
                 const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: (result as any).contentType });
+                const blob = new Blob([byteArray], { type: result.contentType });
 
                 // Create download
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = (result as any).filename;
+                link.download = result.filename;
 
                 document.body.appendChild(link);
                 link.click();

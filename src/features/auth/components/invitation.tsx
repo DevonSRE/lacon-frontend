@@ -1,33 +1,28 @@
 'use client'
-import { useActionState, useEffect, useState } from 'react';
+import { useActionState, useState } from 'react';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Label } from '@/components/ui/label';
-import Input from '@/components/form/input/InputField';
-import { useFormState } from 'react-dom';
 import { invitationAction } from '../server/actions';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
-import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from "sonner";
 import { SubmitButton } from '@/components/submit-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import PasswordValidation from '@/components/PasswordValidation';
 import InputField from '@/components/form/input/InputField';
+import { submitWithoutReset } from '@/lib/submit-without-reset';
 
 export default function InvitationForm() {
     const searchParams = useSearchParams();
     const otp = searchParams.get("otp") ?? ""; // Provide a default value if otp is null
     const email = searchParams.get("email") ?? "";
-    const encodedEmail = email.replace(/ /g, "+");
-    const [submitFailed, setSubmitFailed] = useState(false);
     const [state, dispatch, isPending] = useActionState(invitationAction, undefined);
     const [acceptTerms, setAcceptTerms] = useState(false);
 
 
     useEffectAfterMount(() => {
-        if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+        if (state && state.status >= 400) {
             toast.error(state?.message, {
                 description: typeof state?.errors === "string"
                     ? state.errors
@@ -54,8 +49,21 @@ export default function InvitationForm() {
                         Enter your credentials to access the admin dashboard.
                     </p>
                     {/* <form className="space-y-4"> */}
-                    <form action={dispatch} className="w-full space-y-8">
+                    <form onSubmit={submitWithoutReset(dispatch)} className="w-full space-y-8">
                         <input type='hidden' value={otp} name="otp" />
+                        {!isPending && state && state.status >= 400 && (
+                            <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                                <p>{state.message || "Account setup could not be completed."}</p>
+                                {state.errors && (
+                                    <p>
+                                        {typeof state.errors === "string"
+                                            ? state.errors
+                                            : Object.values(state.errors).flat().join(". ")}
+                                    </p>
+                                )}
+                                {state.status >= 500 && <p>Please wait a moment and try again.</p>}
+                            </div>
+                        )}
                         <div>
                             <Label className="">Email Address</Label>
                             <InputField
@@ -68,7 +76,7 @@ export default function InvitationForm() {
                             />
                         </div>
                         <div className='space-y-8'>
-                            <PasswordValidation resetValidation={submitFailed} />
+                            <PasswordValidation />
                         </div>
                         <div className="flex items-center space-x-2">
                             <Checkbox

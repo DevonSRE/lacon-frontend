@@ -76,7 +76,8 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
 
   // Initialize form data with case details when available
   useEffect(() => {
-    if (caseDetails) {
+    if (!caseDetails) return;
+    const timer = window.setTimeout(() => {
       setFormData(prev => ({
         ...prev,
         id: caseDetails.id,
@@ -89,7 +90,8 @@ const CaseProgressUpdate: NextPage<CaseProgressUpdateProps> = ({ caseDetails, se
         status: caseDetails.status || '',
         current_status: caseDetails.status || 'In Progress',
       }));
-    }
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, [caseDetails]);
 
   const updateField = (field: keyof CaseProgressFormData, value: string | File | null) => {

@@ -50,8 +50,8 @@ export default function NotFound() {
             Oops! Page Not Found
           </p>
           <p className="text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto">
-            The page you're looking for seems to have wandered off into the digital void.
-            Don't worry, it happens to the best of us!
+            The page you&apos;re looking for seems to have wandered off into the digital void.
+            Don&apos;t worry, it happens to the best of us!
           </p>
         </div>
 
@@ -81,7 +81,7 @@ export default function NotFound() {
         {/* Helpful Links */}
         <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Still can't find what you're looking for?
+            Still can&apos;t find what you&apos;re looking for?
           </p>
           <div className="flex flex-wrap gap-4 justify-center text-sm">
             <Link href="/contact" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">

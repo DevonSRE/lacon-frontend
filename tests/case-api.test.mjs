@@ -75,6 +75,14 @@ test("lawyer selection sends the case id, search and pagination", async () => {
   assert.equal(calls[0].args[1].params.page, 2);
   assert.equal(calls[0].args[1].params.keyword, "James");
 });
+test("route recipient lookup does not turn an empty search into a literal all filter", async () => {
+  const { api, calls } = setup({ data: [], total_rows: 0, total_pages: 1, page: 1, size: 20 });
+  await api.getRouteTargets("CIVIL JUSTICE DEPT. HEAD");
+  assert.equal(calls[0].args[0], "/users");
+  assert.equal(calls[0].args[1].params.user_type, "CIVIL JUSTICE DEPT. HEAD");
+  assert.equal(calls[0].args[1].params.status, "ACTIVE");
+  assert.equal(calls[0].args[1].params.keyword, "");
+});
 test("API movement error array is shown instead of a generic success", async () => {
   const { api } = setup(null, { response: { status: 403, data: { message: "Could not move", error: ["This case belongs to another holder"] } } });
   const result = await api.moveCase(id, { action: "accept" });

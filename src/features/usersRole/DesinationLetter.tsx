@@ -141,14 +141,14 @@ const DesinationLetter = () => {
           <div className="ml-4 space-y-5">
             <p>
               <strong>1.</strong> Assignment of cases is subject to availability
-              of cases from the Detention Centre's of the Nigerian correctional
+              of cases from the Detention Centre&apos;s of the Nigerian correctional
               Services or any other place of detention earmarked by the Legal
               Aid Council.
             </p>
 
             <p>
               <strong>2.</strong> Cases are assigned within the State
-              jurisdiction and location of Counsel's legal practice.
+              jurisdiction and location of Counsel&apos;s legal practice.
             </p>
 
             <p>

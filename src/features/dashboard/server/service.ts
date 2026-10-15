@@ -1,14 +1,13 @@
-import { authConfig } from "@/lib/_api/auth-config";
 import { CreateUserFormData } from "./type";
 import { axiosInstance } from "@/lib/_api/axios-config";
 
 
 
 const UserService = {
-    async inviteUser(payload: any) {
+    async inviteUser(payload: CreateUserFormData) {
         return await axiosInstance.post("/users", payload);
     },
-    async updateLawyers(payload: any, id: string) {
+    async updateLawyers(payload: unknown, id: string) {
         return await axiosInstance.patch(`/users/${id}`, payload);
     },
     async deleteUser(id: string) {
@@ -20,11 +19,11 @@ const UserService = {
     async ActivateUser(id: string) {
         return await axiosInstance.patch(`/users/${id}`, { status: "ACTIVE" });
     },
-    async apporveUser(payload: any, id: string) {
+    async apporveUser(payload: unknown, id: string) {
         return await axiosInstance.post(`/users/lawyer-unit-request/${id}/approve`, payload);
     },
 
-    async rejectUser(payload: any, id: string) {
+    async rejectUser(payload: unknown, id: string) {
         return await axiosInstance.post(`/users/lawyer-unit-request/${id}/reject`, payload);
     },
 
