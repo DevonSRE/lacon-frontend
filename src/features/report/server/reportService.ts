@@ -2,42 +2,42 @@ import { axiosInstance } from "@/lib/_api/axios-config";
 import { Ipage } from "@/lib/constants";
 
 const reportServices = {
-    async getOverview(filters: any) {
+    async getOverview(filters: Ipage) {
         return await axiosInstance.get("/analytics/admin-overview", {
             params: filters,
         });
     },
-    async getReportCaseType(filters: any) {
+    async getReportCaseType(filters: Ipage) {
         return await axiosInstance.get("/analytics/admin-casetype", {
             params: filters,
         });
     },
-    async getReportAdminLawyer(filters: any) {
+    async getReportAdminLawyer(filters: Ipage) {
         return await axiosInstance.get("/analytics/admin-lawyer", {
             params: filters,
         });
     },
-    async getReportDemography(filters: any) {
+    async getReportDemography(filters: Ipage) {
         return await axiosInstance.get("analytics/admin-demography", {
             params: filters,
         });
     },
-    async getAdminReport(filters: any) {
+    async getAdminReport(filters: Ipage) {
         return await axiosInstance.get("analytics/admin", {
             params: filters,
         });
     },
-    async getunitheadReport(filters: any) {
+    async getunitheadReport(filters: Ipage) {
         return await axiosInstance.get("analytics/department-report", {
             params: filters,
         });
     },
-    async getAllUnit(filters: any) {
+    async getAllUnit(filters: Ipage) {
         return await axiosInstance.get("analytics/admin-unit", {
             params: filters,
         });
     },
-    async getLaconLAwyer(filters: any) {
+    async getLaconLAwyer(filters: Ipage) {
         return await axiosInstance.get("users/lacon-lawyers", {
             params: filters,
         });
@@ -56,7 +56,7 @@ const reportServices = {
             responseType: 'arraybuffer',
         });
     },
-    async exportAdminUnit(filters: any) {
+    async exportAdminUnit(filters: Ipage) {
         return await axiosInstance.get("export/admin-unit", {
             params: filters,
             responseType: 'arraybuffer',

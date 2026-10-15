@@ -131,39 +131,6 @@ export const caseUpdateSchema = z.object({
 
 export type TProbunoCaseUpdatePayload = z.infer<typeof caseUpdateSchema>;
 
-const createSchema = (fields: Record<string, any>) => ({
-  parse: (data: any) => {
-    const errors: Record<string, string> = {};
-
-    Object.keys(fields).forEach((key) => {
-      const field = fields[key];
-      const value = data[key];
-
-      if (field.required && (!value || value.trim() === "")) {
-        errors[key] = `${key} is required`;
-      }
-
-      if (field.minLength && value && value.length < field.minLength) {
-        errors[key] = `${key} must be at least ${field.minLength} characters`;
-      }
-
-      if (field.type === "email" && value && !/\S+@\S+\.\S+/.test(value)) {
-        errors[key] = "Invalid email format";
-      }
-
-      if (field.type === "number" && value && isNaN(Number(value))) {
-        errors[key] = "Must be a valid number";
-      }
-    });
-
-    if (Object.keys(errors).length > 0) {
-      throw { errors };
-    }
-
-    return data;
-  },
-});
-
 export const personalInfoSchema = z.object({
   state_id: z
     .string()

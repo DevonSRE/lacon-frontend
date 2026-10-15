@@ -1,23 +1,23 @@
 import { axiosInstance } from "@/lib/_api/axios-config";
-import { GetDocumentHistory } from "./userRoleAction";
+import { Ipage } from "@/lib/constants";
 
 const usersServices = {
-    async getUsers(param: any) {
+    async getUsers(param: Ipage) {
         return await axiosInstance.get("/users", {
             params: param,
         });
     },
-    async getLawyers(param: any) {
+    async getLawyers(param: Ipage) {
         return await axiosInstance.get("/users/lawyers", {
             params: param,
         });
     },
-    async getLawyersRequest(param: any) {
+    async getLawyersRequest(param: Ipage) {
         return await axiosInstance.get("/users/lawyer-unit-request", {
             params: param,
         });
     },
-    async getProbunoLawyersRequest(param: any) {
+    async getProbunoLawyersRequest(param: Ipage) {
         return await axiosInstance.get("/users/probono-request", {
             params: param,
         });
@@ -25,12 +25,12 @@ const usersServices = {
     async getProbunoLawyersRequestSingle(id: string) {
         return await axiosInstance.get(`/users/probono-request/${id}`);
     },
-    async getUserType(param: any) {
+    async getUserType(param: Ipage) {
         return await axiosInstance.get("/users/get-user-by-type", {
             params: param,
         });
     },
-    async GetDocumentHistory(param: any, id: string) {
+    async GetDocumentHistory(_param: Ipage, id: string) {
         return await axiosInstance.get(`/casefile/${id}/document-history`);
     },
 }

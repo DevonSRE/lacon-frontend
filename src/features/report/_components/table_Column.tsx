@@ -1,10 +1,10 @@
-import { useReactTable, getCoreRowModel, flexRender, ColumnDef } from "@tanstack/react-table";
+import { ColumnDef, CellContext } from "@tanstack/react-table";
 import { LawyerData, StateData } from "./report_types";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const centerCell = (label: string) => ({
     header: () => <div className="text-center">{label}</div>,
-    cell: (info: any) => <div className="text-center">{info.getValue()}</div>,
+    cell: (info: CellContext<StateData, unknown>) => <div className="text-center">{String(info.getValue() ?? "")}</div>,
 });
 
 export const stateColumns: ColumnDef<StateData>[] = [

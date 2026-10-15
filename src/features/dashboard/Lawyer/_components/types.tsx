@@ -2,6 +2,7 @@ export interface ICase {
     id: string;
     case_id?: string;
     filed_date?: string;
+    dueDate?: string;
     first_name?: string;
     middle_name?: string;
     last_name?: string;

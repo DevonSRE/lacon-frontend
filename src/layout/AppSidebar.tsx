@@ -200,7 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       })
       .filter((item): item is NavItem => item !== null);
     return filtered;
-  }, [user?.role]);
+  }, [user]);
 
   // Simplified submenu state management
   const [openSubmenu, setOpenSubmenu] = useState<string | null>(null);
@@ -216,22 +216,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Auto-open submenu if any child is active
   useEffect(() => {
-    let submenuMatched = false;
-
-    filteredNavItems.forEach((nav, index) => {
-      if (nav.subItems) {
-        nav.subItems.forEach((subItem) => {
-          if (isActive(subItem.path)) {
-            setOpenSubmenu(`main-${index}`);
-            submenuMatched = true;
-          }
-        });
-      }
-    });
-
-    if (!submenuMatched) {
-      setOpenSubmenu(null);
-    }
+    const matchedIndex = filteredNavItems.findIndex((nav) =>
+      nav.subItems?.some((subItem) => isActive(subItem.path))
+    );
+    queueMicrotask(() => setOpenSubmenu(matchedIndex >= 0 ? `main-${matchedIndex}` : null));
   }, [pathname, isActive, filteredNavItems]);
 
   // Calculate submenu heights

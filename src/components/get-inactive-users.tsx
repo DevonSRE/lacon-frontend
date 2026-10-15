@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import {
   Select,
@@ -8,7 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { GetActiveUsers, GetInActiveUsers } from "@/server/actions/GetDetails";
+import { GetInActiveUsers } from "@/server/actions/GetDetails";
+import { uniqueRoleOptions } from "@/lib/user-invitation-options";
 
 export const GetInActiveUser = ({
   placeholder,
@@ -53,17 +54,14 @@ export const GetInActiveUser = ({
     }
   }, [isLoading, onLoadingChange]);
 
-  const [selectedTitle, setSelectedTitle] = useState<string | null>(null);
-
   const handleDivisionChange = (newValue: string) => {
-    setSelectedTitle(newValue);
     onValueChange?.(newValue);
   };
-  const users = data?.data ?? []; // Adjust this if structure differs!
+  const users = uniqueRoleOptions(data?.data);
   return (
     <Select
       onValueChange={handleDivisionChange}
-      value={selectedTitle ?? value}
+      value={value}
       name="user_type"
     >
       <SelectTrigger
@@ -87,10 +85,7 @@ export const GetInActiveUser = ({
             No user types available
           </div>
         ) : (
-          users
-            .filter((title: any) => typeof title === "string")
-            .sort((a: string, b: string) => a.localeCompare(b))
-            .map((title: string) => (
+          users.map((title: string) => (
               <SelectItem key={title} value={title} className="py-2">
                 {title}
               </SelectItem>

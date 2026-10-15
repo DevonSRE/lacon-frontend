@@ -188,15 +188,16 @@ export async function ForgotPasswordAction(
   try {
     await AuthService.forgotPassword(result.data);
     (await cookies()).set("otpEmail", result.data.email);
-  } catch (err: any) {
-    if (err?.response) {
+  } catch (err: unknown) {
+    const error = err as ErrorResponse;
+    if (error?.response) {
       return {
-        status: err.response.status,
-        message: err.response.data.message,
-        errors: err.response.data.data['error'],
+        status: error.response.status,
+        message: error.response.data.message,
+        errors: error.response.data.data?.error ?? error.response.data.error,
         success: false,
       };
-    } else if (err.request) {
+    } else if (error.request) {
       return {
         status: 504,
         message: "Something went wrong. Please try again.",
@@ -206,8 +207,8 @@ export async function ForgotPasswordAction(
     } else {
       return {
         status: 500,
-        message: err.message,
-        errors: err.message,
+        message: error.message,
+        errors: error.message,
         success: false,
       };
     }
@@ -219,7 +220,7 @@ export async function ForgotPasswordAction(
 export async function logoutAction() {
   deleteSession();
 
-  redirect("/login");
+  redirect("/signin");
 }
 
 export async function verifyOTP(_prevState: unknown, formData: FormData) {
@@ -250,11 +251,12 @@ export async function verifyOTP(_prevState: unknown, formData: FormData) {
 
     const data = res.data as LoginResponseData;
     (await cookies()).set("TempToken", data.token);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const error = err as ErrorResponse;
     return {
-      status: err?.response?.status || 500,
-      message: err?.response?.data?.message || "Failed to verify OTP.",
-      errors: err?.response?.data?.errors || "An unknown error occurred.",
+      status: error?.response?.status || 500,
+      message: error?.response?.data?.message || "Failed to verify OTP.",
+      errors: error?.response?.data?.errors || "An unknown error occurred.",
     };
   }
   redirect("/password/reset-password");
@@ -295,15 +297,16 @@ export async function changePassword(_prevState: unknown, formData: FormData) {
     (await
       // If OTP is correct, clear the session/cookie
       cookies()).delete("otpEmail");
-  } catch (err: any) {
-    console.error("Failed to verify OTP:", err);
+  } catch (err: unknown) {
+    const error = err as ErrorResponse;
+    console.error("Failed to verify OTP:", error);
     return {
-      status: err?.response?.status || 500,
-      message: err?.response?.data?.message || "Failed to verify OTP.",
-      errors: err?.response?.data?.errors || "An unknown error occurred.",
+      status: error?.response?.status || 500,
+      message: error?.response?.data?.message || "Failed to verify OTP.",
+      errors: error?.response?.data?.errors || "An unknown error occurred.",
     };
   }
-  redirect("/reset-password");
+  redirect("/password/reset-password");
 }
 
 export async function resetPassword(_prevState: unknown, formData: FormData) {
@@ -339,16 +342,17 @@ export async function resetPassword(_prevState: unknown, formData: FormData) {
       message: "Password has been successfuly changed, Please Login.",
       success: true,
     };
-  } catch (err: any) {
-    console.error("Failed to reset password:", err);
+  } catch (err: unknown) {
+    const error = err as ErrorResponse;
+    console.error("Failed to reset password:", error);
     return {
-      status: err?.response?.status || 500,
-      message: err?.response?.data?.message || "Failed to reset password.",
-      errors: err?.response?.data?.errors || "An unknown error occurred.",
+      status: error?.response?.status || 500,
+      message: error?.response?.data?.message || "Failed to reset password.",
+      errors: error?.response?.data?.errors || "An unknown error occurred.",
       success: false,
     };
   }
-  redirect("/login");
+  redirect("/signin");
 }
 
 

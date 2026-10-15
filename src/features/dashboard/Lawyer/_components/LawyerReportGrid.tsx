@@ -9,7 +9,7 @@ import UpdateCaseDetails from "../../../cases/sheet/updateCase";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { ICase } from "./types";
 
-export default function LawyersReportGrid({ caseData }: { caseData: any[] }) {
+export default function LawyersReportGrid({ caseData }: { caseData: ICase[] }) {
     const [openCaseDocumentUpload, setOpenCaseDocumentUpload] = useState(false);
     const [openCaseProgressUpdate, setOpenCaseProgressUpdate] = useState(false);
     const [openUpdateCaseDetails, setOpenUpdateCaseDetails] = useState(false);

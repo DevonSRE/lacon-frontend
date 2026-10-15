@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -49,7 +49,6 @@ export function AddLawyerSheet() {
   const { isOpen, setIsOpen } = useAction();
   const [state, dispatch, isPending] = useActionState(InviteLawyer, undefined);
   const [formData, setFormData] = useState<FormDataLawyer>(defaultFormData);
-  const [dailogOpen, setDialogOpen] = useState(false);
   const [selectedState, setSelectedState] = useState<string>("");
   const [selectedZone, setSelectedZone] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
@@ -78,10 +77,6 @@ export function AddLawyerSheet() {
       setSelectedState("");
     }
   }, [state]);
-
-  useEffect(() => {
-    setDialogOpen(true);
-  }, [isPending]);
 
   const serverErrors = isFieldErrorObject(state?.errors) ? state.errors : {};
   return (

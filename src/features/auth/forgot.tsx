@@ -16,7 +16,7 @@ const FORGOT = () => {
     const [state, dispatch, isPending] = useActionState(ForgotPasswordAction, undefined);
     useEffectAfterMount(() => {
         if (state?.message && !state.success) {
-            toast.error(state.errors);
+            toast.error(typeof state.errors === "string" ? state.errors : "Unable to reset password.");
         }
     }, [state]);
     return (

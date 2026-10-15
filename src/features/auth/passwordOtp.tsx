@@ -32,13 +32,15 @@ export default function PASSWORDOTPCOMPONENT({ email }: { email: string }) {
 
     useEffect(() => {
         if (otpState && 'success' in otpState) {
-            if (otpState.success) {
-                toast.success(otpState.message);
-                setTimeLeft(60 * 5);
-            } else {
-                toast.error(otpState.message);
-            }
-            setIsResending(false);
+            queueMicrotask(() => {
+                if (otpState.success) {
+                    toast.success(otpState.message);
+                    setTimeLeft(60 * 5);
+                } else {
+                    toast.error(otpState.message);
+                }
+                setIsResending(false);
+            });
         }
     }, [otpState]);
 

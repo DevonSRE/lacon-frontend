@@ -3,8 +3,9 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { GetStates } from "@/server/actions/GetDetails";
+
+type LocationOption = { id: string; title: string };
 
 
 export const GetState = ({
@@ -80,7 +81,7 @@ export const GetState = ({
                     {data?.data?.data?.length > 0 ? (
                         [...(data?.data?.data ?? [])] // clone to avoid mutating original
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
-                            .map((location: any) => (
+                            .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">
                                     {location.title}
                                 </SelectItem>

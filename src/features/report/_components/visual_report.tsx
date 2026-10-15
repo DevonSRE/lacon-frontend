@@ -1,23 +1,17 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Router, TrendingUp } from "lucide-react";
 import { Icons } from "@/icons/icons";
 import { lawyerColumns, stateColumns } from "./table_Column";
 import { VisualReportProps } from "./report_types";
 import { DataTable } from "@/components/data-table";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-
-
-export default function VisualReport({ stateData, lawyersData }: VisualReportProps) {
-    const router = useRouter();
-
-    const StatCard = ({ title, value, subtitle, isHighlighted, }: {
-        title: string;
-        value: string | number;
-        subtitle?: string;
-        isHighlighted?: boolean;
-    }) => (
+function StatCard({ title, value, subtitle, isHighlighted }: {
+    title: string;
+    value: string | number;
+    subtitle?: string;
+    isHighlighted?: boolean;
+}) {
+    return (
         <Card className="p-4 rounded-xs">
             <CardContent className="space-y-2 mt-6">
                 <div className={`font-bold ${isHighlighted ? "text-red-500" : "text-black"}`}>
@@ -28,7 +22,10 @@ export default function VisualReport({ stateData, lawyersData }: VisualReportPro
             </CardContent>
         </Card>
     );
+}
 
+
+export default function VisualReport({ stateData, lawyersData }: VisualReportProps) {
     return (
         <div className="space-y-10">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

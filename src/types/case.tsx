@@ -115,7 +115,7 @@ export interface CaseOverview {
     occupation: string;
     disability_status: string;
     status: string;
-    criminal_case?: any;
-    civil_case?: any;
-    pdss?: any;
+    criminal_case?: Record<string, unknown>;
+    civil_case?: Record<string, unknown>;
+    pdss?: Record<string, unknown>;
 }

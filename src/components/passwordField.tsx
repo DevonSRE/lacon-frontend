@@ -7,7 +7,7 @@ import { Input } from "./ui/input";
 import clsx from "clsx";
 
 interface LoginPasswordFieldProps {
-  state?: { status: any; message: any; errors: any };
+  state?: { status: unknown; message: unknown; errors: unknown };
   clearErrors?: () => void;
   label?: string;
   name?: string;

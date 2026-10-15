@@ -109,7 +109,7 @@ export async function CaseUpdate(_prevState: unknown, formData: FormData) {
             supporting_documents = uploadResult?.data;
         }
         // Prepare data for API call
-        let uploadData = { ...result.data };
+        const uploadData = { ...result.data };
         if (supporting_documents != null) {
             uploadData.supporting_documents = supporting_documents;
         }
@@ -160,7 +160,7 @@ export async function UploadCaseDocumentAction(_prevState: unknown, formData: Fo
             document_path = uploadResult?.data;
         }
         // Prepare data for API call
-        let uploadData = { ...result.data };
+        const uploadData = { ...result.data };
         if (document_path != null) {
             uploadData.document_path = document_path;
         }

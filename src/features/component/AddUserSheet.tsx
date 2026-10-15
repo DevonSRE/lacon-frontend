@@ -17,18 +17,17 @@ import { useAction } from "@/context/ActionContext";
 import { InviteUser } from "../dashboard/server/action";
 import { SubmitButton } from "@/components/submit-button";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
-import { CLIENT_ERROR_STATUS } from "@/lib/constants";
 import InputField from "@/components/form/input/InputField";
-import { isFieldErrorObject, ROLES } from "@/types/auth";
-import { FormDataUser, zones } from "../dashboard/server/type";
-import { GetState } from "@/components/get-state";
+import { isFieldErrorObject } from "@/types/auth";
+import { FormDataUser } from "../dashboard/server/type";
 import { CustomeSheet } from "@/components/CustomSheet";
 import LoadingDialog from "@/components/LoadingDialog";
 import { useQueryClient } from "@tanstack/react-query";
 import { GetZone } from "@/components/get-zone";
-import { GetActiveUser } from "@/components/get-active-users";
-import { GetInactiveState } from "@/components/get-inactive-state";
+import { GetState } from "@/components/get-state";
 import { GetInActiveUser } from "@/components/get-inactive-users";
+import { GetInvitationCenter } from "@/components/get-invitation-center";
+import { invitationScope } from "@/lib/user-invitation-options";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 const defaultFormData: FormDataUser = {
@@ -48,15 +47,14 @@ export function AddUserSheet() {
     useAction();
   const [state, dispatch, isPending] = useActionState(InviteUser, undefined);
   const [formData, setFormData] = useState<FormDataUser>(defaultFormData);
-  const [selectedState, setSelectedState] = useState<string>("");
-  const [userType, setSelectedUserType] = useState<string>("");
+  const [submittedRole, setSubmittedRole] = useState("");
   const queryClient = useQueryClient();
-  const [loading, setLoading] = useState<boolean>(false);
+  const scope = invitationScope(formData.user_type, formData.designation);
   const handleChange = (key: keyof FormDataUser, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
   useEffectAfterMount(() => {
-    if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
+    if (state && state.status >= 400) {
       toast.error(state?.message, {
         description:
           typeof state?.errors === "string"
@@ -78,6 +76,7 @@ export function AddUserSheet() {
         details: "User Created successfully!",
       });
       queryClient.invalidateQueries({ queryKey: ["getUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["InActiveUsers"] });
       setTimeout(() => {
         setLoadingDialog({ open: false, title: "", details: "" });
       }, 2000);
@@ -85,6 +84,7 @@ export function AddUserSheet() {
   }, [state]);
   const serverErrors = isFieldErrorObject(state?.errors) ? state.errors : {};
   const dispatchAction = (formData: FormData) => {
+    setSubmittedRole(String(formData.get("user_type") ?? ""));
     startTransition(() => {
       dispatch(formData);
     });
@@ -97,7 +97,7 @@ export function AddUserSheet() {
         details: "Creating User Role...",
       });
     }
-  }, [isPending]);
+  }, [isPending, setLoadingDialog]);
 
   return (
     <>
@@ -110,16 +110,18 @@ export function AddUserSheet() {
       <CustomeSheet open={isOpen} setOpen={setIsOpen} className="sm:w-[600px]">
         <form className="space-y-6" onSubmit={submitWithoutReset(dispatchAction)}>
           <h2 className="text-xl font-semibold">Add New User</h2>
+          {!isPending && state && state.status >= 400 && submittedRole === formData.user_type && <div role="alert" className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+            <p>{state.message}</p>
+            {state.errors && <p>{typeof state.errors === "string" ? state.errors : Object.values(state.errors).flat().join(". ")}</p>}
+          </div>}
           <div className="space-y-1">
             <Label>User Role</Label>
             <GetInActiveUser
-              value={userType}
+              value={formData.user_type}
               onValueChange={(val: string) => {
-                setSelectedUserType(val);
-                handleChange("user_type", val);
+                setFormData(prev => ({ ...prev, user_type: val, designation: "", state_id: "", zone_id: "", center_id: "" }));
               }}
               placeholder="Select User Type"
-              onLoadingChange={(loading) => setLoading(loading)}
             />
           </div>
 
@@ -135,7 +137,7 @@ export function AddUserSheet() {
                     key={formData.designation + state?.status}
                     name="designation"
                     value={formData.designation}
-                    onValueChange={(val) => handleChange("designation", val)}
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, designation: val, state_id: "", zone_id: "", center_id: "" }))}
                   >
                     <SelectTrigger className="w-full  rounded-none h-11">
                       <SelectValue placeholder="Select Designation" />
@@ -165,7 +167,7 @@ export function AddUserSheet() {
                     key={formData.designation + state?.status}
                     name="designation"
                     value={formData.designation}
-                    onValueChange={(val) => handleChange("designation", val)}
+                    onValueChange={(val) => setFormData(prev => ({ ...prev, designation: val, state_id: "", zone_id: "", center_id: "" }))}
                   >
                     <SelectTrigger className="w-full  rounded-none h-11">
                       <SelectValue placeholder="Select Designation" />
@@ -185,23 +187,15 @@ export function AddUserSheet() {
               )}
 
               {/* State Selection */}
-              {(
-                (formData.designation === "State Office" && formData.user_type === "INTERNAL PARALEGAL") ||
-                formData.user_type === "STATE COORDINATOR" || formData.user_type === "CENTRE COORDINATOR" ||
-
-                (formData.user_type === "LACON LAWYER" && (formData.designation === "State Lawyer" || formData.designation === "Centre Lawyer")) ||
-
-               (formData.user_type === "PRO BONO LAWYER" && (formData.designation === "State Lawyer" || formData.designation === "Centre Lawyer")) 
-                  // (formData.designation === "State Office" ||  formData.designation === "Center Lawyer")
-
-                ) && (
+              {scope.state && (
                 <div className="space-y-1">
                   <Label>
                     Select State <span className="text-red-500">*</span>
                   </Label>
-                  <GetInactiveState
-                    value={selectedState}
-                    onValueChange={(val: string) => setSelectedState(val)}
+                  <GetState
+                    key={formData.user_type + formData.designation}
+                    value={formData.state_id}
+                    onValueChange={(val: string) => setFormData(prev => ({ ...prev, state_id: val, center_id: "" }))}
                     placeholder="Select state"
                   />
 
@@ -212,37 +206,17 @@ export function AddUserSheet() {
                   )}
                 </div>
               )}
-              {
-                (
-              formData.user_type === "CENTRE COORDINATOR"  ||
-               (formData.user_type === "PRO BONO LAWYER" && formData.designation === "Centre Lawyer") ||
-               (formData.user_type === "LACON LAWYER" && formData.designation === "Centre Lawyer") 
-
-                )
-              && (
+              {scope.center && (
                 <div className="space-y-1">
                   <Label>
                     Select Center <span className="text-red-500">*</span>
                   </Label>
-                  <Select
-                    key={formData.center_id + state?.status}
-                    name="center_id"
+                  <GetInvitationCenter
+                    key={formData.state_id}
+                    stateId={formData.state_id}
                     value={formData.center_id}
                     onValueChange={(val) => handleChange("center_id", val)}
-                  >
-                    <SelectTrigger
-                      className={`w-full ${
-                        serverErrors.center_id ? "border-red-500" : ""
-                      }`}
-                    >
-                      <SelectValue placeholder="Select Designated Center" />
-                    </SelectTrigger>
-                    <SelectContent className="h-60 overflow-y-auto">
-                      <SelectItem value="Center A"> Center A</SelectItem>
-                      <SelectItem value="Center B"> Center B</SelectItem>
-                      <SelectItem value="Center C"> Center C</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  />
                   {serverErrors.center_id && (
                     <p className="text-red-500 text-sm">
                       {serverErrors.center_id[0]}
@@ -252,25 +226,16 @@ export function AddUserSheet() {
               )}
 
               {/* Zone Selection */}
-              {(formData.user_type === "ZONAL DIRECTOR" ||
-                formData.designation === "CENTRE COORDINATOR" ||
-                formData.designation === "Zonal Office" ||
-
-                   (formData.user_type === "LACON LAWYER" && formData.designation === "Zonal Lawyer") ||
-
-               (formData.user_type === "PRO BONO LAWYER" && formData.designation === "Zonal Lawyer")
-              
-              
-              ) && (
+              {scope.zone && (
                 <div className="space-y-1">
                   <Label>
                     Zone Selection <span className="text-red-500">*</span>
                   </Label>
                   <GetZone
-                    value={selectedState}
-                    onValueChange={(val: string) => setSelectedState(val)}
+                    key={formData.user_type + formData.designation}
+                    value={formData.zone_id}
+                    onValueChange={(val: string) => handleChange("zone_id", val)}
                     placeholder="Select your zone"
-                    onLoadingChange={(loading) => setLoading(loading)}
                   />
 
                   {serverErrors.zone_id && (

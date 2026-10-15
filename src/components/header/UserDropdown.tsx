@@ -5,34 +5,28 @@ import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
 import { LoaderCircle, LogOut } from "lucide-react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useAppSelector } from "@/hooks/redux";
+import { useRouter } from "next/navigation";
 
 export default function UserDropdown() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false); // Add dialog state
   const { data: user } = useAppSelector((state) => state.profile);
-  const [name, setName] = useState<string>("");
+  const name = [user?.first_name, user?.last_name].filter(Boolean).join(" ");
 
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
     setIsOpen((prev) => !prev);
   }
 
-  useEffect(() => {
-    if (user?.first_name && user?.last_name) {
-      setName(`${user.first_name} ${user.last_name}`);
-    }
-  }, [user]);
-
   function closeDropdown() {
     setIsOpen(false);
   }
 
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   const handleLogout = async (e: React.MouseEvent) => {
@@ -51,8 +45,8 @@ export default function UserDropdown() {
       setDialogOpen(false);
       setLoading(false);
 
-      // Navigate to signin
-      window.location.href = '/signin'; // Force a full page redirect
+      router.replace("/signin");
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
       setLoading(false);

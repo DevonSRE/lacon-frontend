@@ -6,6 +6,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from ".
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { GetZones } from "@/server/actions/GetDetails";
 
+type LocationOption = { id: string; title: string };
+
 
 export const GetZone = ({
     placeholder,
@@ -76,7 +78,7 @@ export const GetZone = ({
                 </SelectTrigger>
                 <SelectContent className="bg-white text-zinc-900">
                     {data?.data?.data?.length > 0 ? (
-                        data?.data?.data.map((location: any) => (
+                        data?.data?.data.map((location: LocationOption) => (
                             <SelectItem key={location.id} value={location.id} className="py-2">
                                 {location.title}
                             </SelectItem>

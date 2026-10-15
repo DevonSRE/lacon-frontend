@@ -16,6 +16,7 @@ import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { useAction } from '@/context/ActionContext';
 import { GetState } from '@/components/get-state';
+import { ZodError } from 'zod';
 
 interface CivilCaseFormProps {
     currentStep?: number;
@@ -37,7 +38,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         if (selectedStateId === "") {
             setIsOpen(true);
         }
-    }, [selectedStateId]);
+    }, [selectedStateId, setIsOpen]);
 
     useEffectAfterMount(() => {
         if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
@@ -117,10 +118,10 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
             }
             setErrors({});
             return true;
-        } catch (error: any) {
-            if (error.name === 'ZodError') {
+        } catch (error: unknown) {
+            if (error instanceof ZodError) {
                 const formattedErrors: Record<string, string[]> = {};
-                error.issues.forEach((err: any) => {
+                error.issues.forEach((err) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];
@@ -162,7 +163,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 }
                 fd.append("isPublic", isPublic ? "true" : "false");
                 Object.entries(formData).forEach(([key, value]) => {
-                    const v: any = value;
+                    const v: unknown = value;
                     if (v instanceof File) {
                         fd.append(key, v);
                     } else if (typeof v === "object" && v !== null) {

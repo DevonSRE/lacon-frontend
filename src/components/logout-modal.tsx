@@ -14,16 +14,18 @@ import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
 import { LoaderCircle, LogOut } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function LogoutModal() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const handleLogout = async () => {
     setLoading(true);
     try {
       await deleteSession();
       localStorage.clear();
-      // redirect() is not allowed in event handlers; a full load also clears in-memory query/redux state.
-      window.location.href = "/signin";
+      router.replace("/signin");
+      router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);
       setLoading(false); // Reset loading state on error

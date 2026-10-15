@@ -18,6 +18,7 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { GetState } from '@/components/get-state'
+import { ZodError } from 'zod'
 
 
 interface CivilCaseFormProps {
@@ -42,7 +43,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         if (selectedStateId === "") {
             setIsOpen(true);
         }
-    }, [selectedStateId]);
+    }, [selectedStateId, setIsOpen]);
 
     useEffectAfterMount(() => {
         if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
@@ -117,11 +118,11 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             }
             setErrors({});
             return true;
-        } catch (error: any) {
-            if (error.name === 'ZodError') {
+        } catch (error: unknown) {
+            if (error instanceof ZodError) {
                 const formattedErrors: Record<string, string[]> = {};
 
-                error.issues.forEach((err: any) => {
+                error.issues.forEach((err) => {
                     const path = err.path.join('.');
                     if (!formattedErrors[path]) {
                         formattedErrors[path] = [];
@@ -168,7 +169,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 }
                 fd.append("isPublic", isPublic ? "true" : "false");
                Object.entries(formData).forEach(([key, value]) => {
-                    const v: any = value;
+                    const v: unknown = value;
                     if (v instanceof File) {
                         fd.append(key, v);
                     } else if (typeof v === "object" && v !== null) {

@@ -9,7 +9,7 @@ export default function ReusableTabs({
   activeTab, onTabChange, tabs, tablistClassName,
 }: {
   activeTab: string;
-  tabs: { id: any; label: string }[];
+  tabs: { id: string; label: string }[];
   onTabChange: (type: string) => void;
   tablistClassName?: string;
 }) {
@@ -31,7 +31,7 @@ export default function ReusableTabs({
           tablistClassName
         )}>
         {/* <div className="w-full overflow-x-auto scrollbar-hide"> */}
-          {tabs.map((tab: { id: any; label: string }) => (
+          {tabs.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id} className="relative px-0 font-semibold rounded-none border-b-2 border-transparent data-[state=active]:border- data-[state=active]:text-[#BD2B12] data-[state=active]:font-bold data-[state=active]:shadow-none text-sm text-neutral-400">
               {tab.label}
               {activeTab == tab.id && (

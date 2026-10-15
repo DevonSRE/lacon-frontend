@@ -82,7 +82,7 @@ export default function FileACase() {
                             <Label htmlFor="case-type-select">What type of case are you filing?</Label>
                             <Select
                                 value={caseType}
-                                onValueChange={(val) => setCaseType(val as any)}
+                                onValueChange={(val) => setCaseType(val as typeof caseType)}
                             >
                                 <SelectTrigger className="w-full h-11">
                                     <SelectValue placeholder="Choose a case type" />

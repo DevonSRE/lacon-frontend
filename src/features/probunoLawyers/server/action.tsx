@@ -114,16 +114,10 @@ export async function submitLawyersForm(
     }
   }
 }
-type SchemaType =
-  | typeof proBonoSchema
-  | typeof caseUpdateSchema
-  | typeof probunoInventoryCaseformSchema;
-type ServiceMethod = (data: any) => Promise<any>;
-
-async function handleFormSubmission(
+async function handleFormSubmission<TSchema extends z.ZodType>(
   formData: FormData,
-  schema: SchemaType,
-  serviceMethod: ServiceMethod
+  schema: TSchema,
+  serviceMethod: (data: z.infer<TSchema>) => Promise<unknown>
 ) {
   const data = Object.fromEntries(formData);
   const result = schema.safeParse(data);
@@ -289,7 +283,7 @@ export async function submitProBonoForm(
   _prevState: unknown,
   formData: FormData
 ) {
-  const data: Record<string, any> = {};
+  const data: Record<string, FormDataEntryValue | FormDataEntryValue[]> = {};
   const multiValueFields = ["criminal_courts_preference"];
   try {
     for (const [key, value] of formData.entries()) {
@@ -297,7 +291,7 @@ export async function submitProBonoForm(
         if (!data[key]) {
           data[key] = [];
         }
-        data[key].push(value);
+        (data[key] as FormDataEntryValue[]).push(value);
       } else if (!Object.prototype.hasOwnProperty.call(data, key)) {
         data[key] = value;
       }
@@ -529,7 +523,7 @@ export async function submitMercyApplicationForm(
     };
 
     // Prepare data for API call
-    let uploadData = { ...data };
+    const uploadData = { ...data };
     if (disabilityProof != null) {
       data.perogative_of_mercy.recommendations = disabilityProof;
     }

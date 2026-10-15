@@ -7,7 +7,9 @@ import {
     TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-export default function LawyersReportTable({ tableData }: { tableData: any[] }) {
+import { ICase } from "./types";
+
+export default function LawyersReportTable({ tableData }: { tableData: ICase[] }) {
     return (
         <Table className="mt-4">
             <TableHeader>

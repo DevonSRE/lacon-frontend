@@ -48,7 +48,7 @@ export default function LawyersRequest() {
   const [searchTerm, setSearchTerm] = useState("");
   const [reason, setReason] = useState("");
   const { setIsOpen } = useAction();
-  const [Actiontype, setActiontype] = useState<ROLES | undefined>(undefined);
+  const [Actiontype, setActiontype] = useState<string | undefined>(undefined);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
   const { data: user } = useAppSelector((state) => state.profile);
   const [selectedUser, setSelectedUser] = useState<ILawyerRequest | null>(null);
@@ -133,7 +133,7 @@ export default function LawyersRequest() {
 
   const actionType: string[] = ["Creation", "Suspension", "approve"];
 
-  const handleActionType = (role: any) => {
+  const handleActionType = (role: string) => {
     setActiontype(role === "All" ? undefined : role);
     const searchInput = document.getElementsByName(
       "searchTerm"

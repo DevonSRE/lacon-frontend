@@ -1,23 +1,23 @@
 import { axiosInstance } from "@/lib/_api/axios-config";
 
 const casesServices = {
-    async getCases(param: any) {
+    async getCases(param: unknown) {
         return await axiosInstance.get("/casefile", {
             params: param,
         });
     },
-    async getEvents(param: any, id: string) {
+    async getEvents(param: unknown, id: string) {
         return await axiosInstance.get(`/users/${id}/events`, {
             params: param,
         });
     },
-    async AssignCases(payload: any) {
+    async AssignCases(payload: unknown) {
         return await axiosInstance.patch("/admin/casefile/case-assignment", payload);
     },
-    async UpdateCasesFile(payload: any, id: string) {
+    async UpdateCasesFile(payload: unknown, id: string) {
         return await axiosInstance.post(`/admin/casefile/${id}/case-update`, payload);
     },
-    async UploadeDocument(payload: any, id: string) {
+    async UploadeDocument(payload: unknown, id: string) {
         return await axiosInstance.post(`/casefile/${id}/document-upload`, payload);
     },
 }
