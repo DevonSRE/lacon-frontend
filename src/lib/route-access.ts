@@ -41,6 +41,9 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
   ],
   "/reports": [ROLES.ADMIN, ROLES.PLATFORM_ADMIN, ROLES.DIRECTOR_GENERAL],
   "/settings": [ROLES.ADMIN],
+  // Zones, states and centres decide where cases are routed and who holds them,
+  // so only a platform admin may change them (the API agrees).
+  "/organisation": [ROLES.PLATFORM_ADMIN],
 };
 
 // "/users" itself is reachable by anyone allowed on one of its tabs.
