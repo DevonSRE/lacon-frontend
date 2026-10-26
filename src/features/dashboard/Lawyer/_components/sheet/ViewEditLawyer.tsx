@@ -18,6 +18,11 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import LoadingDialog from '@/components/LoadingDialog';
 import { useQueryClient } from '@tanstack/react-query';
+import { GetState } from '@/components/get-state';
+import { GetZone } from '@/components/get-zone';
+import { GetInvitationCenter } from '@/components/get-invitation-center';
+import { ROLES } from '@/types/auth';
+import { invitationScope } from '@/lib/user-invitation-options';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 interface RecentCase {
@@ -32,9 +37,10 @@ interface LawyerDetailsProps {
     recentCases?: RecentCase[];
     sheetType?: "view" | "edit" | "suspend" | "delete" | null;
     setOpen: Dispatch<SetStateAction<boolean>>;
+    allUserRoles?: boolean;
 }
 
-export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases, sheetType }: LawyerDetailsProps) {
+export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases, sheetType, allUserRoles = false }: LawyerDetailsProps) {
     const queryClient = useQueryClient();
 
     // Add missing state and hooks for the edit form
@@ -45,6 +51,9 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
         phone_number: lawyer?.phone_number || '',
         user_type: lawyer?.user_type || '',
         status: lawyer?.status || '',
+        state_id: lawyer?.state_id || '',
+        zone_id: lawyer?.zone_id || '',
+        center_id: lawyer?.center_id || '',
     });
 
     // Simplified loading dialog state
@@ -56,6 +65,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
 
     const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
     const [state, dispatch] = useActionState(UpdateLawyer, undefined);
+    const scope = invitationScope(formData.user_type);
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({
             ...prev,
@@ -326,14 +336,44 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                                 <SelectValue placeholder="Select Role" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
-                                <SelectItem value="PRO BONO LAWYER">Pro bono Lawyer</SelectItem>
+                                {(allUserRoles ? Object.values(ROLES) : [ROLES.LACON_LAWYER, ROLES.PRO_BONO_LAWYER]).map((role) => (
+                                    <SelectItem key={role} value={role}>{role}</SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                         {serverErrors.user_type && (
                             <p className="text-red-500 text-sm">{serverErrors.user_type[0]}</p>
                         )}
                     </div>
+
+                    {allUserRoles && (
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            {(scope.state || !!formData.state_id) && <div className="space-y-1">
+                                <Label>Assigned State</Label>
+                                <GetState
+                                    value={formData.state_id}
+                                    onValueChange={(value: string) => setFormData(previous => ({ ...previous, state_id: value, center_id: '' }))}
+                                    placeholder="Select state"
+                                />
+                            </div>}
+                            {(scope.zone || !!formData.zone_id) && <div className="space-y-1">
+                                <Label>Assigned Zone</Label>
+                                <GetZone
+                                    value={formData.zone_id}
+                                    onValueChange={(value: string) => handleChange('zone_id', value)}
+                                    placeholder="Select zone"
+                                />
+                            </div>}
+                            {(scope.center || !!formData.center_id) && <div className="space-y-1 sm:col-span-2">
+                                <Label>Assigned Centre</Label>
+                                <GetInvitationCenter
+                                    stateId={formData.state_id}
+                                    value={formData.center_id}
+                                    onValueChange={(value: string) => handleChange('center_id', value)}
+                                />
+                            </div>}
+                        </div>
+                    )}
 
                     <div className="space-y-1">
                         <Label>Status <span className="text-red-500">*</span></Label>

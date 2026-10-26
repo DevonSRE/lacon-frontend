@@ -115,14 +115,14 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
             <CustomeSheet open={openCaseType} backButton={false} setOpen={handleCloseCaseType} className="min-w-3xl">
                 <div className="mt-6">
                     {selectedCaseForm === "Civil" && (
-                        <CivilCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
+                        <CivilCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} onCaseSubmitted={onCaseSubmitted} />
                     )}
                     {selectedCaseForm === "Criminal" && (
-                        <CriminalCaseForm  handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} />
+                        <CriminalCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false} currentStep={currentStep} setCurrentStep={setCurrentStep} state_id={state_id} onCaseSubmitted={onCaseSubmitted} />
                     )}
                     {(selectedCaseForm === "pdss-instation" || selectedCaseForm === "pdss-organisation") && (
                         <PDSSCaseForm handleCloseCaseType={handleCloseCaseType} isPublic={false}
-                            currentStep={currentStep} setCurrentStep={setCurrentStep} type={selectedCaseForm} state_id={state_id} />
+                            currentStep={currentStep} setCurrentStep={setCurrentStep} type={selectedCaseForm} state_id={state_id} onCaseSubmitted={onCaseSubmitted} />
                     )}
                     {selectedCaseForm === "Decongestion" && (
                         <DecongestionForm

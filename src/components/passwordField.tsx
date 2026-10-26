@@ -15,6 +15,7 @@ interface LoginPasswordFieldProps {
   error?: string;
   placeholder?: string;
   showStrength?: boolean;
+  required?: boolean;
 }
 
 export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
@@ -26,6 +27,7 @@ export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
   error,
   placeholder = "input password",
   showStrength = false,
+  required = false,
 }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [password, setPassword] = useState("");
@@ -47,7 +49,7 @@ export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
       {label && (
         <Label htmlFor={id} className={clsx("", error ? "text-red-500" : "")}>
           {label}
-          {/* <span className="text-red-500 ml-1 text-lg">*</span> */}
+          {required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}
         </Label>
       )}
 
@@ -64,7 +66,7 @@ export const LoginPasswordField: React.FC<LoginPasswordFieldProps> = ({
             setPassword(e.target.value);
             clearErrors?.();
           }}
-          required
+          required={required}
         />
         <span
           onClick={() => setShowPassword(!showPassword)}

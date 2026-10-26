@@ -7,6 +7,9 @@ import { GetStates } from "@/server/actions/GetDetails";
 
 type LocationOption = { id: string; title: string };
 
+const displayStateName = (title: string) =>
+    title.trim().toUpperCase() === "FCT" ? "Federal Capital Territory" : title;
+
 
 export const GetState = ({
     placeholder,
@@ -83,7 +86,7 @@ export const GetState = ({
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">
-                                    {location.title}
+                                    {displayStateName(location.title)}
                                 </SelectItem>
                             ))
                     ) : (

@@ -1,25 +1,27 @@
 'use client';
 
-import { useActionState, useState } from 'react';
-import { useFormState } from 'react-dom';
-import { submitLawyersForm } from '../server/action';
+import { useActionState, useState, useTransition } from 'react';
+import { requestProBonoReviewCode, submitLawyersForm } from '../server/action';
 import { SubmitButton } from '@/components/submit-button';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { isFieldErrorObject } from '@/types/auth';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import InputField from '@/components/form/input/InputField';
 import SelectField from '@/components/SelectField';
-import { FormDataProbunoUpdate, FormErrors, ProBonoCase } from '../server/probunoTypes';
+import { FormDataProbunoUpdate, ProBonoCase } from '../server/probunoTypes';
 import CaseIntakeDialog from './CaseIntakeDialog';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options';
 export default function LawyersAnnualCasesReviewForm() {
     const [state, formAction, isPending] = useActionState(submitLawyersForm, undefined);
-    const [errors, setErrors] = useState<FormErrors>({})
+    const errors: Record<string, string[] | undefined> = state?.errors && typeof state.errors === 'object'
+        ? state.errors as Record<string, string[]>
+        : {};
     const [open, setOpen] = useState(false)
+    const [isRequestingCode, startCodeRequest] = useTransition();
+    const [codeMessage, setCodeMessage] = useState('');
 
     useEffectAfterMount(() => {
         if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
@@ -37,6 +39,7 @@ export default function LawyersAnnualCasesReviewForm() {
     }, [state]);
 
     const [formData, setFormData] = useState<FormDataProbunoUpdate>({
+        code: '',
         first_name: '',
         last_name: '',
         contact_address: '',
@@ -96,6 +99,16 @@ export default function LawyersAnnualCasesReviewForm() {
                 case_.id === id ? { ...case_, [field]: value } : case_
             )
         }));
+    };
+
+    const handleRequestCode = () => {
+        setCodeMessage('');
+        startCodeRequest(async () => {
+            const result = await requestProBonoReviewCode(formData.email);
+            setCodeMessage(result.message);
+            if (result.success) toast.success(result.message);
+            else toast.error(result.message);
+        });
     };
 
     // Custom form submission handler
@@ -188,6 +201,34 @@ export default function LawyersAnnualCasesReviewForm() {
                                 error={!!errors.contact_address}
                             />
 
+                            <div className="rounded-md border border-gray-200 bg-gray-50 p-4 space-y-3">
+                                <p className="text-sm text-gray-700">
+                                    Request a confirmation code using the email above, then enter the code before submitting.
+                                </p>
+                                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end">
+                                    <InputField
+                                        label="Confirmation Code"
+                                        required
+                                        name="code"
+                                        type="text"
+                                        value={formData.code}
+                                        onChange={(e) => setFormData(prev => ({ ...prev, code: e.target.value.replace(/\D/g, '').slice(0, 6) }))}
+                                        placeholder="Enter 6-digit code"
+                                        error={!!errors.code}
+                                    />
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={handleRequestCode}
+                                        disabled={isRequestingCode || !formData.email}
+                                        className="h-11"
+                                    >
+                                        {isRequestingCode ? 'Sending…' : 'Send code'}
+                                    </Button>
+                                </div>
+                                {codeMessage && <p role="status" className="text-xs text-gray-600">{codeMessage}</p>}
+                            </div>
+
                         </div>
                     </div>
 
@@ -258,7 +299,7 @@ export default function LawyersAnnualCasesReviewForm() {
                                     />
 
                                     <InputField
-                                        label="The Offering/Charge"
+                                        label="Offence/Charge"
                                         required
                                         name={`cases[${index}].offering_charge`}
                                         type="text"

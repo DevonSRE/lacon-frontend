@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 import { stateOptions } from '@/lib/types'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import { FormDataCivilCase, legalAidFormSchema, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema'
-import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
+import { CRIMINAL_COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { toast } from 'sonner'
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
@@ -26,9 +26,10 @@ interface CivilCaseFormProps {
   handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
   isPublic: boolean;
   state_id?: string;
+  onCaseSubmitted?: () => void;
 }
 
-export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { } }: CivilCaseFormProps) {
+export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = () => { }, onCaseSubmitted }: CivilCaseFormProps) {
   const router = useRouter();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [open, setOpen] = useState(false);
@@ -59,6 +60,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
     } else if (state && state.status === 200) {
       setCurrentStep(1);
       setOpen(true);
+      onCaseSubmitted?.();
     }
   }, [state]);
 
@@ -203,6 +205,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         onOpenChange={setOpen}
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
+        caseReference={state?.data?.case_id ?? state?.data?.id}
       />
       {!isPublic &&
         <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
@@ -481,7 +484,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       name="case_status"
                       label="Case Status"
                       placeholder="Case Status"
-                      options={COURT_STAGE_OPTIONS}
+                      options={CRIMINAL_COURT_STAGE_OPTIONS}
                       required
                       value={formData.case_status} // Add value prop
                       onValueChange={(value) => handleSelectChange(value, 'case_status')}

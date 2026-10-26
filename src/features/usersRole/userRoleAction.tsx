@@ -38,7 +38,27 @@ export async function GetLawyerRequestAction(params: Ipage) {
 export async function GetProbunoLawyerRequestAction(params: Ipage) {
     try {
         const response = await usersServices.getProbunoLawyersRequest(params);
-        return { data: response.data?.data, success: true };
+        const page = response.data?.data;
+        const data = page?.data?.map((application: Record<string, unknown>) => ({
+            ...application,
+            ID: application.user_id,
+            ApplicationID: application.id,
+            FirstName: application.first_name,
+            LastName: application.last_name,
+            Email: application.email,
+            PhoneNumber: application.phone_number,
+            AltNumber: application.alternate_number,
+            YearOfCall: application.year_of_call,
+            NBANumber: application.nba_branch,
+            Experience: application.experience_in_criminal_law,
+            MaxLoad: application.pro_bono_capacity,
+            PreferredCourt: Array.isArray(application.criminal_courts_preference)
+                ? application.criminal_courts_preference.join(", ")
+                : application.criminal_courts_preference,
+            Status: String(application.status ?? "").toUpperCase(),
+            CreatedAt: application.created_at,
+        }));
+        return { data: { ...page, data }, success: true };
 
     } catch (err: unknown) {
         const error = err as ErrorResponse;

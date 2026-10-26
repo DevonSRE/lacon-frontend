@@ -1,6 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import {
     Dialog,
     DialogClose,
@@ -27,12 +27,22 @@ import { toast } from "sonner";
 
 export default function FileACase() {
     const router = useRouter();
-    const dialogCloseRef = useRef<HTMLButtonElement>(null);
     const { isOpen, setIsOpen, setSeletedStateId } = useAction();
 
     const [selectedState, setSelectedState] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
+    const [statesLoading, setStatesLoading] = useState<boolean>(false);
+    const [isNavigating, startNavigation] = useTransition();
     const [caseType, setCaseType] = useState<"Civil" | "Criminal" | "PDSS-InStation" | "PDSS-Organisation" | "">("");
+
+    const resetSelections = () => {
+        setSelectedState("");
+        setCaseType("");
+    };
+
+    const handleOpenChange = (open: boolean) => {
+        setIsOpen(open);
+        if (!open) resetSelections();
+    };
 
     const handleProceed = () => {
         if (!selectedState) {
@@ -46,22 +56,35 @@ export default function FileACase() {
         }
 
         setSeletedStateId(selectedState);
-        setLoading(true);
-
-        if (dialogCloseRef.current) {
-            dialogCloseRef.current.click();
-        }
-
-        setTimeout(() => {
-            setLoading(false);
-            const slug = caseType.trim().toLowerCase().replace(/\s+/g, "-");
+        const slug = caseType.trim().toLowerCase().replace(/\s+/g, "-");
+        resetSelections();
+        startNavigation(() => {
+            setIsOpen(false);
             router.push(`/probono/cases/${slug}`);
-        }, 100);
+        });
     };
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <>
+        {isNavigating && (
+            <div role="status" aria-live="polite" className="fixed inset-0 z-[100] flex items-center justify-center bg-white/80 backdrop-blur-sm">
+                <div className="flex items-center gap-3 rounded-lg border bg-white px-5 py-4 shadow-lg">
+                    <Loader2 className="size-5 animate-spin text-red-600" />
+                    <span className="text-sm font-medium text-gray-800">Loading case form…</span>
+                </div>
+            </div>
+        )}
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogContent className="sm:max-w-xl">
+                <DialogClose asChild>
+                    <button
+                        type="button"
+                        aria-label="Close file a case dialog"
+                        className="absolute right-4 top-4 rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-500"
+                    >
+                        <X className="size-4" />
+                    </button>
+                </DialogClose>
                 <DialogHeader className="space-y-4">
                     <DialogTitle>File a Case</DialogTitle>
                 </DialogHeader>
@@ -74,7 +97,7 @@ export default function FileACase() {
                                 value={selectedState}
                                 onValueChange={(val: string) => setSelectedState(val)}
                                 placeholder="Select your state"
-                                onLoadingChange={(loading) => setLoading(loading)}
+                                onLoadingChange={(loading) => setStatesLoading(loading)}
                             />
                         </div>
 
@@ -101,19 +124,17 @@ export default function FileACase() {
                     </div>
                 </DialogDescription>
                 <DialogFooter className="flex flex-col gap-2">
-                    <DialogClose asChild>
-                        <button ref={dialogCloseRef} className="hidden" />
-                    </DialogClose>
                     <Button
-                        disabled={loading || !selectedState || !caseType}
+                        disabled={statesLoading || isNavigating || !selectedState || !caseType}
                         className="w-full h-11 bg-red-500"
                         onClick={handleProceed}
                     >
-                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {loading ? "Proceeding" : "Proceed"}
+                        {(statesLoading || isNavigating) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {statesLoading ? "Loading states…" : isNavigating ? "Proceeding…" : "Proceed"}
                     </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+        </>
     );
 }

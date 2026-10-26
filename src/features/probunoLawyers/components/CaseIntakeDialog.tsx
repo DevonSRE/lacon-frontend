@@ -13,13 +13,15 @@ interface CaseIntakeDialogProps {
     onOpenChange: (open: boolean) => void
     handleCloseCaseType?: (open: boolean) => void
     isHome?: boolean
+    caseReference?: string
 }
 
 export default function CaseIntakeDialog({
     open,
     onOpenChange,
     handleCloseCaseType,
-    isHome
+    isHome,
+    caseReference,
 }: CaseIntakeDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
@@ -33,6 +35,11 @@ export default function CaseIntakeDialog({
                             The case intake form has been successfully<br />
                             recorded in our system.
                         </p>
+                        {caseReference && (
+                            <p className="rounded bg-green-50 px-4 py-2 text-center text-sm font-semibold text-green-800">
+                                Case reference: {caseReference}
+                            </p>
+                        )}
                         {!isHome ? (
                             <Button onClick={() => { handleCloseCaseType?.(false); onOpenChange(false) }} className="w-full h-11 bg-black text-white hover:bg-gray-800">
                                 Close

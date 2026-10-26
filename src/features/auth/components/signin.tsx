@@ -67,7 +67,7 @@ export default function SigninForm() {
               placeholder="example@email.com"
             />
             <div>
-              <LoginPasswordField error={errors.password?.[0]} />
+              <LoginPasswordField error={errors.password?.[0]} required />
               <div className="text-right text-xs text-red-500 mt-1 cursor-pointer">
                 <Link href="/password/forgot">
                   Forgot Password?
@@ -95,12 +95,9 @@ export default function SigninForm() {
               Sign in with Google
             </Button> */}
 
-            <div className="text-center text-sm mt-4">
-              Request An Account Creation?{' '}
-              <span className="text-red-600 font-semibold cursor-pointer">
-                Send request!!
-              </span>
-            </div>
+            <p className="text-center text-sm mt-4 text-gray-500">
+              Accounts are created by an authorised LACON administrator.
+            </p>
           </form>
         </div>
       </div>

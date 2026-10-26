@@ -8,6 +8,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { caseReference, normalizeCase, statusLabel, type CaseRecord } from "../domain";
 import { getCase, getCaseHistory, getCaseDocuments } from "../server/lifecycle";
 import CaseActions from "./CaseActions";
+import { CIVIL_COURT_STAGE_OPTIONS, CRIMINAL_COURT_STAGE_OPTIONS } from "@/lib/form-options";
 
 function dateLabel(raw?: string) {
   if (!raw || raw.startsWith("0001-")) return "Not recorded";
@@ -15,7 +16,15 @@ function dateLabel(raw?: string) {
   return Number.isNaN(date.getTime()) ? raw : date.toLocaleString("en-GB");
 }
 function Details({ values }: { values: Record<string, unknown> }) {
-  return <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">{Object.entries(values).filter(([key, value]) => !key.endsWith("_id") && value !== undefined && value !== null && value !== "").map(([key, value]) => <div key={key} className="min-w-0"><dt className="text-sm capitalize text-gray-500">{key.replaceAll("_", " ")}</dt><dd className="whitespace-pre-wrap break-words text-sm">{typeof value === "boolean" ? value ? "Yes" : "No" : String(value)}</dd></div>)}</dl>;
+  const stageOptions = [...CIVIL_COURT_STAGE_OPTIONS, ...CRIMINAL_COURT_STAGE_OPTIONS];
+  const displayValue = (key: string, value: unknown) => {
+    if (typeof value === "boolean") return value ? "Yes" : "No";
+    if (key === "court_stage" || key === "case_status") {
+      return stageOptions.find(option => option.value === value)?.label ?? String(value);
+    }
+    return String(value);
+  };
+  return <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">{Object.entries(values).filter(([key, value]) => !key.endsWith("_id") && value !== undefined && value !== null && value !== "").map(([key, value]) => <div key={key} className="min-w-0"><dt className="text-sm capitalize text-gray-500">{key.replaceAll("_", " ")}</dt><dd className="whitespace-pre-wrap break-words text-sm">{displayValue(key, value)}</dd></div>)}</dl>;
 }
 export default function CaseWorkspace({ id, initialCase }: { id: string; initialCase?: CaseRecord }) {
   const { data: user } = useAppSelector(s => s.profile);
@@ -39,7 +48,7 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
     {!!record.possible_duplicate_of?.length && <div className="rounded border border-amber-300 bg-amber-50 p-4"><h2 className="font-semibold">Possible duplicate</h2><p className="text-sm">These cases share an email or phone number within the last 30 days. Check them before proceeding.</p><div className="mt-2 flex flex-wrap gap-3">{record.possible_duplicate_of.map(ref => <Link key={ref} className="text-sm underline" href={`/cases?search=${encodeURIComponent(ref)}`}>{ref}</Link>)}</div></div>}
     {record.status === "REVISION_REQUESTED" && <div className="rounded bg-amber-50 p-4"><h2 className="font-semibold">Revision requested</h2><p>{revision?.reason || "Review the case history for the assigner’s reason. Add a progress update after making the correction."}</p></div>}
     <CaseActions caseRecord={record} />
-    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ origin: record.origin_channel, filed_level: record.filed_level, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: record.filing_actor?.role, filing_state: record.state_name, zone: record.zone_name, centre: record.center_name, department: record.department_name, current_holder: record.current_holder?.name || "No holder available", holder_role: record.current_holder?.role, assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
+    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, origin: record.origin_channel, filed_level: record.filed_level, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: record.filing_actor?.role, filing_state: record.state_name, zone: record.zone_name, centre: record.center_name, department: record.department_name, current_holder: record.current_holder?.name || "No holder available", holder_role: record.current_holder?.role, assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
     <section className="space-y-3"><h2 className="font-semibold">Client information</h2><Details values={{ gender: record.gender, age: record.age, marital_status: record.marital_status, email: record.email, phone_number: record.phone_number, state_of_origin: record.state_of_origin, permanent_address: record.permanent_address, occupation: record.occupation }} /></section>
     {[record.civil_case, record.criminal_case, record.pdss, record.decongestion_unit, record.perogative_of_mercy].filter(Boolean).map((fields, index) => <section key={index} className="space-y-3"><h2 className="font-semibold">Case details</h2><Details values={fields!} /></section>)}
     <section className="space-y-3"><h2 className="font-semibold">Movement history</h2>

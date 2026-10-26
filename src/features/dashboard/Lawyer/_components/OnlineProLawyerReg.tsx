@@ -127,7 +127,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
     { label: 'First Name', name: 'first_name', type: 'input', required: true },
     { label: 'Last Name', name: 'last_name', type: 'input', required: true },
     { label: 'Email Address', name: 'email', type: 'input', required: true },
-    { label: 'Mobile Phone Number', name: 'phone_number', type: 'input', required: true },
+    { label: 'Mobile Phone Number', name: 'phone_number', type: 'input', inputType: 'tel', required: true },
     { label: 'Alternate Number', name: 'alternate_number', type: 'input', required: false },
     { label: 'State Bar Membership', name: 'state_bar_membership', type: 'input', required: true },
     { label: 'Name of Law Firm/Organization', name: 'name_of_law_firm_organization', type: 'textarea', required: true },
@@ -163,9 +163,15 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                     <InputField
                       label={field.label}
                       name={field.name}
+                      type={'inputType' in field ? field.inputType : 'text'}
                       required={field.required}
                       value={formData[field.name as keyof FormData] as string}
-                      onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      onChange={(e) => handleInputChange(
+                        field.name,
+                        field.name === 'phone_number'
+                          ? e.target.value.replace(/\D/g, '').slice(0, 11)
+                          : e.target.value
+                      )}
                     />
                   ) : (
                     <TextAreaField
@@ -193,7 +199,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
           {/* SECTION 2: Experience */}
           <section className="space-y-4">
-            <h2 className="font-semibold text-lg">SECTION 2: Experience in Criminal Law Practice</h2>
+            <h2 className="font-semibold text-lg">SECTION 2: Experience in Criminal Law Practice <span className="text-red-500 text-xs">*</span></h2>
             <p className="text-sm text-gray-700 mb-4">How many years of experience do you have?</p>
             <div className="space-y-3">
               {EXPERIENCE_OPTIONS.map(option => (
@@ -215,7 +221,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
           {/* SECTION 3: Case Capacity */}
           <section className="space-y-4">
-            <h2 className="font-semibold text-lg">SECTION 3: Pro Bono Case Handling Capacity</h2>
+            <h2 className="font-semibold text-lg">SECTION 3: Pro Bono Case Handling Capacity <span className="text-red-500 text-xs">*</span></h2>
             <p className="text-sm text-gray-700 mb-4">How many pro-bono cases can you handle at a time?</p>
             <div className="space-y-3">
               {CAPACITY_OPTIONS.map(option => (
@@ -237,7 +243,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
           {/* SECTION 4: Court Preference */}
           <section className="space-y-4">
-            <h2 className="font-semibold text-lg">SECTION 4: Criminal Matters Preference</h2>
+            <h2 className="font-semibold text-lg">SECTION 4: Criminal Matters Preference <span className="text-red-500 text-xs">*</span></h2>
             <p className="text-sm text-gray-700 mb-4">Which courts do you prefer handling criminal matters in?</p>
             <div className="space-y-3">
               {COURT_PREFERENCE_OPTIONS.map(option => (

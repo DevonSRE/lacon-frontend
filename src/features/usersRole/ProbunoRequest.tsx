@@ -27,7 +27,7 @@ export default function ProbunoRequest() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const { setIsOpen } = useAction();
-    const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
+    const [selectedStatus, setSelectedStatus] = useState<string | undefined>("pending");
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
     const { data: user } = useAppSelector((state) => state.profile);
     const [selectedUser, setSelectedUser] = useState<ILawyerRequest | null>(null);
@@ -47,13 +47,13 @@ export default function ProbunoRequest() {
 
 
     const { data, isLoading } = useQuery({
-        queryKey: ["getProbunoLawyersRequest", currentPage, debouncedSearchTerm, selectedRole],
+        queryKey: ["getProbunoLawyersRequest", currentPage, debouncedSearchTerm, selectedStatus],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 keyword: debouncedSearchTerm ?? "",
-                user_type: selectedRole ?? "",
+                status: selectedStatus ?? "all",
             };
             return await GetProbunoLawyerRequestAction(filters);
         },
@@ -61,17 +61,17 @@ export default function ProbunoRequest() {
     });
 
     const actionType: string[] = [
-        "active", "inactive", "Deleted"
+        "pending", "active", "inactive"
     ];
 
     const handleActionType = (role: string) => {
-        setSelectedRole(role);
+        setSelectedStatus(role);
     };
 
     return (
         <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
             <div className="row flex justify-between">
-                <div className="text-2xl font-semibold">Probuno Request from Website</div>
+                <div className="text-2xl font-semibold">Pro Bono Requests from Website</div>
             </div>
             <div className="flex items-center mt-6 gap-6 w-full justify-between">
                 <div className="relative w-full">
@@ -96,7 +96,7 @@ export default function ProbunoRequest() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
                             {actionType.map((tab) => (
-                                <DropdownMenuCheckboxItem key={tab} checked={selectedRole === tab} onClick={() => handleActionType(tab)}>
+                                <DropdownMenuCheckboxItem key={tab} checked={selectedStatus === tab} onClick={() => handleActionType(tab)}>
                                     {tab}
                                 </DropdownMenuCheckboxItem>
                             ))}

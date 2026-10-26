@@ -12,6 +12,9 @@ const ProbunoService = {
     async casesUpdate(payload: TProbunoCaseUpdatePayload) {
         return await userConfig.post("/users/probono-lawyers-update-case", payload);
     },
+    async requestReviewCode(payload: { email: string }) {
+        return await userConfig.post("/users/probono-lawyers-update-case/request-code", payload);
+    },
     async casesCase(payload: unknown) {
         return await axiosInstance.post("/casefile", payload);
     },
