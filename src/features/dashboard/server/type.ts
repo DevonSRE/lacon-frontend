@@ -28,6 +28,7 @@ export interface FormDataLawyer {
   status: string;
   department_name: string;
   max_load: string;
+  reason: string;
 }
 
 export const zones: Zone[] = [
@@ -112,6 +113,10 @@ export const createLawyerSchema = z.object({
   // are dropped by the schema unless listed here.
   department_name: z.string().optional(),
   max_load: z.string().optional(),
+  // A field office raises a request instead of creating the account; the reason
+  // is what the Director General decides on.
+  as_request: z.string().optional(),
+  reason: z.string().optional(),
 
   // status: z.string().optional(),
   first_name: z

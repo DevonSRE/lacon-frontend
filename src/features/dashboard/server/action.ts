@@ -77,6 +77,15 @@ export async function InviteLawyer(_prevState: unknown, formData: FormData) {
     }
   }
   try {
+    // A field office cannot create an account: it asks the Director General,
+    // who creates it on approval. The same form raises the request.
+    if (result.data.as_request === "true") {
+      if (!result.data.reason?.trim()) {
+        return { status: 400, errors: { reason: ["A reason is required"] }, message: "Invalid field found" };
+      }
+      const response = await UserService.requestUser({ ...result.data, action: "ADD" });
+      return { status: 200, message: "Request sent for approval", success: true, data: response.data };
+    }
     const response = await UserService.inviteUser(result.data);
     return {
       status: 200,

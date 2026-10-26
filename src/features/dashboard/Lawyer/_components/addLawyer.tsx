@@ -43,11 +43,24 @@ const DEPARTMENT_OPTIONS = [
 // Radix Select has no empty-string value, so "none" needs a sentinel.
 const NO_DEPARTMENT = "__none__";
 
+// The field offices that ask the Director General instead of creating accounts.
+const REQUESTER_ROLES: string[] = [
+  "ZONAL DIRECTOR",
+  "STATE COORDINATOR",
+  "CENTRE COORDINATOR",
+  "DECONGESTION UNIT HEAD",
+  "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD",
+  "PDSS UNIT HEAD",
+  "DIO UNIT HEAD",
+];
+
 const defaultFormData: FormDataLawyer = {
   user_type: "",
   designation: "",
   department_name: "",
   max_load: "",
+  reason: "",
   state: "",
   center_id: "",
   zone_id: "",
@@ -70,6 +83,9 @@ export function AddLawyerSheet() {
   const [loading, setLoading] = useState<boolean>(false);
   const { data: user } = useAppSelector((state) => state.profile);
   const role = user?.role;
+  // A field office cannot create an account: the API refuses it and the Director
+  // General creates it on approval. The same form raises the request.
+  const asRequest = !!role && REQUESTER_ROLES.includes(role);
   const handleChange = (key: keyof FormDataLawyer, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -86,7 +102,7 @@ export function AddLawyerSheet() {
     } else if (state?.status === 200 || state?.status === 201) {
       queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
 
-      toast.success("User invited successfully!");
+      toast.success(asRequest ? "Request sent to the Director General for approval." : "User invited successfully!");
       setIsOpen(false);
       setFormData(defaultFormData); // ✅ Reset form on success
       setSelectedZone("");
@@ -104,7 +120,15 @@ export function AddLawyerSheet() {
           </span>
           <ScrollArea className="h-screen mt-4">
             <form className="space-y-4 p-1" onSubmit={submitWithoutReset(dispatch)}>
-              <SheetTitle className="text-xl font-semibold">Add New Lawyer</SheetTitle>
+              <SheetTitle className="text-xl font-semibold">
+                {asRequest ? "Request a new user" : "Add New Lawyer"}
+              </SheetTitle>
+              {asRequest && (
+                <p className="text-sm text-gray-600">
+                  This is sent to the Director General. The account is created, and the invite sent, only if it is approved.
+                </p>
+              )}
+              <input type="hidden" name="as_request" value={asRequest ? "true" : "false"} />
 
               <div className="space-y-1">
                 <Label>
@@ -201,6 +225,25 @@ export function AddLawyerSheet() {
                   />
                   {serverErrors.max_load && (
                     <p className="text-red-500 text-sm">{serverErrors.max_load[0]}</p>
+                  )}
+                </div>
+              )}
+
+              {asRequest && (
+                <div className="space-y-1">
+                  <Label>
+                    Reason for the request <span className="text-red-500">*</span>
+                  </Label>
+                  <textarea
+                    name="reason"
+                    required
+                    value={formData.reason}
+                    onChange={(e) => handleChange("reason", e.target.value)}
+                    placeholder="Why is this account needed?"
+                    className={`min-h-24 w-full rounded border p-2 ${serverErrors.reason ? "border-red-500 bg-red-50" : ""}`}
+                  />
+                  {serverErrors.reason && (
+                    <p className="text-red-500 text-sm">{serverErrors.reason[0]}</p>
                   )}
                 </div>
               )}

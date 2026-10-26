@@ -19,6 +19,11 @@ const UserService = {
     async ActivateUser(id: string) {
         return await axiosInstance.patch(`/users/${id}`, { status: "ACTIVE" });
     },
+    // A field office asks the DG for an account change; nothing is created until
+    // the DG approves it.
+    async requestUser(payload: unknown) {
+        return await axiosInstance.post("/users/lawyer-unit-request", payload);
+    },
     async apporveUser(payload: unknown, id: string) {
         return await axiosInstance.post(`/users/lawyer-unit-request/${id}/approve`, payload);
     },
