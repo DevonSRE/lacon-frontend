@@ -34,6 +34,8 @@ export type CaseFilters = { page?: number; size?: number; search?: string; state
 export type MovementCommand = {
   action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status";
   target_user_id?: string; assignee_id?: string; reason?: string; status?: string;
+  // Both are required when status is COMPLETED; the API refuses the move without them.
+  outcome?: string; resolution_report?: string;
 };
 export const HEAD_ROLES = ["CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "DECONGESTION UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "OSCAR UNIT HEAD", "PDSS UNIT HEAD", "DIO UNIT HEAD"];
 export const COORDINATOR_ROLES = ["ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR"];

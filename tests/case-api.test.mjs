@@ -56,9 +56,28 @@ test("reason-required movements reject blanks before making requests", async () 
 test("all movement and status endpoints use the documented methods", async () => {
   for (const action of ["accept", "reject", "escalate", "lawyer-reject", "request-revision", "status"]) {
     const { api, calls } = setup();
-    const result = await api.moveCase(id, { action, reason: "Test reason", ...(action === "status" ? { status: "COMPLETED" } : {}) });
+    const result = await api.moveCase(id, { action, reason: "Test reason", ...(action === "status" ? { status: "COMPLETED", outcome: "Case won", resolution_report: "Judgment delivered." } : {}) });
     assert.equal(result.success, true);
     assert.equal(calls[0].args[0], action === "status" ? `/admin/casefile/${id}/case-status-update` : `/casefile/${id}/${action}`);
+  }
+});
+test("completing a case requires an outcome and a resolution report", async () => {
+  for (const command of [{}, { outcome: "Case won" }, { resolution_report: "Judgment delivered." }, { outcome: "   ", resolution_report: "   " }]) {
+    const { api, calls } = setup();
+    assert.equal((await api.moveCase(id, { action: "status", status: "COMPLETED", ...command })).success, false);
+    assert.equal(calls.length, 0);
+  }
+  const { api, calls } = setup();
+  const result = await api.moveCase(id, { action: "status", status: "COMPLETED", outcome: "Case won", resolution_report: "Judgment delivered." });
+  assert.equal(result.success, true);
+  assert.equal(calls[0].args[1].outcome, "Case won");
+  assert.equal(calls[0].args[1].resolution_report, "Judgment delivered.");
+});
+test("other status moves do not need a report", async () => {
+  for (const status of ["INPROGRESS", "CLOSED"]) {
+    const { api, calls } = setup();
+    assert.equal((await api.moveCase(id, { action: "status", status })).success, true);
+    assert.equal(calls.length, 1);
   }
 });
 test("invalid identifiers do not reach the API", async () => {

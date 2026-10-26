@@ -56,6 +56,7 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
   const [search] = useDebounce(keyword, 300);
   const [page, setPage] = useState(1);
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ outcome?: string; resolution_report?: string }>({});
   const [pending, startTransition] = useTransition();
   const client = useQueryClient();
   const router = useRouter();
@@ -68,17 +69,29 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
   });
   const candidates = targets.data?.success ? targets.data.data : undefined;
   const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision"].includes(action) || (action === "assign" && !!caseRecord.assignment);
+  // Completing a case carries the final report: the API refuses the move without both fields.
+  const completing = action === "status" && status === "COMPLETED";
   const submit = (formData: FormData) => {
-    setError("");
+    setError(""); setFieldErrors({});
     startTransition(async () => {
       try {
         const file = formData.get("file");
         if (file instanceof File && file.size > 10 * 1024 * 1024) { setError("Choose a file smaller than 10 MB."); return; }
         const reason = String(formData.get("reason") ?? "").trim();
         if (reasonRequired && !reason) { setError("Please enter a reason."); return; }
+        const outcome = String(formData.get("outcome") ?? "").trim();
+        const resolutionReport = String(formData.get("resolution_report") ?? "").trim();
+        if (completing) {
+          const missing = {
+            ...(outcome ? {} : { outcome: "Enter the outcome of the case." }),
+            ...(resolutionReport ? {} : { resolution_report: "Enter a resolution report." }),
+          };
+          if (Object.keys(missing).length > 0) { setFieldErrors(missing); return; }
+        }
         const result = action === "progress" ? await postCaseProgress(caseRecord.id, formData)
           : action === "document" ? await postCaseDocument(caseRecord.id, formData)
           : await moveCase(caseRecord.id, { action, status, reason: reason || undefined,
+            ...(completing ? { outcome, resolution_report: resolutionReport } : {}),
             ...(action === "assign" ? { assignee_id: target } : target ? { target_user_id: target } : {}) });
         if (!result.success) { setError(result.message); return; }
         await Promise.all([
@@ -122,6 +135,18 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
     </>}
     {action === "document" && <><Label htmlFor="document-title">Document title</Label><Input id="document-title" name="document_title" required /><Label htmlFor="document-type">Document type</Label><Input id="document-type" name="document_type" required placeholder="e.g. Court order" /></>}
     {["progress", "document"].includes(action) && <div className="space-y-2"><Label htmlFor="case-file">{action === "progress" ? "Supporting document (optional)" : "Document"}</Label><Input id="case-file" name="file" type="file" accept=".jpeg,.jpg,.png,.webp,.pdf,.doc,.docx,.xlsx" required={action === "document"} /><p className="text-sm text-gray-500">Images, PDF, Word or Excel. Maximum 10 MB.</p></div>}
+    {completing && <>
+      <div className="space-y-1">
+        <Label htmlFor="case-outcome">Outcome (required)</Label>
+        <Input id="case-outcome" name="outcome" aria-invalid={!!fieldErrors.outcome} aria-describedby={fieldErrors.outcome ? "case-outcome-error" : undefined} placeholder="e.g. Case won, charges withdrawn, settled out of court" />
+        {fieldErrors.outcome && <p id="case-outcome-error" role="alert" className="text-sm text-red-700">{fieldErrors.outcome}</p>}
+      </div>
+      <div className="space-y-1">
+        <Label htmlFor="resolution-report">Resolution report (required)</Label>
+        <textarea id="resolution-report" name="resolution_report" aria-invalid={!!fieldErrors.resolution_report} aria-describedby={fieldErrors.resolution_report ? "resolution-report-error" : undefined} className="min-h-24 w-full rounded border p-2" placeholder="How the case was resolved, and what the client was told." />
+        {fieldErrors.resolution_report && <p id="resolution-report-error" role="alert" className="text-sm text-red-700">{fieldErrors.resolution_report}</p>}
+      </div>
+    </>}
     {!["progress", "document", "accept"].includes(action) && <><Label htmlFor="movement-reason">Reason {reasonRequired ? "(required)" : "(optional)"}</Label><textarea id="movement-reason" name="reason" required={reasonRequired} className="min-h-24 w-full rounded border p-2" /></>}
     {action === "accept" && <p>The case will be accepted and ready for assignment.</p>}
     {action === "status" && <p>{status === "CLOSED" ? "Confirm that this completed case can be closed." : status === "COMPLETED" ? "Mark your work as completed. The assigning coordinator will close the case." : "Confirm that you are starting work on this case."}</p>}
