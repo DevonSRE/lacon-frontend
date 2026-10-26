@@ -19,6 +19,10 @@ function Details({ values }: { values: Record<string, unknown> }) {
   const stageOptions = [...CIVIL_COURT_STAGE_OPTIONS, ...CRIMINAL_COURT_STAGE_OPTIONS];
   const displayValue = (key: string, value: unknown) => {
     if (typeof value === "boolean") return value ? "Yes" : "No";
+    // Dates arrived raw, e.g. "2026-10-26T00:24:13.07438261Z".
+    if (key.endsWith("_on") || key.endsWith("_at") || key.endsWith("_date")) {
+      return dateLabel(String(value));
+    }
     if (key === "court_stage" || key === "case_status") {
       return stageOptions.find(option => option.value === value)?.label ?? String(value);
     }

@@ -7,7 +7,7 @@ import { GetStates } from "@/server/actions/GetDetails";
 
 type LocationOption = { id: string; title: string };
 
-const displayStateName = (title: string) =>
+export const displayStateName = (title: string) =>
     title.trim().toUpperCase() === "FCT" ? "Federal Capital Territory" : title;
 
 

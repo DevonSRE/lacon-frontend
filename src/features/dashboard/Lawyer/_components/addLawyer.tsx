@@ -29,9 +29,25 @@ import { GetInactiveState } from "@/components/get-inactive-state";
 import { GetZone } from "@/components/get-zone";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+// The department and unit offices a lawyer or paralegal can be linked to. The
+// API refuses anything else, so these must match its role names exactly.
+const DEPARTMENT_OPTIONS = [
+  "CIVIL JUSTICE DEPT. HEAD",
+  "CRIMINAL JUSTICE DEPT. HEAD",
+  "DECONGESTION UNIT HEAD",
+  "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD",
+  "PDSS UNIT HEAD",
+  "DIO UNIT HEAD",
+] as const;
+// Radix Select has no empty-string value, so "none" needs a sentinel.
+const NO_DEPARTMENT = "__none__";
+
 const defaultFormData: FormDataLawyer = {
   user_type: "",
   designation: "",
+  department_name: "",
+  max_load: "",
   state: "",
   center_id: "",
   zone_id: "",
@@ -141,6 +157,53 @@ export function AddLawyerSheet() {
                   </p>
                 )}
               </div>
+
+              {/* A lawyer or paralegal linked to a unit appears in that unit head's
+                  assignable pool; without it, unit heads have nobody to assign to. */}
+              {formData.user_type && formData.user_type !== "PRO BONO LAWYER" && (
+                <div className="space-y-1">
+                  <Label>Department or unit</Label>
+                  <input type="hidden" name="department_name" value={formData.department_name} />
+                  <Select
+                    value={formData.department_name}
+                    onValueChange={(val) => handleChange("department_name", val === NO_DEPARTMENT ? "" : val)}
+                  >
+                    <SelectTrigger className={`w-full h-11 ${serverErrors.department_name ? "border-red-500" : ""}`}>
+                      <SelectValue placeholder="None (state or centre work only)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_DEPARTMENT}>None (state or centre work only)</SelectItem>
+                      {DEPARTMENT_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Pick a unit so its head can assign cases to this person.
+                  </p>
+                  {serverErrors.department_name && (
+                    <p className="text-red-500 text-sm">{serverErrors.department_name[0]}</p>
+                  )}
+                </div>
+              )}
+
+              {formData.user_type && (
+                <div className="space-y-1">
+                  <InputField
+                    type="number"
+                    label="Cases at a time"
+                    name="max_load"
+                    min="0"
+                    className={serverErrors.max_load ? "border-red-500 bg-red-50" : ""}
+                    placeholder="Leave empty for no set limit"
+                    value={formData.max_load}
+                    onChange={(e) => handleChange("max_load", e.target.value)}
+                  />
+                  {serverErrors.max_load && (
+                    <p className="text-red-500 text-sm">{serverErrors.max_load[0]}</p>
+                  )}
+                </div>
+              )}
 
               {/* Zonal Directors and State Coordinators create within their own zone. */}
               {(role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR) && (

@@ -50,9 +50,11 @@ export async function getCaseDocuments(id: string, page = 1): Promise<Result<Pag
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   return read(`/casefile/${id}/document-history`, { page, size: 20 });
 }
-export async function getAssignees(id: string, page = 1, keyword = ""): Promise<Result<PageResult<DirectoryUser>>> {
+export async function getAssignees(id: string, page = 1, keyword = "", state = ""): Promise<Result<PageResult<DirectoryUser>>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
-  return read("/users/assignable-lawyers", { case_id: id, page, size: 20, keyword });
+  // state narrows the pool to one state, so a unit head can pick a lawyer near
+  // the client or the custodial centre; "all" is every state.
+  return read("/users/assignable-lawyers", { case_id: id, page, size: 20, keyword, state: state || "all" });
 }
 export async function getRouteTargets(role: string, page = 1, keyword = ""): Promise<Result<PageResult<DirectoryUser>>> {
   return read("/users", { user_type: role, status: "ACTIVE", page, size: 20, keyword });

@@ -27,6 +27,9 @@ export type CaseMovement = {
 export type DirectoryUser = {
   id: string; first_name: string; last_name: string; user_type: string; status: string;
   state?: string; zone_name?: string; max_load?: number; open_cases?: number;
+  // department_name is the department or unit the lawyer belongs to: it is what
+  // puts them in that unit head's assignable pool.
+  department_name?: string;
 };
 export type CaseDocument = { id: string; document_title: string; document_type: string; document_url?: string; document_path?: string; created_at?: string };
 export type PageResult<T> = { data: T[]; total_rows: number; total_pages: number; page: number; size: number };

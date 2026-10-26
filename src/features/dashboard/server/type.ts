@@ -26,6 +26,8 @@ export interface FormDataLawyer {
   phone_number: string;
   role: string;
   status: string;
+  department_name: string;
+  max_load: string;
 }
 
 export const zones: Zone[] = [
@@ -105,6 +107,11 @@ export const createLawyerSchema = z.object({
   state_id: z.string().optional(),
   zone_id: z.string().optional(),
   center_id: z.string().optional(),
+  // department_name links the lawyer to a department or unit, so its head can
+  // assign cases to them; max_load is how many cases they take at once. Both
+  // are dropped by the schema unless listed here.
+  department_name: z.string().optional(),
+  max_load: z.string().optional(),
 
   // status: z.string().optional(),
   first_name: z
