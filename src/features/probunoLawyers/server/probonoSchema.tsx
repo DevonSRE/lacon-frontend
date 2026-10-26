@@ -1,12 +1,11 @@
 import { z } from "zod";
 import {
   CAPACITY_OPTIONS,
-  COURT_STAGES,
   EXPERIENCE_OPTIONS,
   todayISO,
 } from "@/lib/form-options";
 
-const courtStage = z.enum(COURT_STAGES, { error: "Case status is required" });
+const courtStage = z.string().trim().min(1, { message: "Case status is required" });
 
 const optionalNotAfterToday = (label: string) =>
   z
@@ -49,7 +48,7 @@ export const proBonoSchema = z.object({
   law_firm_organization_address: z.string().min(1).optional(),
   email: z.string().email(),
   state_id: z.string().uuid(),
-  phone_number: z.string(),
+  phone_number: z.string().regex(/^\d{11}$/, { message: "Mobile phone number must be exactly 11 digits" }),
   alternate_number: z.string(),
   year_of_call: z.string().min(4).max(4).optional(),
   nba_branch: z.string().min(1).optional(),
@@ -72,6 +71,31 @@ export const proBonoSchema = z.object({
 
 export type TProbunoFormPayload = z.infer<typeof proBonoSchema>;
 
+const proBonoCaseSchema = z.object({
+  client_name: z.string().min(1, { message: "Client name is required" }),
+  sex: z.enum(["male", "female"], { error: "Gender is required" }),
+  date_case_taken: z
+    .string()
+    .min(1, { message: "Date you took the case is required" })
+    .refine((v) => v <= todayISO(), { message: "Date you took the case cannot be in the future" }),
+  nature_of_service: z.string().min(1, { message: "Nature of services is required" }),
+  offering_charge: z.string().min(1, { message: "Offence/charge is required" }),
+  suit_number: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9]+(\/[A-Za-z0-9]+){2,}$/, {
+      message: "Suit number should look like AB/1234/26",
+    }),
+  status_of_case: courtStage,
+  last_date_of_appearance: z
+    .string()
+    .min(1, { message: "Last date of appearance is required" })
+    .refine((v) => v <= todayISO(), { message: "Last date of appearance cannot be in the future" }),
+  is_client_in_custody: z
+    .enum(["true", "false"], { error: "Say whether the client is in custody" })
+    .transform((v) => v === "true"),
+});
+
 export const probunoInventoryCaseformSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().min(1),
@@ -88,40 +112,17 @@ export const probunoInventoryCaseformSchema = z.object({
   preferred_courts: z.array(z.string()).min(1, { message: "Select at least one court" }),
   client_types: z.array(z.string()).min(1, { message: "Select at least one client category" }),
   referral_sources: z.array(z.string()).min(1, { message: "Select at least one client source" }),
+  cases: z.array(proBonoCaseSchema).min(1, { message: "Add at least one current case" }),
 });
 
 export type TProbunoInventoryCaseform = z.infer<
   typeof probunoInventoryCaseformSchema
 >;
 
-const CaseSchema = z.object({
-  client_name: z.string().min(1, { message: "Client name is required" }),
-  sex: z.enum(["male", "female"], { error: "Gender is required" }),
-  date_case_taken: z
-    .string()
-    .min(1, { message: "Date you took the case is required" })
-    .refine((v) => v <= todayISO(), { message: "Date you took the case cannot be in the future" }),
-  nature_of_service: z.string().min(1, { message: "Nature of services is required" }),
-  offering_charge: z.string().min(1, { message: "Offering/charge is required" }),
-  // Loose check: slash-separated segments, e.g. AB/1234/26 or FHC/L/CS/12/2020. Raw string is stored.
-  suit_number: z
-    .string()
-    .trim()
-    .regex(/^[A-Za-z0-9]+(\/[A-Za-z0-9]+){2,}$/, {
-      message: "Suit number should look like AB/1234/26",
-    }),
-  status_of_case: courtStage,
-  last_date_of_appearance: z
-    .string()
-    .min(1, { message: "Last date of appearance is required" })
-    .refine((v) => v <= todayISO(), { message: "Last date of appearance cannot be in the future" }),
-  // The select posts "true"/"false"; z.coerce.boolean() turned "false" into true.
-  is_client_in_custody: z
-    .enum(["true", "false"], { error: "Say whether the client is in custody" })
-    .transform((v) => v === "true"),
-});
+const CaseSchema = proBonoCaseSchema;
 
 export const caseUpdateSchema = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, { message: "Enter the 6-digit confirmation code" }),
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),
@@ -189,6 +190,7 @@ export const caseDetailsSchema = z.object({
     .string()
     // .min(1, { message: "Defendant address is required" })
     .optional(),
+  defendant_email: z.string().email({ message: "Enter a valid defendant email address" }).optional().or(z.literal("")),
   defendant_phone_number: z
     .string()
     // .min(1, { message: "Defendant phone number is required" })
@@ -286,6 +288,7 @@ export type FormDataCivilCase = {
   court_of_trial?: string;
   prosecuting_agency?: string;
   defendant_address?: string;
+  defendant_email?: string;
   defendant_phone_number?: string;
   date_in_detention?: string;
 
@@ -489,7 +492,7 @@ export const caseSchema = z.object({
     .min(1, { message: "Date you took the case is required" })
     .refine((v) => v <= todayISO(), { message: "Date you took the case cannot be in the future" }),
   nature_of_service: z.string().min(1, { message: "Nature of services is required" }),
-  offering_charge: z.string().min(1, { message: "Offering/charge is required" }),
+  offering_charge: z.string().min(1, { message: "Offence/charge is required" }),
   // Loose check: slash-separated segments, e.g. AB/1234/26 or FHC/L/CS/12/2020. Raw string is stored.
   suit_number: z
     .string()
@@ -509,6 +512,7 @@ export const caseSchema = z.object({
 });
 
 export const probunoUpdateForm = z.object({
+  code: z.string().trim().regex(/^\d{6}$/, { message: "Enter the 6-digit confirmation code" }),
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),

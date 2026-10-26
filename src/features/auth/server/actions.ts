@@ -11,6 +11,56 @@ import { NEXT_BASE_URL } from "@/lib/constants";
 import { handleApiError } from "@/lib/utils";
 import z from "zod";
 
+const temporaryInviteCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 15 * 60,
+};
+
+const clearTemporaryInviteCookies = async () => {
+  const cookieStore = await cookies();
+  for (const name of ["TempToken", "TempID", "TempRole", "TempEmail"]) {
+    cookieStore.delete(name);
+  }
+};
+
+export async function validateInvitationAction(email: string, otp: string) {
+  const parsed = z.object({
+    email: z.string().trim().email(),
+    otp: z.string().regex(/^\d{6}$/),
+  }).safeParse({ email, otp });
+
+  if (!parsed.success) {
+    return { status: 400, success: false, message: "This invitation is invalid or has expired." };
+  }
+
+  const cookieStore = await cookies();
+  const existingToken = cookieStore.get("TempToken")?.value;
+  const existingEmail = cookieStore.get("TempEmail")?.value;
+  if (existingToken && existingEmail === parsed.data.email) {
+    return { status: 200, success: true, message: "Invitation verified." };
+  }
+
+  await clearTemporaryInviteCookies();
+  try {
+    const response = await AuthService.acceptInvite(parsed.data);
+    const responseData = response.data as { token: string; id: string; role: ROLES };
+    cookieStore.set("TempToken", responseData.token, temporaryInviteCookieOptions);
+    cookieStore.set("TempID", responseData.id, temporaryInviteCookieOptions);
+    cookieStore.set("TempRole", responseData.role, temporaryInviteCookieOptions);
+    cookieStore.set("TempEmail", parsed.data.email, temporaryInviteCookieOptions);
+    return { status: 200, success: true, message: "Invitation verified." };
+  } catch {
+    return {
+      status: 400,
+      success: false,
+      message: "This invitation is invalid or has expired. Ask an administrator for a new invitation.",
+    };
+  }
+}
+
 export async function SignInAction(_prevState: unknown, formData: FormData) {
   const data = Object.fromEntries(formData);
   const result = LoginFormSchema.safeParse(data);
@@ -95,7 +145,15 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
 
   let token = (await cookies()).get("TempToken")?.value;
   let id = (await cookies()).get("TempID")?.value;
-  let role = (await cookies()).get("TempRole")?.value as ROLES;
+  let role = (await cookies()).get("TempRole")?.value as ROLES | undefined;
+  const tempEmail = (await cookies()).get("TempEmail")?.value;
+
+  if (tempEmail !== data.email) {
+    await clearTemporaryInviteCookies();
+    token = undefined;
+    id = undefined;
+    role = undefined;
+  }
 
   if (!token || !id || !role) {
     try {
@@ -105,9 +163,10 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
       });
 
       const responseData = response.data as { token: string; id: string; role: ROLES };
-      (await cookies()).set("TempToken", responseData.token);
-      (await cookies()).set("TempID", responseData.id);
-      (await cookies()).set("TempRole", responseData.role);
+      (await cookies()).set("TempToken", responseData.token, temporaryInviteCookieOptions);
+      (await cookies()).set("TempID", responseData.id, temporaryInviteCookieOptions);
+      (await cookies()).set("TempRole", responseData.role, temporaryInviteCookieOptions);
+      (await cookies()).set("TempEmail", data.email as string, temporaryInviteCookieOptions);
       token = responseData.token;
       id = responseData.id;
       role = responseData.role;
@@ -142,31 +201,36 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
         },
       };
     } else {
-      const data = await signupResponse.json();
+      const loginResponse = await AuthService.loginUser({
+        email: data.email as string,
+        password: result.data.password,
+      });
+      const loginData = loginResponse.data as LoginResponseData;
       const sessionData = {
         user: {
-          id: data.data.id,
-          email: data.data.email,
-          first_name: data.data.first_name,
-          last_name: data.data.last_name,
-          phone_number: data.data.phone_number,
-          state_id: data.state_id ?? "",
-          id_image: data.id_image ?? "",
-          state_name: data.state_name ?? "",
-          zone_id: data.zone_id ?? "",
-          zone_name: data.zone_name ?? "",
-          role: data.data.user_type as ROLES,
+          id: loginData.ID,
+          email: loginData.email,
+          first_name: loginData.first_name,
+          last_name: loginData.last_name,
+          phone_number: loginData.phone_number,
+          state_id: loginData.state_id !== "00000000-0000-0000-0000-000000000000" ? loginData.state_id : "",
+          id_image: loginData.id_image ?? "",
+          state_name: loginData.state_name ?? "",
+          zone_id: loginData.zone_id ?? "",
+          zone_name: loginData.zone_name ?? "",
+          role: loginData.role as ROLES,
         },
-        token: token,
+        token: loginData.token,
       };
       await createSession(sessionData);
-      (await cookies()).delete("TempToken");
+      role = loginData.role as ROLES;
+      await clearTemporaryInviteCookies();
     }
   } catch (err) {
     console.error("Error updating user:", err);
     return handleApiError(err);
   }
-  redirect(defaultLoginRedirect(role));
+  redirect(defaultLoginRedirect(role as ROLES));
 }
 
 

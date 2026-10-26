@@ -81,7 +81,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
             setTimeout(() => {
                 setDialogState({ open: false, title: "", details: "" });
                 if (decisionData.decision === "approved") {
-                    router.push(`/users/desination-letter/${user?.ID}`);
+                    router.push(`/users/desination-letter/${user?.ApplicationID ?? user?.ID}`);
                 }
                 setOpen(false);
             }, 2000);

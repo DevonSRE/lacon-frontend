@@ -36,11 +36,13 @@ import {
 import { useDebounce } from "use-debounce";
 import { ROLES } from "@/types/auth";
 import { useAppSelector } from "@/hooks/redux";
-import { IUser } from "@/types/case";
+import { ILawyerManagement, IUser } from "@/types/case";
 import { CustomDialog } from "@/components/CustomDialog";
 import { DeleteUser } from "../dashboard/server/action";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { toast } from "sonner";
+import { CustomeSheet } from "@/components/CustomSheet";
+import ViewEditLawyer from "@/features/dashboard/Lawyer/_components/sheet/ViewEditLawyer";
 
 export default function UserRoles() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -55,6 +57,8 @@ export default function UserRoles() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [dailogOpen, setdailogOpen] = useState(false);
   const [dailogActiveOpen, setdailogActiveOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [detailsType, setDetailsType] = useState<"view" | "edit">("view");
   const [state, dispatch, isPending] = useActionState(DeleteUser, undefined);
   const queryClient = useQueryClient();
 
@@ -80,8 +84,12 @@ export default function UserRoles() {
     }
   }, [state]);
 
-  const handleOpenSheet = (user: IUser, type: "suspend" | "delete" | "activate") => {
+  const handleOpenSheet = (user: IUser, type: "view" | "edit" | "suspend" | "delete" | "activate") => {
     setSelectedUser(user);
+    if (type === "view" || type === "edit") {
+      setDetailsType(type);
+      setDetailsOpen(true);
+    }
     if (type === "suspend") setSheetOpen(true);
     if (type === "delete") setdailogOpen(true);
     if (type === "activate") setdailogActiveOpen(true);
@@ -90,11 +98,14 @@ export default function UserRoles() {
     () =>
       createUserColumns(
         user?.role as ROLES,
+        user?.id,
+        (target) => handleOpenSheet(target, "view"),
+        (target) => handleOpenSheet(target, "edit"),
         (user) => handleOpenSheet(user, "activate"),
         (user) => handleOpenSheet(user, "suspend"),
         (user) => handleOpenSheet(user, "delete")
       ),
-    [user?.role]
+    [user?.id, user?.role]
   );
   const { data, isLoading } = useQuery({
     queryKey: ["getUsers", currentPage, debouncedSearchTerm, selectedRole],
@@ -190,6 +201,15 @@ export default function UserRoles() {
         </section>
       </div>
       <DataTable columns={columns} loading={isLoading} data={data?.data.data} />
+      <CustomeSheet open={detailsOpen} setOpen={setDetailsOpen}>
+        <ViewEditLawyer
+          key={`${selectedUser?.id ?? "user"}-${detailsType}`}
+          lawyer={selectedUser as unknown as ILawyerManagement}
+          sheetType={detailsType}
+          setOpen={setDetailsOpen}
+          allUserRoles
+        />
+      </CustomeSheet>
       {data?.data?.data.length > 0 && (
         <div className="flex justify-end pt-4">
           <TablePagination

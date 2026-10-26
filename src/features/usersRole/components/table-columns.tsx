@@ -4,11 +4,14 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreVertical } from "lucide-react";
+import { Eye, MoreVertical, Pencil } from "lucide-react";
 import { ROLES } from "@/types/auth";
 
 export const createUserColumns = (
   userRole: ROLES,
+  currentUserId: string | undefined,
+  onView: (user: IUser) => void,
+  onEdit: (user: IUser) => void,
   onActivate: (user: IUser) => void,
   onSuspend: (user: IUser) => void,
   onDelete: (user: IUser) => void
@@ -80,9 +83,11 @@ export const createUserColumns = (
       header: "",
       cell: ({ row }) => {
         const user = row.original;
+        const isSelf = user.id === currentUserId;
+        const isProtectedPlatformAdmin = userRole === ROLES.DIRECTOR_GENERAL && user.user_type === ROLES.PLATFORM_ADMIN;
 
         // Optional: restrict actions based on role
-        if (userRole !== "ADMIN" && userRole !== "DIRECTOR GENERAL") return null;
+        if (![ROLES.ADMIN, ROLES.PLATFORM_ADMIN, ROLES.DIRECTOR_GENERAL].includes(userRole)) return null;
          const status = row.original.status.toUpperCase();
 
         return (
@@ -93,19 +98,29 @@ export const createUserColumns = (
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="p-1 space-y-2 bg-gray-50 rounded-xs hover:bg-gray-200 text-xs" >
-              {status !== "INACTIVE" && (
+              <DropdownMenuItem onClick={() => onView(user)}>
+                <Eye className="mr-2 size-4" /> View
+              </DropdownMenuItem>
+              {!isProtectedPlatformAdmin && (
+                <DropdownMenuItem onClick={() => onEdit(user)}>
+                  <Pencil className="mr-2 size-4" /> Edit
+                </DropdownMenuItem>
+              )}
+              {!isSelf && !isProtectedPlatformAdmin && status !== "INACTIVE" && (
                 <DropdownMenuItem onClick={() => onSuspend(user)}>
                   Suspend Account
                 </DropdownMenuItem>
               )}
-              {status === "INACTIVE" && (
+              {!isSelf && !isProtectedPlatformAdmin && status === "INACTIVE" && (
                 <DropdownMenuItem onClick={() => onActivate(user)}>
                   Activate Account
                 </DropdownMenuItem>
               )}
-              <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
-                Delete Account
-              </DropdownMenuItem>
+              {!isSelf && !isProtectedPlatformAdmin && (
+                <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
+                  Delete Account
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -231,7 +246,7 @@ export const createProbunoRequestColumns = (userRole: ROLES,
       accessorKey: "Status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.Status;
+        const status = row.original.Status.toUpperCase();
         const statusMap: Record<string, { label: string; color: string }> = {
           ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
           PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
@@ -258,7 +273,7 @@ export const createProbunoRequestColumns = (userRole: ROLES,
         const user = row.original;
         const status = row.original.Status;
         return (
-          (status === "pending") ? (
+          (status === "PENDING") ? (
             <Button className="bg-red-500 text-white " onClick={() => onReview(user)}>Review</Button>
           ) : (
             <Button className="bg-gray-500 text-white " onClick={() => onReview(user)}>View</Button>

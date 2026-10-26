@@ -5,7 +5,7 @@ import { submitProBonoCaseForm } from '../server/action';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
-import { CheckboxField, ProbunoInventoryFormData } from '../server/probunoTypes';
+import { ProBonoCase } from '../server/probunoTypes';
 import { SubmitButton } from '@/components/submit-button';
 import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
@@ -24,6 +24,7 @@ import {
 } from '@/lib/form-options';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import CurrentProBonoCases, { createEmptyProBonoCase } from './CurrentProBonoCases';
 interface FormData {
     first_name: string;
     last_name: string;
@@ -41,6 +42,7 @@ interface FormData {
     referral_sources: string[];
     client_types_other: string;
     referral_sources_other: string;
+    cases: ProBonoCase[];
 }
 
 const RequiredMark = () => <span className="text-red-500 text-xs">*</span>;
@@ -68,7 +70,8 @@ export default function ProBonoInventoryForm() {
         client_types: [],
         referral_sources: [],
         client_types_other: '',
-        referral_sources_other: ''
+        referral_sources_other: '',
+        cases: [createEmptyProBonoCase()]
     });
 
     const handleInputChange = (name: string, value: string) => {
@@ -114,7 +117,8 @@ export default function ProBonoInventoryForm() {
             client_types: [],
             referral_sources: [],
             client_types_other: '',
-            referral_sources_other: ''
+            referral_sources_other: '',
+            cases: [createEmptyProBonoCase()]
         });
         setSelectedState("");
         setAgreementChange(false);
@@ -170,6 +174,7 @@ export default function ProBonoInventoryForm() {
                 </div>
                 <div className=" space-y-10">
                     <form onSubmit={submitWithoutReset(formAction)} className="w-full space-y-6">
+                        <input type="hidden" name="cases_data" value={JSON.stringify(formData.cases)} />
                         {/* Section 1: Personal Details and Office Info */}
                         <section>
                             <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 1: Personal Details and Office Info</h2>
@@ -353,9 +358,14 @@ export default function ProBonoInventoryForm() {
                             </div>
                         </section>
 
+                        <CurrentProBonoCases
+                            cases={formData.cases}
+                            onChange={(cases) => setFormData(prev => ({ ...prev, cases }))}
+                        />
+
                         {/* Section 5: Describe Who your Clients are */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 5: Describe Who your Clients are (Select as applicable) <RequiredMark /></h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 6: Describe Who your Clients are (Select as applicable) <RequiredMark /></h2>
 
                             <div className="space-y-3">
                                 {CLIENT_TYPE_OPTIONS.map((option) => {
@@ -391,7 +401,7 @@ export default function ProBonoInventoryForm() {
 
                         {/* Section 6: How Do You Source your Clients */}
                         <section>
-                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 6: How Do You Source your Clients <RequiredMark /></h2>
+                            <h2 className="text-base font-semibold text-gray-900 mb-6">SECTION 7: How Do You Source your Clients <RequiredMark /></h2>
 
                             <div className="space-y-3">
                                 {REFERRAL_SOURCE_OPTIONS.map((option) => {

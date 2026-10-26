@@ -8,6 +8,7 @@ export type Actor = { id: string; name: string; email: string; role: string };
 export type CaseRecord = {
   id: string; case_id: string; first_name: string; middle_name?: string; last_name: string;
   case_type: string; status: string; created_at?: string; filed_date?: string;
+  court_stage?: string;
   state_id?: string; state_name?: string; zone_name?: string; center_name?: string;
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;

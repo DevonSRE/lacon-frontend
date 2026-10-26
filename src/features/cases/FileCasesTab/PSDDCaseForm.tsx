@@ -28,9 +28,10 @@ interface CivilCaseFormProps {
     type: string;
     isPublic: boolean;
     state_id?: string;
+    onCaseSubmitted?: () => void;
 }
 
-export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), type }: CivilCaseFormProps) {
+export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), type, onCaseSubmitted }: CivilCaseFormProps) {
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const { selectedStateId, setIsOpen } = useAction();
@@ -60,6 +61,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
         } else if (state && state.status === 200) {
             setCurrentStep(1);
             setOpen(true);
+            onCaseSubmitted?.();
 
         }
     }, [state]);
@@ -202,6 +204,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 onOpenChange={setOpen}
                 handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
+                caseReference={state?.data?.case_id ?? state?.data?.id}
             />
             <div className="min-h-screen px-4">
                 <div className="flex items-center justify-between">

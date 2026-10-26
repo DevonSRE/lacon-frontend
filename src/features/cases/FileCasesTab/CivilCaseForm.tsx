@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react';
 import { ArrowLeft, CloudUpload } from 'lucide-react';
 import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema';
-import { COURT_STAGE_OPTIONS } from '@/lib/form-options';
+import { CIVIL_COURT_STAGE_OPTIONS } from '@/lib/form-options';
 import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
 import SelectField from '@/components/SelectField';
@@ -24,9 +24,10 @@ interface CivilCaseFormProps {
     handleCloseCaseType?: Dispatch<SetStateAction<boolean>>;
     isPublic: boolean;
     state_id?: string;
+    onCaseSubmitted?: () => void;
 }
 
-export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, setCurrentStep = () => { }, handleCloseCaseType = (() => { }) }: CivilCaseFormProps) {
+export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), onCaseSubmitted }: CivilCaseFormProps) {
     const router = useRouter();
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [open, setOpen] = useState(false);
@@ -55,6 +56,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         } else if (state && state.status === 200) {
             setCurrentStep(1);
             setOpen(true);
+            onCaseSubmitted?.();
         }
     }, [state]);
 
@@ -82,6 +84,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
         case_status: '',
         defendant_name: '',
         defendant_address: '',
+        defendant_email: '',
         defendant_phone_number: '',
         court_location: '',
         date_of_admission: '',
@@ -191,7 +194,13 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
 
     return (
         <>
-            <CaseIntakeDialog open={open} onOpenChange={setOpen} handleCloseCaseType={handleCloseCaseType} isHome={isPublic ? true : false} />
+            <CaseIntakeDialog
+                open={open}
+                onOpenChange={setOpen}
+                handleCloseCaseType={handleCloseCaseType}
+                isHome={isPublic ? true : false}
+                caseReference={state?.data?.case_id ?? state?.data?.id}
+            />
             <div className="min-h-screen">
                 {!isPublic &&
                     <button className="border-none" onClick={() => handleBack(isPublic)}><ArrowLeft /></button>
@@ -199,7 +208,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 <div className="w-full max-w-6xl  flex flex-col sm:flex-row sm:items-center">
                     <div className="flex items-center mb-4 sm:mb-0">
                         <h1 className="text-lg font-semibold text-gray-900">
-                            Filing A Civil Cases
+                            Filing A Civil Case
                         </h1>
                     </div>
                     <div className="flex sm:ml-auto space-x-2 justify-start sm:justify-end">
@@ -459,7 +468,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                         name="case_status"
                                         label="Case Status"
                                         placeholder="Case Status"
-                                        options={COURT_STAGE_OPTIONS}
+                                        options={CIVIL_COURT_STAGE_OPTIONS}
                                         required
                                         value={formData.case_status} // Add value prop
                                         onValueChange={(value) => handleSelectChange(value, 'case_status')}
@@ -510,14 +519,14 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                     <div>
                                         <InputField
                                             type="email"
-                                            name="defendant_address"
+                                            name="defendant_email"
                                             label="Defendant's Email Address"
                                             placeholder="Enter Email Address"
-                                            value={formData.defendant_address}
-                                            onChange={(e) => updateField('defendant_address', e.target.value)}
-                                            className={` ${errors.defendant_address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                                            value={formData.defendant_email}
+                                            onChange={(e) => updateField('defendant_email', e.target.value)}
+                                            className={` ${errors.defendant_email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                         />
-                                        {errors.defendant_address && <p className="text-red-500 text-xs mt-1">{errors.defendant_address}</p>}
+                                        {errors.defendant_email && <p className="text-red-500 text-xs mt-1">{errors.defendant_email}</p>}
                                     </div>
 
                                     <div>

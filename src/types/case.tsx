@@ -19,6 +19,15 @@ export interface IUser {
   phone_number: string;
   role: string;
   status: string;
+  state?: string;
+  state_id?: string;
+  zone_id?: string;
+  zone_name?: string;
+  center_name?: string | null;
+  center_id?: string;
+  max_case_load?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 
@@ -28,6 +37,7 @@ export interface ILawyerRequest {
   // Not sent by the API yet; see lacon-shared/backend-issues.
   RequestedByRole?: string;
   ID: string;
+  ApplicationID?: string;
   LawyerID:string;
   FirstName: string;
   MiddleName: string;
@@ -90,6 +100,7 @@ export interface ILawyerManagement {
   zone_id: string;
   zone_name: string;
   center_name?: string | null;
+  center_id?: string;
   profile_image?: string;
   created_at: string;
   updated_at: string;

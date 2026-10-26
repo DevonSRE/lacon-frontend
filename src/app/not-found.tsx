@@ -1,14 +1,10 @@
 'use client';
-import GridShape from "@/components/common/GridShape";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
 export default function NotFound() {
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden">
-      <GridShape />
-
       {/* Main Content Container */}
       <div className="relative z-10 mx-auto w-full max-w-2xl text-center">
         {/* Animated Error Badge */}
@@ -23,26 +19,6 @@ export default function NotFound() {
         <h1 className="mb-8 text-6xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 bg-clip-text text-transparent dark:from-white dark:via-gray-300 dark:to-white md:text-8xl">
           404
         </h1>
-
-        {/* SVG Images with Hover Effect */}
-        <div className="mb-10 transition-transform duration-300 hover:scale-105">
-          <Image
-            src="/images/error/404.svg"
-            alt="404 Error Illustration"
-            className="dark:hidden mx-auto"
-            width={472}
-            height={152}
-            priority
-          />
-          <Image
-            src="/images/error/404-dark.svg"
-            alt="404 Error Illustration"
-            className="hidden dark:block mx-auto"
-            width={472}
-            height={152}
-            priority
-          />
-        </div>
 
         {/* Enhanced Description */}
         <div className="mb-10 space-y-2">
@@ -78,25 +54,9 @@ export default function NotFound() {
           </button>
         </div>
 
-        {/* Helpful Links */}
-        <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-            Still can&apos;t find what you&apos;re looking for?
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center text-sm">
-            <Link href="/contact" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-              Contact Support
-            </Link>
-            <span className="text-gray-300 dark:text-gray-600">•</span>
-            <Link href="/sitemap" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-              Site Map
-            </Link>
-            <span className="text-gray-300 dark:text-gray-600">•</span>
-            <Link href="/help" className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors">
-              Help Center
-            </Link>
-          </div>
-        </div>
+        <p className="mt-12 pt-8 border-t border-gray-200 text-sm text-gray-500 dark:border-gray-700 dark:text-gray-400">
+          Use the home page to continue browsing LACON services.
+        </p>
       </div>
 
       {/* Enhanced Footer */}

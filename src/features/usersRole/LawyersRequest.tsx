@@ -131,7 +131,7 @@ export default function LawyersRequest() {
     staleTime: 100000,
   });
 
-  const actionType: string[] = ["Creation", "Suspension", "approve"];
+  const actionType: string[] = ["Create", "Suspension"];
 
   const handleActionType = (role: string) => {
     setActiontype(role === "All" ? undefined : role);
@@ -265,9 +265,7 @@ export default function LawyersRequest() {
                 <span className="font-medium">Details:</span>
                 <Card className="mt-2 bg-gray-100">
                   <CardContent className="text-sm text-gray-800">
-                    Request to add new staff lawyer to handle increased caseload
-                    in civil justice department. Lawyer has 5 years experience
-                    in civil litigation.
+                    {selectedUser?.Reason?.trim() || `${selectedUser?.RequestedName || "A staff member"} requested to ${selectedUser?.Action?.toLowerCase() || "manage"} ${selectedUser?.LawyerName || "this user"}${selectedUser?.RequestedByRole ? ` as ${selectedUser.RequestedByRole}` : ""}.`}
                   </CardContent>
                 </Card>
               </div>

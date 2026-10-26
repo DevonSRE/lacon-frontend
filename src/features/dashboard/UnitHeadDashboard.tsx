@@ -197,16 +197,8 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                                 title="Assigned Cases"
                                 value={processedData.assignedCases.total}
                                 change={`+${processedData.assignedCases.total > 0 ? '1' : '0'}%`}
-                                categories={processedData.assignedCases.categories.length > 0
-                                    ? processedData.assignedCases.categories
-                                    : ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-                                }
-                                data={
-                                    processedData.assignedCases.data.length > 0
-                                    ? processedData.assignedCases.data
-                                    : 
-                                    [0, 2, 9, 0, 0, 0]
-                                }
+                                categories={processedData.assignedCases.categories}
+                                data={processedData.assignedCases.data}
                                 orientation="horizontal"
                                 cardBg="bg-black-50"
                                 barColor="#000000"
@@ -215,15 +207,8 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                                 title="Pending Cases"
                                 value={processedData.pendingCases.total}
                                 change={`+${processedData.pendingCases.total > 0 ? '2' : '0'}%`}
-                                categories={processedData.pendingCases.categories.length > 0
-                                    ? processedData.pendingCases.categories
-                                    : ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-                                }
-                                data={
-                                    processedData.pendingCases.data.length > 0
-                                    ? processedData.pendingCases.data
-                                    : [1, 2, 0, 0, 0, 0]
-                                }
+                                categories={processedData.pendingCases.categories}
+                                data={processedData.pendingCases.data}
                                 orientation="vertical"
                                 cardBg="bg-black-50"
                                 barColor="#000000"

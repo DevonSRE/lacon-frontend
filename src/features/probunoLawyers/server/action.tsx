@@ -64,6 +64,7 @@ export async function submitLawyersForm(
 
     // Prepare data for validation
     const validationData = {
+      code: data.code,
       first_name: data.first_name,
       last_name: data.last_name,
       contact_address: data.contact_address,
@@ -85,6 +86,7 @@ export async function submitLawyersForm(
     }
 
     const submissionData = {
+      code: result.data.code,
       first_name: result.data.first_name,
       last_name: result.data.last_name,
       // contact_address: result.data.contact_address,
@@ -112,6 +114,29 @@ export async function submitLawyersForm(
       const error = err as ErrorResponse;
       return handleApiError(error);
     }
+  }
+}
+
+export async function requestProBonoReviewCode(email: string) {
+  const parsedEmail = z.string().trim().email("Enter a valid email address").safeParse(email);
+  if (!parsedEmail.success) {
+    return { status: 400, success: false, message: parsedEmail.error.issues[0]?.message ?? "Enter a valid email address" };
+  }
+
+  try {
+    const response = await ProbunoService.requestReviewCode({ email: parsedEmail.data });
+    return {
+      status: response.status,
+      success: true,
+      message: response.data?.message ?? "If this is an approved pro bono account, a confirmation code has been sent.",
+    };
+  } catch (err: unknown) {
+    const error = err as ErrorResponse;
+    return {
+      status: error.response?.status ?? 500,
+      success: false,
+      message: error.response?.data?.message ?? "The confirmation code could not be requested. Please try again.",
+    };
   }
 }
 async function handleFormSubmission<TSchema extends z.ZodType>(
@@ -192,6 +217,18 @@ export async function submitProBonoCaseForm(
   // Safely extract raw data from form
   const rawData = Object.fromEntries(formData.entries());
 
+  let cases: unknown[] = [];
+  try {
+    cases = JSON.parse(String(formData.get("cases_data") ?? "[]"));
+  } catch {
+    return {
+      status: 400,
+      errors: { cases: ["Invalid cases data format"] },
+      message: "Validation Failed",
+      success: false,
+    };
+  }
+
   // "Other" is sent as "Other: <what the lawyer typed>"; it must not be blank.
   const otherErrors: Record<string, string[]> = {};
   const withOtherText = (field: string) =>
@@ -211,6 +248,7 @@ export async function submitProBonoCaseForm(
     preferred_courts: formData.getAll("preferred_courts"),
     client_types: withOtherText("client_types"),
     referral_sources: withOtherText("referral_sources"),
+    cases,
   };
 
   const result = probunoInventoryCaseformSchema.safeParse(parsedData);
@@ -678,6 +716,14 @@ export async function submitPublicCaseForm(
       };
     } else {
       const error = err as ErrorResponse;
+      if (data.isPublic === "true" && (error.response?.status === 401 || error.response?.status === 403)) {
+        return {
+          status: 503,
+          message: "Public case filing is temporarily unavailable. Please try again later or contact LACON support.",
+          errors: null,
+          success: false,
+        };
+      }
       return handleApiError(error);
     }
   }

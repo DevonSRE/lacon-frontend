@@ -69,12 +69,18 @@ export default function CaseStatCard({
                     </div>
                     <div className="text-gray-400 text-xl">⋯</div>
                 </div>
-                <ReactApexChart
-                    options={chartOptions}
-                    series={[{ data }]}
-                    type="bar"
-                    height={250}
-                />
+                {data.length > 0 ? (
+                    <ReactApexChart
+                        options={chartOptions}
+                        series={[{ data }]}
+                        type="bar"
+                        height={250}
+                    />
+                ) : (
+                    <div className="flex h-[250px] items-center justify-center text-sm text-gray-500">
+                        No {title.toLowerCase()} data available.
+                    </div>
+                )}
             </CardContent>
         </Card>
     );
