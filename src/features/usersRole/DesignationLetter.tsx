@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getProbunoLawyersRequestSingleAction } from "./userRoleAction";
 
-const DesinationLetter = () => {
+const DesignationLetter = () => {
   const router = useRouter();
   const params = useParams();
   const id = params.id;
@@ -27,9 +27,20 @@ const DesinationLetter = () => {
   if (!id) return null;
 
   const courts = data?.data?.criminal_courts_preference;
+  const name = [data?.data?.first_name, data?.data?.last_name].filter(Boolean).join(" ");
+  // The letter is dated the day the application was approved.
+  const decided = data?.data?.decided_at ? new Date(data.data.decided_at) : null;
+  const letterDate = decided && !Number.isNaN(decided.getTime())
+    ? decided.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+    : "";
 
   return (
-    <div className="max-w-4xl mx-auto bg-gray-100 p-8 ">
+    <div className="max-w-4xl mx-auto bg-gray-100 p-8 print:bg-white">
+      <div className="mb-4 flex justify-end print:hidden">
+        <button type="button" onClick={() => window.print()} className="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray-800">
+          Download / Print
+        </button>
+      </div>
       <h1
         className="text-3xl text-center font-bold text-black mb-2"
         style={{ fontFamily: "Old English Text MT, serif" }}
@@ -66,7 +77,7 @@ const DesinationLetter = () => {
             <div className="text-sm">No. 20, Port-Harcourt</div>
             <div className="text-sm">Crescent Off Gimbiya Street,</div>
             <div className="text-sm">Area 11, Garki, Abuja.</div>
-            <div className="text-sm">1st June, 2025.</div>
+            {letterDate && <div className="text-sm">{letterDate}</div>}
           </div>
         </div>
       </div>
@@ -88,7 +99,10 @@ const DesinationLetter = () => {
               <span className="font-medium">Firm:</span>
             </div>
             <div className="text-sm">
-              <span className="font-medium">Year of Practice:</span>
+              <span className="font-medium">State of Practice:</span>
+            </div>
+            <div className="text-sm">
+              <span className="font-medium">Years of Practice:</span>
             </div>
             <div className="text-sm">
               <span className="font-medium">Preferred Courts:</span>
@@ -99,11 +113,9 @@ const DesinationLetter = () => {
           </div>
 
           <div className="space-y-2 text-right">
-            <div className="text-sm">
-              {data?.data.first_name} {data?.data.last_name}
-            </div>
-            {/* client_base is the lawyer's client categories, not the firm. The API has no firm-name field yet (backend-issues #14). */}
-            <div className="text-sm">{data?.data.name_of_law_firm_organization || "-"}</div>
+            <div className="text-sm">{name || "-"}</div>
+            <div className="text-sm">{data?.data.law_firm_name || "-"}</div>
+            <div className="text-sm">{data?.data.state_of_practice || "-"}</div>
             <div className="text-sm">
               {data?.data.experience_in_criminal_law || "-"}
             </div>
@@ -125,13 +137,13 @@ const DesinationLetter = () => {
 
         <div className="space-y-4 text-sm leading-relaxed">
           <p>
-            <strong>Sir,</strong>
+            <strong>Dear {name || "Counsel"},</strong>
           </p>
 
           <p>
             We write to bring to your attention, that your request to be
             registered as a Pro Bono Legal service provider under the Legal Aid
-            Scheme of the Legal Aid Council has been granted. Consequent up you
+            Scheme of the Legal Aid Council has been granted. Consequently, you
             are by this letter, designated as a Pro-Bono Legal Services Provider
             Pursuant to PART IV of the Legal Aid Act, 2011.
           </p>
@@ -162,7 +174,7 @@ const DesinationLetter = () => {
             <div className="ml-8 space-y-2">
               <p>
                 i. Register the case with the Legal Aid Council at the Custodial
-                Centre Deconvention Unit;
+                Centre Decongestion Unit;
               </p>
               <p>ii. Show evidence of registration;</p>
               <p>
@@ -229,4 +241,4 @@ const DesinationLetter = () => {
   );
 };
 
-export default DesinationLetter;
+export default DesignationLetter;

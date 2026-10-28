@@ -39,7 +39,18 @@ const InfoRow = ({ label, value }: { label: string; value: string | number }) =>
     </div>
 );
 
+const readableDate = (raw?: string | null) => {
+    if (!raw) return "-";
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime())
+        ? raw
+        : date.toLocaleString("en-GB", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" });
+};
+
+const decisionLabels: Record<string, string> = { ACTIVE: "Approved", INACTIVE: "Declined", SUSPEND: "Suspended" };
+
 export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProps) {
+    const decided = !!user && user.Status !== "PENDING";
     const [state, dispatch, isPending] = useActionState(AcceptRejectProbunoRequest, undefined);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const router = useRouter();
@@ -75,13 +86,13 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
             setDialogState({
                 open: true,
                 title: "done",
-                details: "successfully!",
+                details: decisionData.decision === "approved" ? "Application approved." : "Application declined. The applicant has been emailed the reason.",
             });
             queryClient.invalidateQueries({ queryKey: ["getProbunoLawyersRequest"] });
             setTimeout(() => {
                 setDialogState({ open: false, title: "", details: "" });
                 if (decisionData.decision === "approved") {
-                    router.push(`/users/desination-letter/${user?.ApplicationID ?? user?.ID}`);
+                    router.push(`/users/designation-letter/${user?.ApplicationID ?? user?.ID}`);
                 }
                 setOpen(false);
             }, 2000);
@@ -94,6 +105,15 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
             reason: ''
         });
         setOpen(false);
+    };
+
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        if (decisionData.decision === "rejected" && !decisionData.reason.trim()) {
+            event.preventDefault();
+            setErrors(prev => ({ ...prev, reason: "Enter a reason for declining" }));
+            return;
+        }
+        submitWithoutReset(dispatchAction)(event);
     };
 
     const handleSelectChange = (value: string, name: keyof ReviewProbuno) => {
@@ -121,14 +141,15 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                     </h2>
 
                     <div className="space-y-1 bg-gray-50 p-4">
-                        <InfoRow label="Full Name" value={`${user?.LastName ?? "-"} - ${user?.FirstName ?? "-"}`} />
-                        {/* <InfoRow label="No. of Lawyers in Firm" value={user?.numLawyers ?? "-"} /> */}
-                        {/* <InfoRow label="Firm Address" value={user?.firmAddress ?? "-"} /> */}
-                        <InfoRow label="Email" value={user?.Email ?? "-"} />
-                        <InfoRow label="Phone" value={user?.PhoneNumber ?? "-"} />
-                        <InfoRow label="Alt Number" value={user?.AltNumber ?? "-"} />
-                        <InfoRow label="Year of Call" value={user?.YearOfCall ?? "-"} />
-                        <InfoRow label="NBA Branch" value={user?.NBANumber ?? "-"} />
+                        <InfoRow label="Full Name" value={[user?.FirstName, user?.LastName].filter(Boolean).join(" ") || "-"} />
+                        <InfoRow label="Email" value={user?.Email || "-"} />
+                        <InfoRow label="Phone" value={user?.PhoneNumber || "-"} />
+                        <InfoRow label="Alt Number" value={user?.AltNumber || "-"} />
+                        <InfoRow label="Most Contactable Number" value={user?.MostContactableNumber || "-"} />
+                        <InfoRow label="State Bar Membership" value={user?.StateBarMembership || "-"} />
+                        <InfoRow label="Law Firm/Organization" value={user?.LawFirmName || "-"} />
+                        <InfoRow label="Firm Address" value={user?.LawFirmAddress || "-"} />
+                        <InfoRow label="State of Practice" value={user?.StateOfPractice || "-"} />
                     </div>
                 </div>
 
@@ -140,7 +161,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                             Section 2: Criminal Law Experience
                         </h2>
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Years of Experience" value={user?.Experience ?? "0"} />
+                            <InfoRow label="Years of Experience" value={user?.Experience || "-"} />
                         </div>
                     </div>
 
@@ -151,7 +172,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                         </h2>
 
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Capacity" value={user?.MaxLoad ?? 0} />
+                            <InfoRow label="Capacity" value={user?.MaxLoad || "-"} />
                         </div>
                     </div>
 
@@ -161,7 +182,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                             Section 4: Criminal Matters Preference
                         </h2>
                         <div className="space-y-1 bg-gray-50 p-4">
-                            <InfoRow label="Preferred Court" value={user?.PreferredCourt ?? ""} />
+                            <InfoRow label="Preferred Courts" value={user?.PreferredCourt || "-"} />
                         </div>
                     </div>
                 </div>
@@ -174,7 +195,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                         Section 5: Submission Data
                     </h2>
                     <div className="max-w-md space-y-1 bg-gray-50 p-4">
-                        <InfoRow label="Date of Submission" value={user?.CreatedAt ?? ""} />
+                        <InfoRow label="Date of Submission" value={readableDate(user?.CreatedAt)} />
                     </div>
                 </div>
             </div>
@@ -189,9 +210,25 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                 title={isPending ? "loading" : dialogState.title}
             />
 
-            {/* Decision Section */}
+            {/* Decision Section: read-only once the application has been decided. */}
+            {decided ? (
+                <div className="mt-8 bg-white p-6 rounded-lg border-[1px] border-gray-200">
+                    <h2 className="text-sm font-semibold mb-4 text-gray-700">Decision</h2>
+                    <div className="space-y-1 bg-gray-50 p-4">
+                        <InfoRow label="Decision" value={decisionLabels[user?.Status ?? ""] ?? user?.Status ?? "-"} />
+                        <InfoRow label="Reason" value={user?.DecisionReason || "-"} />
+                        <InfoRow label="Decided by" value={user?.DecidedBy?.name || "-"} />
+                        <InfoRow label="Decided on" value={readableDate(user?.DecidedAt)} />
+                    </div>
+                    {user?.Status === "ACTIVE" && (
+                        <Button onClick={() => router.push(`/users/designation-letter/${user?.ApplicationID ?? user?.ID}`)} className="mt-4 bg-black text-white h-11">
+                            View Letter of Designation
+                        </Button>
+                    )}
+                </div>
+            ) : (
             <div className="mt-8 bg-white p-6 rounded-lg border-[1px] border-gray-200">
-                <form onSubmit={submitWithoutReset(dispatchAction)} className="w-full space-y-6">
+                <form onSubmit={handleSubmit} className="w-full space-y-6">
                     <input type="hidden" name="decision" value={decisionData.decision} />
                     <input type="hidden" name="lawyer_id" value={user?.ID} />
                     <div className='mb-4'>
@@ -214,9 +251,11 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                     <div className="mb-6">
                         <TextAreaField
                             name="reason"
-                            label="Reason for Decision ( If Rejected ):"
-                            required
-                            placeholder="Enter your permanent address"
+                            label="Reason for Decision (required when declining):"
+                            required={decisionData.decision === "rejected"}
+                            placeholder="Why is this application being declined?"
+                            value={decisionData.reason}
+                            onChange={(e) => handleSelectChange(e.target.value, 'reason')}
                             error={errors.reason}
                         />
                     </div>
@@ -235,6 +274,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                 </form>
 
             </div>
+            )}
         </div>
     );
 };

@@ -16,7 +16,7 @@ import { displayStateName } from "@/components/get-state";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
 import { getAssignees, getRouteTargets, moveCase, postCaseDocument, postCaseProgress } from "../server/lifecycle";
 
-type Action = MovementCommand["action"] | "progress" | "document";
+export type Action = MovementCommand["action"] | "progress" | "document";
 type Recipient = DirectoryUser;
 
 // isFull: the lawyer is already carrying the case load they agreed to. A pro bono
@@ -44,7 +44,8 @@ function emptyPoolMessage(action: Action, role: string) {
 }
 const titles: Record<Action, string> = { route: "Route case", assign: "Assign lawyer", escalate: "Send back up the chain", "lawyer-reject": "Return assignment", accept: "Accept case", reject: "Reject case", "request-revision": "Request revision", status: "Update status", progress: "Add progress update", document: "Upload document" };
 
-export default function CaseActions({ caseRecord, onChanged }: { caseRecord: CaseRecord; onChanged?: () => void }) {
+// `only` narrows the buttons to some actions (the dashboard queues offer review or assignment only).
+export default function CaseActions({ caseRecord, onChanged, only }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[] }) {
   const { data: user } = useAppSelector(state => state.profile);
   const permissions = casePermissions(caseRecord, user);
   const [selected, setSelected] = useState<{ action: Action; status?: string } | null>(null);
@@ -64,7 +65,7 @@ export default function CaseActions({ caseRecord, onChanged }: { caseRecord: Cas
   ];
   return <>
     <div className="flex flex-wrap gap-2">
-      {actions.filter(a => a.allowed).map(a => <Button key={`${a.action}-${a.status ?? ""}`} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
+      {actions.filter(a => a.allowed && (!only || only.includes(a.action))).map(a => <Button key={`${a.action}-${a.status ?? ""}`} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
     </div>
     <Dialog open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">

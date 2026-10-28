@@ -77,7 +77,14 @@ export interface ILawyerRequest {
   Experience: string;
   Reason: string;
   PreferredCourt: string;
-  Speciaty: string;
+  // Pro bono applications: what the public form asked, and the decision once made.
+  LawFirmName?: string;
+  LawFirmAddress?: string;
+  StateBarMembership?: string;
+  MostContactableNumber?: string;
+  StateOfPractice?: string;
+  DecidedBy?: { name: string; role: string } | null;
+  DecidedAt?: string | null;
 }
 
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { GetState } from '@/components/get-state';
+import { displayStateName, GetState } from '@/components/get-state';
 import { GetZone } from '@/components/get-zone';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAction } from '@/context/ActionContext';
@@ -151,7 +151,7 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                                 {selectedZoneStates.length > 0 ? (
                                     selectedZoneStates.map((state: StateOption) => (
                                         <SelectItem key={state.id} value={state.id} className="py-2">
-                                            {state.title}
+                                            {displayStateName(state.title)}
                                         </SelectItem>
                                     ))
                                 ) : (

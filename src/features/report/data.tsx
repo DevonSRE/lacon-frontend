@@ -18,8 +18,8 @@ export default function ReportData() {
                 return <LaconLawyerTable />;
               case 'PDSS-bail-at-police-stations':
                 return <PDSSBAIL />;
-            //   case 'desination-letter':
-            //     return <DesinationLetter />;
+            //   case 'designation-letter':
+            //     return <DesignationLetter />;
             default:
                 return <>404 page </>;
         }

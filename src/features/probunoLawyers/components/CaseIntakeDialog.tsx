@@ -14,6 +14,18 @@ interface CaseIntakeDialogProps {
     handleCloseCaseType?: (open: boolean) => void
     isHome?: boolean
     caseReference?: string
+    // Public filings: where the confirmation went and who reviews the case.
+    email?: string
+    reviewer?: string
+    // The role now holding the case, when the API routed it (FCT cases go to the HQ heads).
+    holderRole?: string
+}
+
+const REVIEWERS: Record<string, string> = {
+    "CIVIL JUSTICE DEPT. HEAD": "the Civil Justice Department Head",
+    "CRIMINAL JUSTICE DEPT. HEAD": "the Criminal Justice Department Head",
+    "PDSS UNIT HEAD": "the PDSS Unit Head",
+    "DIRECTOR GENERAL": "the Director General",
 }
 
 export default function CaseIntakeDialog({
@@ -22,7 +34,11 @@ export default function CaseIntakeDialog({
     handleCloseCaseType,
     isHome,
     caseReference,
+    email,
+    reviewer = "the State Coordinator for your state",
+    holderRole,
 }: CaseIntakeDialogProps) {
+    const reviewedBy = (holderRole && REVIEWERS[holderRole]) || reviewer
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md p-6">
@@ -31,13 +47,25 @@ export default function CaseIntakeDialog({
                         <CheckCircle className="text-green-600 w-12 h-12" />
                         <DialogTitle className="text-xl font-semibold">Case Intake Submitted</DialogTitle>
 
-                        <p className="text-sm text-gray-600 text-center">
-                            The case intake form has been successfully<br />
-                            recorded in our system.
-                        </p>
-                        {caseReference && (
+                        {isHome ? (
+                            <div className="space-y-3 text-center text-sm text-gray-600">
+                                {caseReference && (
+                                    <p className="rounded bg-green-50 px-4 py-2 font-semibold text-green-800">
+                                        Your reference is {caseReference}
+                                    </p>
+                                )}
+                                <p>Quote this reference whenever you contact LACON about your case.</p>
+                                {email && <p>We have sent a confirmation email to <span className="font-medium text-gray-900">{email}</span>.</p>}
+                                <p>Your case will be reviewed by {reviewedBy}. Acceptance is not guaranteed; we will email you the decision.</p>
+                            </div>
+                        ) : caseReference ? (
                             <p className="rounded bg-green-50 px-4 py-2 text-center text-sm font-semibold text-green-800">
-                                Case reference: {caseReference}
+                                Case {caseReference} filed
+                            </p>
+                        ) : (
+                            <p className="text-sm text-gray-600 text-center">
+                                The case intake form has been successfully<br />
+                                recorded in our system.
                             </p>
                         )}
                         {!isHome ? (

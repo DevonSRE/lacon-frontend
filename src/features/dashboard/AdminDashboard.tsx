@@ -6,6 +6,7 @@ import { mainColumns } from "./components/table-columns";
 import { useQuery } from "@tanstack/react-query";
 import { GetAdminReport } from "../report/server/reportAction";
 import { CaseOverview } from "@/types/case";
+import { Queue } from "./components/UnitCaseQueues";
 
 interface StatCardProps {
     title: string;
@@ -129,6 +130,11 @@ export default function AdminDashboard({ role }: { role: string }) {
                         subtitle="Weekly Civil & Criminal"
                     />
                 </div>
+
+                {/* Cases nobody could be routed to (e.g. no State Coordinator for the state yet). The DG
+                    can accept, reject or send them on; a platform admin sees them but does not decide. */}
+                <Queue title="No holder" empty="Every case has a holder."
+                    filters={{ queue: "unrouted" }} actions={["accept", "reject", "route"]} />
 
                 {caseOverview.length > 0 && (
                 <div className="flex flex-1 flex-col gap-4 pt-0">

@@ -9,12 +9,13 @@ import { Button } from '@/components/ui/button'
 import { useRouter } from 'next/navigation'
 import { stateOptions } from '@/lib/types'
 import { Label } from '@/components/ui/label'
-import { FormDataPDSSCase, pdssCaseSchema, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema'
+import { FormDataPDSSCase, pdssCaseSchema, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema'
 import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
 import { useAction } from '@/context/ActionContext'
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
+import useSubmitLock from '@/hooks/use-submit-lock'
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { GetState } from '@/components/get-state'
@@ -34,9 +35,12 @@ interface CivilCaseFormProps {
 export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setCurrentStep = () => { }, handleCloseCaseType = (() => { }), type, onCaseSubmitted }: CivilCaseFormProps) {
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
+    const acquireSubmit = useSubmitLock(state);
     const { selectedStateId, setIsOpen } = useAction();
     const [open, setOpen] = useState(false);
     const [selectedState, setSelectedState] = useState<string>("");
+    // Staff filing without a fixed state must say where they are filing from.
+    const needsFilingState = !isPublic && state_id === "";
     const [loading, setLoading] = useState<boolean>(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -114,7 +118,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     const validateStep = (step: number) => {
         try {
             if (step === 1) {
-                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : personalInfoSchema).parse(formData);
+                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : needsFilingState ? personalInfoSchema.extend(filingStateSchema.shape) : personalInfoSchema).parse(needsFilingState ? { ...formData, state_id: selectedState } : formData);
             } else if (step === 2) {
                 pdssCaseSchema.parse(formData);
             }
@@ -180,6 +184,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                         fd.append(key, String(v));
                     }
                 });
+                if (!acquireSubmit()) return;
                 startTransition(() => formAction(fd));
             }
         }
@@ -205,6 +210,9 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
                 caseReference={state?.data?.case_id ?? state?.data?.id}
+                email={formData.email}
+                holderRole={state?.data?.current_holder?.role}
+                reviewer="the PDSS Unit Head"
             />
             <div className="min-h-screen px-4">
                 <div className="flex items-center justify-between">
@@ -243,13 +251,14 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                             <div className="bg-white  mt-5 ">
                                 {(!isPublic && state_id === "") && (
                                     <div className="space-y-6 my-4">
-                                        <Label htmlFor="state-select">Where are you filing from?</Label>
+                                        <Label htmlFor="state-select">Where are you filing from?<span className="text-red-500 text-xs">*</span></Label>
                                         <GetState
                                             value={selectedState}
-                                            onValueChange={(val: string) => setSelectedState(val)}
+                                            onValueChange={(val: string) => { setSelectedState(val); setErrors(prev => ({ ...prev, state_id: '' })); }}
                                             placeholder="Select your state"
                                             onLoadingChange={(loading) => setLoading(loading)}
                                         />
+                                        {errors.state_id && <p className="text-red-500 text-xs mt-1">{errors.state_id}</p>}
                                     </div>
                                 )}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

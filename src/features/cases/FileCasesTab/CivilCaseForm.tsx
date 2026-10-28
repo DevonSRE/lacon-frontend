@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react';
 import { ArrowLeft, CloudUpload } from 'lucide-react';
-import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema, publicContactSchema } from '../../probunoLawyers/server/probonoSchema';
+import { caseDetailsSchema, FormDataCivilCase, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema';
 import { CIVIL_COURT_STAGE_OPTIONS } from '@/lib/form-options';
 import InputField from '@/components/form/input/InputField';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
+import useSubmitLock from '@/hooks/use-submit-lock';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
@@ -32,9 +33,12 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [open, setOpen] = useState(false);
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
+    const acquireSubmit = useSubmitLock(state);
     const { selectedStateId, setIsOpen } = useAction();
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedState, setSelectedState] = useState<string>("");
+    // Staff filing without a fixed state must say where they are filing from.
+    const needsFilingState = !isPublic && state_id === "";
     useEffect(() => {
         if (selectedStateId === "") {
             setIsOpen(true);
@@ -115,7 +119,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
     const validateStep = (step: number) => {
         try {
             if (step === 1) {
-                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : personalInfoSchema).parse(formData);
+                (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : needsFilingState ? personalInfoSchema.extend(filingStateSchema.shape) : personalInfoSchema).parse(needsFilingState ? { ...formData, state_id: selectedState } : formData);
             } else if (step === 2) {
                 caseDetailsSchema.parse(formData);
             }
@@ -175,6 +179,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                         fd.append(key, String(v));
                     }
                 });
+                if (!acquireSubmit()) return;
                 startTransition(() => formAction(fd));
             }
         }
@@ -200,6 +205,8 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
                 caseReference={state?.data?.case_id ?? state?.data?.id}
+                email={formData.email}
+                holderRole={state?.data?.current_holder?.role}
             />
             <div className="min-h-screen">
                 {!isPublic &&
@@ -225,7 +232,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                     <input type="hidden" name="case_type" value="CIVIL CASE" />
                     <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
                     {(!isPublic && state_id != "") ? (
-                        <input type="t" name="state_id" value={state_id} />
+                        <input type="hidden" name="state_id" value={state_id} />
                     ) :
                         <input type="hidden" name="state_id" value={selectedState} />
                     }
@@ -235,13 +242,14 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                             <div className="bg-white  mt-5 ">
                                 {(!isPublic && state_id === "") && (
                                     <div className="space-y-6 my-4">
-                                        <Label htmlFor="state-select">Where are you filing from?</Label>
+                                        <Label htmlFor="state-select">Where are you filing from?<span className="text-red-500 text-xs">*</span></Label>
                                         <GetState
                                             value={selectedState}
-                                            onValueChange={(val: string) => setSelectedState(val)}
+                                            onValueChange={(val: string) => { setSelectedState(val); setErrors(prev => ({ ...prev, state_id: '' })); }}
                                             placeholder="Select your state"
                                             onLoadingChange={(loading) => setLoading(loading)}
                                         />
+                                        {errors.state_id && <p className="text-red-500 text-xs mt-1">{errors.state_id}</p>}
                                     </div>
                                 )}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

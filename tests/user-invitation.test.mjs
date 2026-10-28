@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import vm from "node:vm";
-import { invitationScope, uniqueRoleOptions } from "../src/lib/user-invitation-options.ts";
+import { invitationScope, paralegalDepartment, uniqueRoleOptions } from "../src/lib/user-invitation-options.ts";
 
 const require = createRequire(import.meta.url);
 const ts = require("typescript");
 const exports = {};
 vm.runInNewContext(ts.transpileModule(readFileSync(new URL("../src/features/dashboard/server/type.ts", import.meta.url), "utf8"), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText, { exports, require: name => name === "@/lib/user-invitation-options" ? { invitationScope } : require(name) });
+}).outputText, { exports, require: name => name === "@/lib/user-invitation-options" ? { invitationScope, paralegalDepartment } : require(name) });
 const person = { first_name: "Synthetic", last_name: "Tester", email: "tester@example.test", phone_number: "08000001015" };
 const id = "00000000-0000-4000-8000-000000000050";
 
@@ -79,4 +79,21 @@ test("invalid state never queries centres", async () => {
 test("centre fetch errors are not reported as a valid empty list", async () => {
   const { api } = centerApi([[]], true);
   assert.equal((await api.getInvitationCenters(id)).success, false);
+});
+
+test("an internal paralegal can belong to a centre or a unit (QA 2026-10-26 item 2)", () => {
+  const paralegal = { ...person, user_type: "INTERNAL PARALEGAL" };
+  // Centre Office needs the state and the centre.
+  assert.equal(exports.createUserSchema.safeParse({ ...paralegal, designation: "Centre Office", state_id: id }).success, false);
+  assert.equal(exports.createUserSchema.safeParse({ ...paralegal, designation: "Centre Office", state_id: id, center_id: id }).success, true);
+  // A unit needs no place and is sent as the unit's department.
+  const unit = exports.createUserSchema.safeParse({ ...paralegal, designation: "PDSS Unit", state_id: "", zone_id: "", center_id: "" });
+  assert.equal(unit.success, true);
+  assert.equal(unit.data.department_name, "PDSS UNIT HEAD");
+  assert.equal(unit.data.state_id, undefined);
+  // An office that is a place sends no department.
+  const state = exports.createUserSchema.safeParse({ ...paralegal, designation: "State Office", state_id: id });
+  assert.equal(state.success, true);
+  assert.equal(state.data.department_name, undefined);
+  assert.equal(paralegalDepartment("LACON LAWYER", "PDSS Unit"), "");
 });

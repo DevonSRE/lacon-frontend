@@ -251,14 +251,14 @@ export const createProbunoRequestColumns = (userRole: ROLES,
       cell: ({ row }) => <span>{row.original.Experience ?? "-"}</span>,
     },
     {
-      accessorKey: "Speciaty",
-      header: "Speciaty",
-      cell: ({ row }) => <span>{row.original.Speciaty ?? "-"}</span>,
+      accessorKey: "PreferredCourt",
+      header: "Preferred Courts",
+      cell: ({ row }) => <span>{row.original.PreferredCourt || "-"}</span>,
     },
     {
       accessorKey: "MaxLoad",
-      header: "Preferred Load",
-      cell: ({ row }) => <span>{row.original.MaxLoad}</span>,
+      header: "Case Load",
+      cell: ({ row }) => <span>{row.original.MaxLoad || "-"}</span>,
     },
     {
       accessorKey: "Status",
@@ -268,7 +268,8 @@ export const createProbunoRequestColumns = (userRole: ROLES,
         const statusMap: Record<string, { label: string; color: string }> = {
           ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
           PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
+          // A declined application is stored as INACTIVE.
+          INACTIVE: { label: "Declined", color: "text-red-800 bg-red-100" },
         };
 
         const current = statusMap[status] || {

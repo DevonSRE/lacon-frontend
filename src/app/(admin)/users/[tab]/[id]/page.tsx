@@ -1,9 +1,9 @@
 
-import DesinationLetter from "@/features/usersRole/DesinationLetter";
+import DesignationLetter from "@/features/usersRole/DesignationLetter";
 export default async function Page() {
 
   return (
-    <DesinationLetter />
+    <DesignationLetter />
   );
 }
 

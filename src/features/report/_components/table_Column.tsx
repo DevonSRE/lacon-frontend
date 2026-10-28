@@ -1,6 +1,7 @@
 import { ColumnDef, CellContext } from "@tanstack/react-table";
 import { LawyerData, StateData } from "./report_types";
 import { Checkbox } from "@/components/ui/checkbox";
+import { displayStateName } from "@/components/get-state";
 
 const centerCell = (label: string) => ({
     header: () => <div className="text-center">{label}</div>,
@@ -8,7 +9,7 @@ const centerCell = (label: string) => ({
 });
 
 export const stateColumns: ColumnDef<StateData>[] = [
-    { accessorKey: "state", ...centerCell("State") },
+    { accessorKey: "state", header: () => <div className="text-center">State</div>, cell: info => <div className="text-center">{displayStateName(String(info.getValue() ?? ""))}</div> },
     { accessorKey: "received", ...centerCell("Received") },
     { accessorKey: "accepted", ...centerCell("Accepted") },
     { accessorKey: "completed", ...centerCell("Completed") },

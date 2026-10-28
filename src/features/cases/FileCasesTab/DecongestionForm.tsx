@@ -7,6 +7,7 @@ import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
 import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
+import useSubmitLock from '@/hooks/use-submit-lock';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { submitDecongestionForm, submitPublicCaseForm } from '../../probunoLawyers/server/action';
@@ -29,6 +30,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
     const [selectedState, setSelectedState] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [state, formAction, isPending] = useActionState(submitDecongestionForm, undefined);
+    const acquireSubmit = useSubmitLock(state);
     useEffectAfterMount(() => {
         if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
             toast.error(
@@ -167,6 +169,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                         );
                     }
                 });
+                if (!acquireSubmit()) return;
                 startTransition(() => formAction(fd));
             }
         }

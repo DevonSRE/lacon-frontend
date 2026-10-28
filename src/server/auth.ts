@@ -26,6 +26,7 @@ export interface LoginResponseData {
   state_name: string;
   zone_id: string;
   zone_name: string;
+  department_name?: string;
 }
 
 const cookieConfig = {

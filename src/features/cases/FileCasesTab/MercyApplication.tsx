@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { submitMercyApplicationForm } from "@/features/probunoLawyers/server/action";
 import { FormDataMercyCase } from "@/features/probunoLawyers/server/probonoSchema";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
+import useSubmitLock from "@/hooks/use-submit-lock";
 import { CLIENT_ERROR_STATUS, SUCCESS_STATUS } from "@/lib/constants";
 import CaseCreated from "../_components/CaseCreated";
 import { useQueryClient } from "@tanstack/react-query";
@@ -34,6 +35,7 @@ export default function MercyApplication({
     submitMercyApplicationForm,
     undefined
   );
+  const acquireSubmit = useSubmitLock(state);
   const queryClient = useQueryClient();
   const [currentStep, setCurrentStep] = useState<number>(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -186,6 +188,8 @@ export default function MercyApplication({
     if (recommendationImage) {
       fd.append("recommendations", recommendationImage);
     }
+
+    if (!acquireSubmit()) return;
 
     startTransition(() => formAction(fd));
   };

@@ -1,6 +1,6 @@
 import { Zone } from "@/lib/types";
 import { z } from "zod";
-import { invitationScope } from "@/lib/user-invitation-options";
+import { invitationScope, paralegalDepartment } from "@/lib/user-invitation-options";
 
 export interface FormDataUser {
   user_type: string;
@@ -99,6 +99,11 @@ export const createUserSchema = z
     if (scope.center && !data.center_id) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Centre selection is required", path: ["center_id"] });
     }
+  })
+  // A unit paralegal belongs to the unit; the API takes it as department_name.
+  .transform(data => {
+    const department_name = paralegalDepartment(data.user_type, data.designation);
+    return department_name ? { ...data, department_name } : data;
   });
 export type CreateUserFormData = z.infer<typeof createUserSchema>;
 
