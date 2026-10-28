@@ -352,10 +352,12 @@ export async function submitProBonoForm(
         success: false,
       };
     }
-    // The form calls it law_firm_organization_address; the API field is law_firm_address.
+    // The form's field names differ from the API's for the firm and the contact number.
     await ProbunoService.registration({
       ...result.data,
+      law_firm_name: result.data.name_of_law_firm_organization,
       law_firm_address: result.data.law_firm_address ?? result.data.law_firm_organization_address,
+      most_contactable_number: result.data.most_contactable_call_no,
     });
 
     return {

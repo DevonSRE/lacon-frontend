@@ -57,6 +57,14 @@ export async function GetProbunoLawyerRequestAction(params: Ipage) {
                 : application.criminal_courts_preference,
             Status: String(application.status ?? "").toUpperCase(),
             CreatedAt: application.created_at,
+            LawFirmName: application.law_firm_name,
+            LawFirmAddress: application.law_firm_address,
+            StateBarMembership: application.state_bar_membership,
+            MostContactableNumber: application.most_contactable_number,
+            StateOfPractice: application.state_of_practice,
+            DecisionReason: application.decision_reason,
+            DecidedBy: application.decided_by,
+            DecidedAt: application.decided_at,
         }));
         return { data: { ...page, data }, success: true };
 

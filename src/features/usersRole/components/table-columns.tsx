@@ -140,12 +140,11 @@ export const createLawyerRequestColumns = (
       accessorKey: "Action",
       header: "Request Type",
       cell: ({ row }) => {
-        const action = row.original.Action;
+        const action = (row.original.Action ?? "").toUpperCase();
         const actionMap: Record<string, { label: string; color: string }> = {
-          Creation: { label: "Create", color: "bg-green-100 text-teal-700" },
-          approve: { label: "approve", color: "bg-yellow-100 text-yellow-700" },
-          Suspension: { label: "Suspension", color: "bg-yellow-100 text-yellow-700" },
-          "Delete Request": { label: "Delete Request", color: "bg-red-100 text-red-600" },
+          ADD: { label: "Add user", color: "bg-green-100 text-teal-700" },
+          DEACTIVATE: { label: "Deactivate", color: "bg-red-100 text-red-600" },
+          REACTIVATE: { label: "Reactivate", color: "bg-yellow-100 text-yellow-700" },
         };
 
         const current = actionMap[action] ?? {
@@ -188,6 +187,25 @@ export const createLawyerRequestColumns = (
       accessorKey: "Reason",
       header: "Reason",
       cell: ({ row }) => <span>{row.original.Reason}</span>,
+    },
+    {
+      accessorKey: "Status",
+      header: "Status",
+      cell: ({ row }) => {
+        const status = (row.original.Status ?? "").toUpperCase();
+        const colour: Record<string, string> = {
+          PENDING: "bg-yellow-100 text-yellow-700",
+          APPROVED: "bg-green-100 text-teal-700",
+          REJECTED: "bg-red-100 text-red-600",
+        };
+        const label = status ? status.charAt(0) + status.slice(1).toLowerCase() : "-";
+        return <span className={`rounded px-2 py-1 text-xs font-medium ${colour[status] ?? "bg-gray-100 text-gray-800"}`}>{label}</span>;
+      },
+    },
+    {
+      accessorKey: "DecisionReason",
+      header: "Decision",
+      cell: ({ row }) => <span>{row.original.DecisionReason?.trim() || "-"}</span>,
     },
     {
       id: "actions",
@@ -233,14 +251,14 @@ export const createProbunoRequestColumns = (userRole: ROLES,
       cell: ({ row }) => <span>{row.original.Experience ?? "-"}</span>,
     },
     {
-      accessorKey: "Speciaty",
-      header: "Speciaty",
-      cell: ({ row }) => <span>{row.original.Speciaty ?? "-"}</span>,
+      accessorKey: "PreferredCourt",
+      header: "Preferred Courts",
+      cell: ({ row }) => <span>{row.original.PreferredCourt || "-"}</span>,
     },
     {
       accessorKey: "MaxLoad",
-      header: "Preferred Load",
-      cell: ({ row }) => <span>{row.original.MaxLoad}</span>,
+      header: "Case Load",
+      cell: ({ row }) => <span>{row.original.MaxLoad || "-"}</span>,
     },
     {
       accessorKey: "Status",
@@ -250,7 +268,8 @@ export const createProbunoRequestColumns = (userRole: ROLES,
         const statusMap: Record<string, { label: string; color: string }> = {
           ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
           PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
+          // A declined application is stored as INACTIVE.
+          INACTIVE: { label: "Declined", color: "text-red-800 bg-red-100" },
         };
 
         const current = statusMap[status] || {

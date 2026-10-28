@@ -50,9 +50,11 @@ export async function getCaseDocuments(id: string, page = 1): Promise<Result<Pag
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   return read(`/casefile/${id}/document-history`, { page, size: 20 });
 }
-export async function getAssignees(id: string, page = 1, keyword = ""): Promise<Result<PageResult<DirectoryUser>>> {
+export async function getAssignees(id: string, page = 1, keyword = "", state = ""): Promise<Result<PageResult<DirectoryUser>>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
-  return read("/users/assignable-lawyers", { case_id: id, page, size: 20, keyword });
+  // state narrows the pool to one state, so a unit head can pick a lawyer near
+  // the client or the custodial centre; "all" is every state.
+  return read("/users/assignable-lawyers", { case_id: id, page, size: 20, keyword, state: state || "all" });
 }
 export async function getRouteTargets(role: string, page = 1, keyword = ""): Promise<Result<PageResult<DirectoryUser>>> {
   return read("/users", { user_type: role, status: "ACTIVE", page, size: 20, keyword });
@@ -64,6 +66,7 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
       action: z.enum(["route", "assign", "escalate", "lawyer-reject", "accept", "reject", "request-revision", "status"]),
       target_user_id: z.uuid().optional(), assignee_id: z.uuid().optional(), reason: z.string().trim().optional(),
       status: z.enum(["INPROGRESS", "COMPLETED", "CLOSED"]).optional(),
+      outcome: z.string().trim().optional(), resolution_report: z.string().trim().optional(),
     }).parse(command);
     const { action, ...body } = request;
     if (["escalate", "lawyer-reject", "reject", "request-revision"].includes(action) && !body.reason) {
@@ -72,6 +75,9 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
     if (action === "route" && !body.target_user_id) return { success: false, status: 400, message: "Choose a recipient." };
     if (action === "assign" && !body.assignee_id) return { success: false, status: 400, message: "Choose a lawyer." };
     if (action === "status" && !body.status) return { success: false, status: 400, message: "Choose a status." };
+    if (body.status === "COMPLETED" && (!body.outcome || !body.resolution_report)) {
+      return { success: false, status: 400, message: "An outcome and a resolution report are required to complete a case." };
+    }
     const response = action === "assign"
       ? await axiosInstance.patch<Envelope<CaseRecord>>("/admin/casefile/case-assignment", { casefile_id: id, assignee_id: body.assignee_id, reason: body.reason })
       : await axiosInstance.post<Envelope<CaseRecord | null>>(action === "status" ? `/admin/casefile/${id}/case-status-update` : `/casefile/${id}/${action}`, body);

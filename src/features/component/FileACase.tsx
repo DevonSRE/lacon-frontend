@@ -58,6 +58,18 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
 
  
     const canFileCase = ["INTERNAL PARALEGAL"].includes(userRole);
+    // A unit paralegal files that unit's cases; a paralegal at head office, a zone, a state or a centre files
+    // civil and criminal cases. OSCAR and DIO have no case form of their own, so their paralegals keep those.
+    const unit = user?.department_name ?? "";
+    const unitCaseTypes: Record<string, { value: string; label: string }[]> = {
+        "PDSS UNIT HEAD": [{ value: "pdss-instation", label: "PDSS (In Station)" }],
+        "DECONGESTION UNIT HEAD": [{ value: "Decongestion", label: "Decongestion" }],
+        "PREROGATIVE OF MERCY UNIT HEAD": [{ value: "MercyApplication", label: "Mercy Application" }],
+    };
+    const paralegalCaseTypes = unitCaseTypes[unit] ?? [
+        { value: "Civil", label: "Civil" },
+        { value: "Criminal", label: "Criminal" },
+    ];
 
     if (!canFileCase) {
         return null;
@@ -82,14 +94,9 @@ export default function FileACaseComponent({ userRole, buttonText, buttonClassNa
                             <SelectValue placeholder="Case Type" />
                         </SelectTrigger>
                         <SelectContent>
-                            {(userRole === ROLES.OSCAR_UNIT_HEAD || userRole === ROLES.INTERNAL_PARALEGAL) && (
-                                <>
-                                    <SelectItem value="Civil">Civil</SelectItem>
-                                    <SelectItem value="Criminal">Criminal</SelectItem>
-                                    <SelectItem value="pdss-instation">PDSS(In Station)</SelectItem>
-                                    {/* <SelectItem value="pdss-organisation">PDSS(In Organization)</SelectItem> */}
-                                </>
-                            )}
+                            {userRole === ROLES.INTERNAL_PARALEGAL && paralegalCaseTypes.map(type => (
+                                <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                            ))}
                             {userRole === ROLES.DECONGESTION_UNIT_HEAD && (
                                 <SelectItem value="Decongestion">Decongestion</SelectItem>
                             )}

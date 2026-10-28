@@ -29,9 +29,38 @@ import { GetInactiveState } from "@/components/get-inactive-state";
 import { GetZone } from "@/components/get-zone";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+// The department and unit offices a lawyer or paralegal can be linked to. The
+// API refuses anything else, so these must match its role names exactly.
+const DEPARTMENT_OPTIONS = [
+  "CIVIL JUSTICE DEPT. HEAD",
+  "CRIMINAL JUSTICE DEPT. HEAD",
+  "DECONGESTION UNIT HEAD",
+  "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD",
+  "PDSS UNIT HEAD",
+  "DIO UNIT HEAD",
+] as const;
+// Radix Select has no empty-string value, so "none" needs a sentinel.
+const NO_DEPARTMENT = "__none__";
+
+// The field offices that ask the Director General instead of creating accounts.
+const REQUESTER_ROLES: string[] = [
+  "ZONAL DIRECTOR",
+  "STATE COORDINATOR",
+  "CENTRE COORDINATOR",
+  "DECONGESTION UNIT HEAD",
+  "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD",
+  "PDSS UNIT HEAD",
+  "DIO UNIT HEAD",
+];
+
 const defaultFormData: FormDataLawyer = {
   user_type: "",
   designation: "",
+  department_name: "",
+  max_load: "",
+  reason: "",
   state: "",
   center_id: "",
   zone_id: "",
@@ -54,6 +83,9 @@ export function AddLawyerSheet() {
   const [loading, setLoading] = useState<boolean>(false);
   const { data: user } = useAppSelector((state) => state.profile);
   const role = user?.role;
+  // A field office cannot create an account: the API refuses it and the Director
+  // General creates it on approval. The same form raises the request.
+  const asRequest = !!role && REQUESTER_ROLES.includes(role);
   const handleChange = (key: keyof FormDataLawyer, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -70,7 +102,7 @@ export function AddLawyerSheet() {
     } else if (state?.status === 200 || state?.status === 201) {
       queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
 
-      toast.success("User invited successfully!");
+      toast.success(asRequest ? "Request sent to the Director General for approval." : "User invited successfully!");
       setIsOpen(false);
       setFormData(defaultFormData); // ✅ Reset form on success
       setSelectedZone("");
@@ -88,7 +120,15 @@ export function AddLawyerSheet() {
           </span>
           <ScrollArea className="h-screen mt-4">
             <form className="space-y-4 p-1" onSubmit={submitWithoutReset(dispatch)}>
-              <SheetTitle className="text-xl font-semibold">Add New Lawyer</SheetTitle>
+              <SheetTitle className="text-xl font-semibold">
+                {asRequest ? "Request a new user" : "Add New Lawyer"}
+              </SheetTitle>
+              {asRequest && (
+                <p className="text-sm text-gray-600">
+                  This is sent to the Director General. The account is created, and the invite sent, only if it is approved.
+                </p>
+              )}
+              <input type="hidden" name="as_request" value={asRequest ? "true" : "false"} />
 
               <div className="space-y-1">
                 <Label>
@@ -141,6 +181,72 @@ export function AddLawyerSheet() {
                   </p>
                 )}
               </div>
+
+              {/* A lawyer or paralegal linked to a unit appears in that unit head's
+                  assignable pool; without it, unit heads have nobody to assign to. */}
+              {formData.user_type && formData.user_type !== "PRO BONO LAWYER" && (
+                <div className="space-y-1">
+                  <Label>Department or unit</Label>
+                  <input type="hidden" name="department_name" value={formData.department_name} />
+                  <Select
+                    value={formData.department_name}
+                    onValueChange={(val) => handleChange("department_name", val === NO_DEPARTMENT ? "" : val)}
+                  >
+                    <SelectTrigger className={`w-full h-11 ${serverErrors.department_name ? "border-red-500" : ""}`}>
+                      <SelectValue placeholder="None (state or centre work only)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={NO_DEPARTMENT}>None (state or centre work only)</SelectItem>
+                      {DEPARTMENT_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>{option}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-500">
+                    Pick a unit so its head can assign cases to this person.
+                  </p>
+                  {serverErrors.department_name && (
+                    <p className="text-red-500 text-sm">{serverErrors.department_name[0]}</p>
+                  )}
+                </div>
+              )}
+
+              {formData.user_type && (
+                <div className="space-y-1">
+                  <InputField
+                    type="number"
+                    label="Cases at a time"
+                    name="max_load"
+                    min="0"
+                    className={serverErrors.max_load ? "border-red-500 bg-red-50" : ""}
+                    placeholder="Leave empty for no set limit"
+                    value={formData.max_load}
+                    onChange={(e) => handleChange("max_load", e.target.value)}
+                  />
+                  {serverErrors.max_load && (
+                    <p className="text-red-500 text-sm">{serverErrors.max_load[0]}</p>
+                  )}
+                </div>
+              )}
+
+              {asRequest && (
+                <div className="space-y-1">
+                  <Label>
+                    Reason for the request <span className="text-red-500">*</span>
+                  </Label>
+                  <textarea
+                    name="reason"
+                    required
+                    value={formData.reason}
+                    onChange={(e) => handleChange("reason", e.target.value)}
+                    placeholder="Why is this account needed?"
+                    className={`min-h-24 w-full rounded border p-2 ${serverErrors.reason ? "border-red-500 bg-red-50" : ""}`}
+                  />
+                  {serverErrors.reason && (
+                    <p className="text-red-500 text-sm">{serverErrors.reason[0]}</p>
+                  )}
+                </div>
+              )}
 
               {/* Zonal Directors and State Coordinators create within their own zone. */}
               {(role === ROLES.ZONAL_DIRECTOR || role === ROLES.STATE_COORDINATOR) && (

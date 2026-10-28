@@ -1,6 +1,7 @@
 import { z } from "zod";
 import {
   CAPACITY_OPTIONS,
+  COURT_PREFERENCE_OPTIONS,
   EXPERIENCE_OPTIONS,
   todayISO,
 } from "@/lib/form-options";
@@ -28,6 +29,17 @@ const age = z.coerce
   .min(1, { message: "Age must be at least 1" })
   .max(120, { message: "Age must be 120 or less" });
 
+// A Nigerian phone number: 11 digits starting with 0, or +234 and 10 digits.
+export const nigerianPhone = z
+  .string()
+  .trim()
+  .regex(/^(0\d{10}|\+234\d{10})$/, { message: "Enter a valid phone number" });
+
+const filingState = z.string().min(1, { message: "Select the state you are filing from" });
+
+// Staff forms that show "Where are you filing from?" must have an answer.
+export const filingStateSchema = z.object({ state_id: filingState });
+
 // Public forms require email as well as phone (PM ruling, checklist section 3).
 export const publicContactSchema = z.object({
   email: z
@@ -39,31 +51,37 @@ export const publicContactSchema = z.object({
 
 
 
+const optionalPhone = z
+  .string()
+  .trim()
+  .refine((v) => !v || /^(0\d{10}|\+234\d{10})$/.test(v), { message: "Enter a valid phone number" })
+  .optional();
+
+// The public pro bono registration form. The server action sends the same data to the API.
 export const proBonoSchema = z.object({
-  first_name: z.string().min(1),
-  last_name: z.string().min(1),
+  first_name: z.string().trim().min(1, { message: "Enter your first name" }),
+  last_name: z.string().trim().min(1, { message: "Enter your last name" }),
   lawyers_count_in_firm: z.number().optional(),
-  name_of_law_firm_organization: z.string().min(1),
+  name_of_law_firm_organization: z.string().trim().min(1, { message: "Enter the name of your law firm or organisation" }),
   law_firm_address: z.string().min(1).optional(),
-  law_firm_organization_address: z.string().min(1).optional(),
-  email: z.string().email(),
-  state_id: z.string().uuid(),
-  phone_number: z.string().regex(/^\d{11}$/, { message: "Mobile phone number must be exactly 11 digits" }),
-  alternate_number: z.string(),
+  law_firm_organization_address: z.string().trim().min(1, { message: "Enter the address of your law firm or organisation" }),
+  email: z
+    .string()
+    .trim()
+    .min(1, { message: "Enter your email address" })
+    .email({ message: "Enter a valid email address" }),
+  state_id: z.string().uuid({ message: "Select your state of practice" }),
+  phone_number: nigerianPhone,
+  alternate_number: optionalPhone,
+  state_bar_membership: z.string().trim().min(1, { message: "Enter your State Bar membership" }),
+  most_contactable_call_no: nigerianPhone,
   year_of_call: z.string().min(4).max(4).optional(),
   nba_branch: z.string().min(1).optional(),
-  experience_in_criminal_law: z.enum(EXPERIENCE_OPTIONS),
-  pro_bono_capacity: z.enum(CAPACITY_OPTIONS),
-  criminal_courts_preference: z.array(
-    z.enum([
-      "Appellate Courts",
-      "High Courts",
-      "Magistrate Courts",
-      "Customary Court",
-      "Sharia Court",
-      "Area Court",
-    ])
-  ),
+  experience_in_criminal_law: z.enum(EXPERIENCE_OPTIONS, { error: "Select your years of experience" }),
+  pro_bono_capacity: z.enum(CAPACITY_OPTIONS, { error: "Select how many cases you can handle at a time" }),
+  criminal_courts_preference: z
+    .array(z.enum(COURT_PREFERENCE_OPTIONS))
+    .min(1, { message: "Select at least one court" }),
   areas_covered: z.string().min(1).optional(),
   client_base: z.string().min(1).optional(),
   source_of_clients: z.string().min(1).optional(),
@@ -133,10 +151,7 @@ export const caseUpdateSchema = z.object({
 export type TProbunoCaseUpdatePayload = z.infer<typeof caseUpdateSchema>;
 
 export const personalInfoSchema = z.object({
-  state_id: z
-    .string()
-    .min(1, { message: "State filling from is not selected" })
-    .optional(),
+  state_id: filingState.optional(),
   case_type: z.string().min(1, { message: "Case Type is required" }).optional(),
   first_name: z
     .string()
@@ -149,9 +164,7 @@ export const personalInfoSchema = z.object({
     .string()
     .min(10, { message: "Address must be at least 10 characters" }),
   age,
-  phone_number: z
-    .string()
-    .min(10, { message: "Phone number must be at least 10 digits" }),
+  phone_number: nigerianPhone,
   marital_status: z.string().min(1, { message: "Marital status is required" }),
   state_of_origin: z
     .string()

@@ -60,8 +60,9 @@ export default function ProbunoRequest() {
         staleTime: 100000,
     });
 
-    const actionType: string[] = [
-        "pending", "active", "inactive"
+    // A declined application is stored as INACTIVE.
+    const actionType: { value: string; label: string }[] = [
+        { value: "pending", label: "Pending" }, { value: "active", label: "Active" }, { value: "inactive", label: "Declined" },
     ];
 
     const handleActionType = (role: string) => {
@@ -71,7 +72,7 @@ export default function ProbunoRequest() {
     return (
         <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
             <div className="row flex justify-between">
-                <div className="text-2xl font-semibold">Pro Bono Requests from Website</div>
+                <div className="text-2xl font-semibold">Pro Bono Applications from Website</div>
             </div>
             <div className="flex items-center mt-6 gap-6 w-full justify-between">
                 <div className="relative w-full">
@@ -96,8 +97,8 @@ export default function ProbunoRequest() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
                             {actionType.map((tab) => (
-                                <DropdownMenuCheckboxItem key={tab} checked={selectedStatus === tab} onClick={() => handleActionType(tab)}>
-                                    {tab}
+                                <DropdownMenuCheckboxItem key={tab.value} checked={selectedStatus === tab.value} onClick={() => handleActionType(tab.value)}>
+                                    {tab.label}
                                 </DropdownMenuCheckboxItem>
                             ))}
                         </DropdownMenuContent>

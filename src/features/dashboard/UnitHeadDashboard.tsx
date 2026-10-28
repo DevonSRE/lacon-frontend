@@ -6,12 +6,12 @@ import { CirclePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { ROLES } from "@/types/auth";
-import BulkCaseUploadDialog from "./components/BulkUpload";
 import { useAction } from "@/context/ActionContext";
 import FileACaseComponent from "../component/FileACase";
 import { useQuery } from "@tanstack/react-query";
 import { GetUnitheadReport } from "../report/server/reportAction";
 import AdminDashboardSkeleton from "@/components/skeleton/dashboard";
+import UnitCaseQueues from "./components/UnitCaseQueues";
 
 interface StatCardProps {
     title: string;
@@ -41,7 +41,8 @@ interface DepartmentCaseSummary {
 interface ApiResponse {
     data: {
         department_case_summary: DepartmentCaseSummary;
-        case_stats_summary: CaseStatsSummary[];
+        // "unassigned" counts what the Pending card counts.
+        case_stats_summary: { assigned?: CaseStatsSummary; unassigned?: CaseStatsSummary };
     };
 }
 
@@ -79,49 +80,19 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
     }
 
 
-    // Helper function to process case stats data
-    const processCaseStatsData = (caseStats: CaseStatsSummary[]) => {
-        if (!caseStats || caseStats.length === 0) {
-            return {
-                assignedCases: { categories: [], data: [], total: 0 },
-                pendingCases: { categories: [], data: [], total: 0 }
-            };
-        }
-
-        // First dataset (index 0) - Assigned Cases
-        const assignedCasesData = caseStats[0] || { Data: [], total: 0, percent: 0 };
-        const assignedCategories = assignedCasesData.Data.map(item => item.Month);
-        const assignedData = assignedCasesData.Data.map(item => item.percent);
-
-        // Second dataset (index 1) - Pending Cases  
-        const pendingCasesData = caseStats[1] || { Data: [], total: 0, percent: 0 };
-        // The second dataset has 24 months (2 years), so we'll take the first 12
-        const pendingCategories = pendingCasesData.Data.slice(0, 12).map(item => item.Month);
-        const pendingData = pendingCasesData.Data.slice(0, 12).map(item => item.percent);
-
-        return {
-            assignedCases: {
-                categories: assignedCategories,
-                data: assignedData,
-                total: assignedCasesData.total
-            },
-            pendingCases: {
-                categories: pendingCategories,
-                data: pendingData,
-                total: pendingCasesData.total
-            }
-        };
+    // The last six months of the head's cases, one bar per month.
+    const toChart = (stats?: CaseStatsSummary) => ({
+        categories: stats?.Data?.map(item => item.Month) ?? [],
+        data: stats?.Data?.map(item => item.percent) ?? [],
+        total: stats?.total ?? 0,
+        percent: stats?.percent ?? 0,
+    });
+    const caseStats = (data?.data as ApiResponse["data"] | undefined)?.case_stats_summary;
+    const processedData = {
+        assignedCases: toChart(caseStats?.assigned),
+        pendingCases: toChart(caseStats?.unassigned),
     };
-
-    const processedData = processCaseStatsData(data?.data?.case_stats_summary || []);
-
-    // Calculate percentage changes (placeholder logic - you can enhance this)
-    const calculatePercentageChange = (current: number, previous: number = 0) => {
-        if (previous === 0 && current === 0) return "+0%";
-        if (previous === 0) return "+100%";
-        const change = ((current - previous) / previous) * 100;
-        return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
-    };
+    const change = (percent: number) => `${percent >= 0 ? "+" : ""}${percent}%`;
 
     const handleCaseSubmitted = () => {
     };
@@ -143,7 +114,7 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                         <div className="flex flex-wrap gap-4">
                             {role === ROLES.INTERNAL_PARALEGAL && (
                                 <>
-                                    <BulkCaseUploadDialog />
+                                    {/* Bulk Upload stays hidden until the upload works (QA 2026-10-26, item 29). */}
                                     <FileACaseComponent
                                         userRole={role as ROLES}
                                         buttonText="File a Case"
@@ -171,24 +142,26 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                         <StatCard
                             title="Total Cases"
                             value={departmentSummary.total || "0"}
-                            subtitle={calculatePercentageChange(parseInt(departmentSummary.total) || 0)}
+                            subtitle=""
                         />
                         <StatCard
                             title="Active Cases"
                             value={departmentSummary.active || 0}
-                            subtitle={calculatePercentageChange(departmentSummary.active)}
+                            subtitle=""
                         />
                         <StatCard
                             title="Closed Cases"
                             value={departmentSummary.closed || 0}
-                            subtitle={calculatePercentageChange(departmentSummary.closed)}
+                            subtitle=""
                         />
                         <StatCard
                             title="Pending Cases"
                             value={departmentSummary.pending || 0}
-                            subtitle={calculatePercentageChange(departmentSummary.pending)}
+                            subtitle=""
                         />
                     </div>
+
+                    <UnitCaseQueues />
 
                     <div className="">
                         <h2 className="text-lg font-semibold mb-4">Case Stats Summary</h2>
@@ -196,7 +169,7 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                             <CaseStatCard
                                 title="Assigned Cases"
                                 value={processedData.assignedCases.total}
-                                change={`+${processedData.assignedCases.total > 0 ? '1' : '0'}%`}
+                                change={change(processedData.assignedCases.percent)}
                                 categories={processedData.assignedCases.categories}
                                 data={processedData.assignedCases.data}
                                 orientation="horizontal"
@@ -206,7 +179,7 @@ export default function UnitHeadDashboard({ role }: { role: string }) {
                             <CaseStatCard
                                 title="Pending Cases"
                                 value={processedData.pendingCases.total}
-                                change={`+${processedData.pendingCases.total > 0 ? '2' : '0'}%`}
+                                change={change(processedData.pendingCases.percent)}
                                 categories={processedData.pendingCases.categories}
                                 data={processedData.pendingCases.data}
                                 orientation="vertical"

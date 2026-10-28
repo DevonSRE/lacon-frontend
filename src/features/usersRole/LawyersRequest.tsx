@@ -131,7 +131,7 @@ export default function LawyersRequest() {
     staleTime: 100000,
   });
 
-  const actionType: string[] = ["Create", "Suspension"];
+  const actionType: string[] = ["ADD", "DEACTIVATE", "REACTIVATE"];
 
   const handleActionType = (role: string) => {
     setActiontype(role === "All" ? undefined : role);
@@ -144,7 +144,10 @@ export default function LawyersRequest() {
   const dispatchAction = (type: "approve" | "reject") => {
     startTransition(() => {
       const formData = new FormData();
-      formData.append("id", String(selectedUser?.LawyerID));
+      // The request's own id, not the account's: an ADD request has no account
+      // yet, and the endpoint decides a request. This used to send LawyerID, so
+      // the decision reached no request and nothing happened.
+      formData.append("id", String(selectedUser?.ID));
       formData.append("type", String(type));
       formData.append("reason", String(reason));
       dispatch(formData);
@@ -310,7 +313,7 @@ export default function LawyersRequest() {
               Approval Request
             </div>
             <div className="justify-center text-center">
-              Are You Sure You Want To Approvet this request
+              Are you sure you want to approve this request?
             </div>
             <div className="p-1">
               <TextAreaField
@@ -367,7 +370,7 @@ export default function LawyersRequest() {
 
               <div className="grid grid-cols-2 gap-4">
                 <Button
-                  disabled={isPending}
+                  disabled={isPending || !reason.trim()}
                   onClick={() => dispatchAction("reject")}
                   className="w-full h-11 bg-red-500 text-white border-0  "
                 >

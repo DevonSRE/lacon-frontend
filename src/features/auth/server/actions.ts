@@ -40,7 +40,7 @@ export async function validateInvitationAction(email: string, otp: string) {
   const existingToken = cookieStore.get("TempToken")?.value;
   const existingEmail = cookieStore.get("TempEmail")?.value;
   if (existingToken && existingEmail === parsed.data.email) {
-    return { status: 200, success: true, message: "Invitation verified." };
+    return { status: 200, success: true, message: "Invitation verified.", role: cookieStore.get("TempRole")?.value ?? "" };
   }
 
   await clearTemporaryInviteCookies();
@@ -51,7 +51,7 @@ export async function validateInvitationAction(email: string, otp: string) {
     cookieStore.set("TempID", responseData.id, temporaryInviteCookieOptions);
     cookieStore.set("TempRole", responseData.role, temporaryInviteCookieOptions);
     cookieStore.set("TempEmail", parsed.data.email, temporaryInviteCookieOptions);
-    return { status: 200, success: true, message: "Invitation verified." };
+    return { status: 200, success: true, message: "Invitation verified.", role: String(responseData.role ?? "") };
   } catch {
     return {
       status: 400,
@@ -87,6 +87,7 @@ export async function SignInAction(_prevState: unknown, formData: FormData) {
         state_name: data.state_name,
         zone_id: data.zone_id,
         zone_name: data.zone_name,
+        department_name: data.department_name ?? "",
         role: data.role as ROLES,
       },
       token: data.token,
@@ -218,6 +219,7 @@ export async function invitationAction(_prevState: unknown, formData: FormData) 
           state_name: loginData.state_name ?? "",
           zone_id: loginData.zone_id ?? "",
           zone_name: loginData.zone_name ?? "",
+          department_name: loginData.department_name ?? "",
           role: loginData.role as ROLES,
         },
         token: loginData.token,

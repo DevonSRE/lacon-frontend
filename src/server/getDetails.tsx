@@ -23,6 +23,11 @@ const detailsServices = {
     });
   },
 
+  // The Director General and each department or unit head, with who holds the seat (DG and admins only).
+  async getRoleSeats() {
+    return await axiosInstance.get("users/role-seats");
+  },
+
   async getActiveUser(param: unknown) {
     return await axiosInstance.get("public/user-types/active", {
       params: param,

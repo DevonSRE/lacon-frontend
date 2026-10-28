@@ -4,7 +4,7 @@ import UserRoles from "./userRole";
 import LawyersRequest from "./LawyersRequest";
 import Lawyers from "../dashboard/Lawyer/_components/lawyersManagement";
 import ProbunoRequest from "./ProbunoRequest";
-import DesinationLetter from "./DesinationLetter";
+import DesignationLetter from "./DesignationLetter";
 
 export default function USERROLS() {
   const params = useParams();
@@ -19,8 +19,8 @@ export default function USERROLS() {
         return <ProbunoRequest />;
       case 'lawyers':
         return <Lawyers />;
-      // case 'desination-letter':
-      //   return <DesinationLetter />;
+      // case 'designation-letter':
+      //   return <DesignationLetter />;
       default:
         return <>404 page </>;
     }

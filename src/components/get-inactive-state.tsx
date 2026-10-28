@@ -1,4 +1,5 @@
 
+import { displayStateName } from "@/components/get-state";
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -86,7 +87,7 @@ export const GetInactiveState = ({
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">
-                                    {location.title}
+                                    {displayStateName(location.title)}
                                 </SelectItem>
                             ))
                     ) : (

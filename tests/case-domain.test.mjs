@@ -36,6 +36,16 @@ test("online case requires acceptance before routing or assignment", () => {
   const pdss = { id: "pdss", role: "PDSS UNIT HEAD" };
   assert.equal(casePermissions({ ...submitted, case_type: "PDSS ORGANIZATION", current_holder: { ...pdss } }, pdss).acceptReject, true);
 });
+test("FCT online cases are reviewed by the HQ Civil and Criminal Justice heads", () => {
+  const civilHead = { id: "civil", role: "CIVIL JUSTICE DEPT. HEAD" };
+  const criminalHead = { id: "criminal", role: "CRIMINAL JUSTICE DEPT. HEAD" };
+  const fctCivil = { ...base, status: "SUBMITTED", case_type: "CIVIL CASE", state_name: "FCT", current_holder: { ...civilHead } };
+  assert.equal(casePermissions(fctCivil, civilHead).acceptReject, true);
+  assert.equal(casePermissions({ ...fctCivil, current_holder: { ...criminalHead } }, criminalHead).acceptReject, false);
+  assert.equal(casePermissions({ ...fctCivil, case_type: "CRIMINAL CASE", state_name: "Federal Capital Territory", current_holder: { ...criminalHead } }, criminalHead).acceptReject, true);
+  // Outside the FCT a head does not review civil cases.
+  assert.equal(casePermissions({ ...fctCivil, state_name: "Lagos" }, civilHead).acceptReject, false);
+});
 test("assigner can reassign and request revision while lawyer holds case", () => {
   const p = casePermissions(assigned, holder);
   assert.equal(p.assign, true); assert.equal(p.revision, true); assert.equal(p.update, false);
@@ -65,4 +75,12 @@ test("normalize model/DTO fields and readable status without conflating court st
   assert.deepEqual(normalizeCase({ ...base, perogative: { reason_for_clemency: "Test" } }).perogative_of_mercy, { reason_for_clemency: "Test" });
   assert.equal(statusLabel("SUBMITTED"), "Pending review");
   assert.equal(statusLabel("REVISION_REQUESTED"), "Revision requested");
+});
+test("the DG can pick up an online case nobody holds", () => {
+  const dg = { id: "dg", role: "DIRECTOR GENERAL" };
+  const unrouted = { ...base, status: "SUBMITTED", case_type: "CIVIL CASE", state_name: "Kano", current_holder: null };
+  const p = casePermissions(unrouted, dg);
+  assert.equal(p.acceptReject, true); assert.equal(p.route, true);
+  // Once a coordinator holds it, the DG no longer decides it.
+  assert.equal(casePermissions({ ...unrouted, current_holder: { id: "sc", name: "SC", email: "", role: "STATE COORDINATOR" } }, dg).acceptReject, false);
 });

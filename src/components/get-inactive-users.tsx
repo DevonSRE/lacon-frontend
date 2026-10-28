@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { GetInActiveUsers } from "@/server/actions/GetDetails";
+import { GetInActiveUsers, GetRoleSeats, type RoleSeat } from "@/server/actions/GetDetails";
 import { uniqueRoleOptions } from "@/lib/user-invitation-options";
 
 export const GetInActiveUser = ({
@@ -46,6 +46,14 @@ export const GetInActiveUser = ({
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 3000),
   });
 
+  // A filled single seat stays in the list, greyed out with its holder, so it does not look missing.
+  // Only the DG and admins may read the holders; for anyone else this list is simply empty.
+  const { data: seatData } = useQuery({
+    queryKey: ["RoleSeats"],
+    queryFn: GetRoleSeats,
+    staleTime: 50000,
+  });
+
   const prevLoadingRef = useRef<boolean | null>(null);
   useEffect(() => {
     if (prevLoadingRef.current !== isLoading) {
@@ -58,6 +66,9 @@ export const GetInActiveUser = ({
     onValueChange?.(newValue);
   };
   const users = uniqueRoleOptions(data?.data);
+  const filledSeats: RoleSeat[] = seatData?.success
+    ? (seatData.data as RoleSeat[]).filter(seat => seat.holder && !users.includes(seat.role))
+    : [];
   return (
     <Select
       onValueChange={handleDivisionChange}
@@ -80,16 +91,23 @@ export const GetInActiveUser = ({
           <div className="py-2 px-4 text-sm text-red-500">
             Failed to load users
           </div>
-        ) : users.length === 0 ? (
+        ) : users.length === 0 && filledSeats.length === 0 ? (
           <div className="py-2 px-4 text-sm text-gray-500">
             No user types available
           </div>
         ) : (
-          users.map((title: string) => (
+          <>
+            {users.map((title: string) => (
               <SelectItem key={title} value={title} className="py-2">
                 {title}
               </SelectItem>
-            ))
+            ))}
+            {filledSeats.map(seat => (
+              <SelectItem key={seat.role} value={seat.role} disabled className="py-2">
+                {seat.role} – assigned to {seat.holder?.name}
+              </SelectItem>
+            ))}
+          </>
         )}
       </SelectContent>
     </Select>

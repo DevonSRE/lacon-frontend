@@ -27,7 +27,7 @@ import { GetZone } from "@/components/get-zone";
 import { GetState } from "@/components/get-state";
 import { GetInActiveUser } from "@/components/get-inactive-users";
 import { GetInvitationCenter } from "@/components/get-invitation-center";
-import { invitationScope } from "@/lib/user-invitation-options";
+import { invitationScope, PARALEGAL_OFFICES } from "@/lib/user-invitation-options";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 const defaultFormData: FormDataUser = {
@@ -173,9 +173,7 @@ export function AddUserSheet() {
                       <SelectValue placeholder="Select Designation" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Head Office">Head Office</SelectItem>
-                      <SelectItem value="Zonal Office">Zonal Office</SelectItem>
-                      <SelectItem value="State Office">State Office</SelectItem>
+                      {PARALEGAL_OFFICES.map(office => <SelectItem key={office} value={office}>{office}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   {serverErrors.designation && (
@@ -197,6 +195,9 @@ export function AddUserSheet() {
                     value={formData.state_id}
                     onValueChange={(val: string) => setFormData(prev => ({ ...prev, state_id: val, center_id: "" }))}
                     placeholder="Select state"
+                    // The FCT has no State Coordinator; its cases go to the HQ
+                    // justice heads. It stays available for centre roles.
+                    excludeFCT={formData.user_type === "STATE COORDINATOR"}
                   />
 
                   {serverErrors.state_id && (

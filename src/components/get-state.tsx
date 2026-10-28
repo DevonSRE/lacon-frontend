@@ -7,9 +7,13 @@ import { GetStates } from "@/server/actions/GetDetails";
 
 type LocationOption = { id: string; title: string };
 
-const displayStateName = (title: string) =>
+export const displayStateName = (title: string) =>
     title.trim().toUpperCase() === "FCT" ? "Federal Capital Territory" : title;
 
+
+// The FCT has no State Coordinator: its civil and criminal cases are held by the
+// HQ Civil and Criminal Justice heads, and the API refuses the role for it.
+const isFCT = (title: string) => ["FCT", "FEDERAL CAPITAL TERRITORY", "ABUJA"].includes(title.trim().toUpperCase());
 
 export const GetState = ({
     placeholder,
@@ -18,7 +22,8 @@ export const GetState = ({
     error,
     className,
     onValueChange, // 🔥 added
-    onLoadingChange
+    onLoadingChange,
+    excludeFCT
 }: {
     value: string;
     placeholder: string;
@@ -27,6 +32,7 @@ export const GetState = ({
     className?: string;
     onValueChange?: (value: string) => void; // 🔥 added
     onLoadingChange?: (loading: boolean) => void;
+    excludeFCT?: boolean;
 }) => {
     const { data, isLoading: loading } = useQuery({
         queryKey: ["states"],
@@ -83,6 +89,7 @@ export const GetState = ({
                 <SelectContent className="bg-white text-zinc-900">
                     {data?.data?.data?.length > 0 ? (
                         [...(data?.data?.data ?? [])] // clone to avoid mutating original
+                            .filter((location: LocationOption) => !excludeFCT || !isFCT(location.title))
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">

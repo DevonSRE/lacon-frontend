@@ -3,7 +3,7 @@ import { axiosInstance, publicAxiosInstance } from "@/lib/_api/axios-config";
 import { userConfig } from "@/lib/_api/user-config";
 
 const ProbunoService = {
-    async registration(payload: TProbunoFormPayload) {
+    async registration(payload: TProbunoFormPayload & { law_firm_name: string; most_contactable_number: string }) {
         return await userConfig.post("/users/probono-lawyers", payload);
     },
     async cases(payload: unknown) {

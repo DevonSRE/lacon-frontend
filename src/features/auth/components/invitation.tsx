@@ -21,6 +21,7 @@ export default function InvitationForm() {
     const [acceptTerms, setAcceptTerms] = useState(false);
     const [inviteStatus, setInviteStatus] = useState<'checking' | 'valid' | 'invalid'>('checking');
     const [inviteMessage, setInviteMessage] = useState('Checking your invitation…');
+    const [inviteRole, setInviteRole] = useState('');
     const validationKey = useRef<string | null>(null);
 
     useEffect(() => {
@@ -32,6 +33,7 @@ export default function InvitationForm() {
             if (validationKey.current !== key) return;
             setInviteStatus(result.success ? 'valid' : 'invalid');
             setInviteMessage(result.message);
+            setInviteRole('role' in result && result.role ? result.role : '');
         });
     }, [email, otp]);
 
@@ -82,9 +84,11 @@ export default function InvitationForm() {
             {/* Right side with form */}
             <div className="flex items-center lg:w-1/2 w-full justify-center px-4">
                 <div className="flex flex-col w-full lg:w-1/2 lg:m-8 justify-center gap-6">
-                    <h2 className="text-2xl font-semibold mb-2">Welcome </h2>
+                    <h2 className="text-2xl font-semibold mb-2">Create your account</h2>
                     <p className="text-gray-600 mb-6 text-md">
-                        Enter your credentials to access the admin dashboard.
+                        {inviteRole
+                            ? <>You have been invited to join the LACON Case Management Platform as <span className="font-medium capitalize text-gray-900">{inviteRole.toLowerCase()}</span>. Choose a password to finish setting up your account.</>
+                            : <>You have been invited to join the LACON Case Management Platform. Choose a password to finish setting up your account.</>}
                     </p>
                     {/* <form className="space-y-4"> */}
                     <form onSubmit={submitWithoutReset(dispatch)} className="w-full space-y-8">
@@ -129,7 +133,7 @@ export default function InvitationForm() {
                         </div>
 
                         <SubmitButton
-                            value="SIGN IN"
+                            value="Create Account"
                             loading={isPending}
                             pendingValue="Processing..."
                             disabled={!acceptTerms}

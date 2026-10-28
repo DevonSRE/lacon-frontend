@@ -2,6 +2,7 @@
 import { useState, useRef, useActionState, useEffect, SetStateAction, Dispatch } from 'react';
 import { Label } from '@/components/ui/label';
 import { submitProBonoForm } from '@/features/probunoLawyers/server/action';
+import { proBonoSchema } from '@/features/probunoLawyers/server/probonoSchema';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from "sonner";
 import InputField from '@/components/form/input/InputField';
@@ -27,6 +28,19 @@ interface FormData {
   pro_bono_capacity: string;
   criminal_courts_preference: string[];
 }
+const PHONE_FIELDS = ['phone_number', 'alternate_number', 'most_contactable_call_no'] as const;
+// Checked as the user types, so a wrong format shows before Submit.
+const LIVE_FIELDS = ['email', ...PHONE_FIELDS] as const;
+
+// A server error arrives as { error: "..." }: show the sentence, not the key.
+function serverErrorText(errors: unknown): string {
+  if (typeof errors === "string") return errors;
+  if (errors && typeof errors === "object") {
+    return Object.values(errors as Record<string, unknown>).flat().map(String).join(" ");
+  }
+  return "";
+}
+
 type ProBonoFormProps = {
   isPublic?: boolean;
   setDialogOpen?: Dispatch<SetStateAction<boolean>>;
@@ -38,6 +52,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
   const [state, formAction, isPending] = useActionState(submitProBonoForm, undefined);
   const [openSuccess, setOpenSuccess] = useState(false);
   const [agreement, setAgreementChange] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Form state management
   const [formData, setFormData] = useState<FormData>({
@@ -57,6 +72,34 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
   const handleInputChange = (name: string, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
+    let message = "";
+    if ((LIVE_FIELDS as readonly string[]).includes(name) && value) {
+      const field = proBonoSchema.shape[name as typeof LIVE_FIELDS[number]];
+      const result = field.safeParse(value);
+      message = result.success ? "" : result.error.issues[0]?.message ?? "";
+    }
+    setFieldErrors(prev => ({ ...prev, [name]: message }));
+  };
+
+  // Every required field is checked on Submit, with the message under the field.
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    const result = proBonoSchema.safeParse({ ...formData, state_id: selectedState });
+    const errors: Record<string, string> = {};
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        const key = String(issue.path[0]);
+        errors[key] ??= issue.message;
+      }
+    }
+    if (!agreement) errors.agree = "Tick \"I agree\" to accept the undertaking";
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      event.preventDefault();
+      const first = Object.keys(errors)[0];
+      formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    submitWithoutReset(formAction)(event);
   };
 
   const handleCheckboxChange = (value: string, checked: boolean) => {
@@ -66,6 +109,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
         ? [...prev.criminal_courts_preference, value]
         : prev.criminal_courts_preference.filter(item => item !== value)
     }));
+    if (checked) setFieldErrors(prev => ({ ...prev, criminal_courts_preference: "" }));
   };
 
   const resetForm = () => {
@@ -85,33 +129,14 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
     });
     setSelectedState("");
     setAgreementChange(false);
+    setFieldErrors({});
   };
 
   useEffectAfterMount(() => {
     if (!state) return;
 
     if (CLIENT_ERROR_STATUS.includes(state.status)) {
-      let errorMessage = "An error occurred.";
-      try {
-        if (typeof state.errors === "string") {
-          errorMessage = state.errors;
-        } else if (state.errors && typeof state.errors === "object") {
-          errorMessage = Object.entries(state.errors)
-            .map(([key, value]) =>
-              Array.isArray(value)
-                ? `${key}: ${value.join(", ")}`
-                : `${key}: ${String(value)}`
-            )
-            .join(" | ");
-        }
-      } catch (err) {
-        console.warn("Error formatting toast message", err);
-        errorMessage = "Failed to parse error message.";
-      }
-
-      toast.error(state.message ?? "An error occurred", {
-        description: errorMessage,
-      });
+      toast.error(serverErrorText(state.errors) || state.message || "Your application could not be submitted.");
 
       // Don't reset form on error - keep user data
     } else if (state.status === 200 || state.status === 201) {
@@ -128,11 +153,11 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
     { label: 'Last Name', name: 'last_name', type: 'input', required: true },
     { label: 'Email Address', name: 'email', type: 'input', required: true },
     { label: 'Mobile Phone Number', name: 'phone_number', type: 'input', inputType: 'tel', required: true },
-    { label: 'Alternate Number', name: 'alternate_number', type: 'input', required: false },
+    { label: 'Alternate Number', name: 'alternate_number', type: 'input', inputType: 'tel', required: false },
     { label: 'State Bar Membership', name: 'state_bar_membership', type: 'input', required: true },
     { label: 'Name of Law Firm/Organization', name: 'name_of_law_firm_organization', type: 'textarea', required: true },
     { label: 'Law Firm/Organization Address', name: 'law_firm_organization_address', type: 'textarea', required: true },
-    { label: 'Most Contactable Call No', name: 'most_contactable_call_no', type: 'input', required: true }
+    { label: 'Most Contactable Call No', name: 'most_contactable_call_no', type: 'input', inputType: 'tel', required: true }
   ];
 
   return (
@@ -150,7 +175,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
         </div>
         <hr />
 
-        <form ref={formRef} onSubmit={submitWithoutReset(formAction)} className='pb-32 space-y-12'>
+        <form ref={formRef} onSubmit={handleSubmit} noValidate className='pb-32 space-y-12'>
           {/* SECTION 1: Personal Details */}
           <input type="hidden" name="isPublic" value={isPublic ? "true" : "false"} />
           <section className="space-y-4">
@@ -166,9 +191,11 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                       type={'inputType' in field ? field.inputType : 'text'}
                       required={field.required}
                       value={formData[field.name as keyof FormData] as string}
+                      error={!!fieldErrors[field.name]}
+                      hint={fieldErrors[field.name]}
                       onChange={(e) => handleInputChange(
                         field.name,
-                        field.name === 'phone_number'
+                        (PHONE_FIELDS as readonly string[]).includes(field.name)
                           ? e.target.value.replace(/\D/g, '').slice(0, 11)
                           : e.target.value
                       )}
@@ -180,6 +207,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                       required={field.required}
                       value={formData[field.name as keyof FormData] as string}
                       onChange={(e) => handleInputChange(field.name, e.target.value)}
+                      error={fieldErrors[field.name]}
                     />
                   )}
                 </div>
@@ -189,9 +217,10 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                 <Label htmlFor="state-select">State of Practice <span className="text-red-500 text-xs">*</span></Label>
                 <GetState
                   value={selectedState}
-                  onValueChange={setSelectedState}
+                  onValueChange={(value: string) => { setSelectedState(value); setFieldErrors(prev => ({ ...prev, state_id: "" })); }}
                   placeholder="Select state"
                 />
+                {fieldErrors.state_id && <p className="text-xs text-red-500">{fieldErrors.state_id}</p>}
               </div>
             </div>
             <input type="hidden" name="state_of_practice" value={selectedState} />
@@ -217,6 +246,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                 </label>
               ))}
             </div>
+            {fieldErrors.experience_in_criminal_law && <p className="text-xs text-red-500">{fieldErrors.experience_in_criminal_law}</p>}
           </section>
 
           {/* SECTION 3: Case Capacity */}
@@ -239,6 +269,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                 </label>
               ))}
             </div>
+            {fieldErrors.pro_bono_capacity && <p className="text-xs text-red-500">{fieldErrors.pro_bono_capacity}</p>}
           </section>
 
           {/* SECTION 4: Court Preference */}
@@ -260,6 +291,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                 </label>
               ))}
             </div>
+            {fieldErrors.criminal_courts_preference && <p className="text-xs text-red-500">{fieldErrors.criminal_courts_preference}</p>}
           </section>
 
           {/* SECTION 5: Agreement */}
@@ -271,39 +303,23 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                 type="checkbox"
                 name="agree"
                 checked={agreement}
-                onChange={e => setAgreementChange(e.target.checked)}
+                onChange={e => { setAgreementChange(e.target.checked); setFieldErrors(prev => ({ ...prev, agree: "" })); }}
                 value="true"
                 className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 mt-1"
               />
               <span className="text-sm text-gray-700">I agree</span>
             </label>
+            {fieldErrors.agree && <p className="text-xs text-red-500">{fieldErrors.agree}</p>}
           </section>
 
           {/* Error Display */}
           {state?.errors && (
-            <div className="text-red-500 bg-red-50 p-4 rounded">
-              <h3 className="font-semibold mb-2">Please fix the following errors:</h3>
-              <ul className="list-disc list-inside space-y-1">
-                {typeof state.errors === 'string' ? (
-                  <li>{state.errors}</li>
-                ) : (
-                  Object.entries(state.errors).map(([key, val]) => {
-                    const messages = Array.isArray(val) ? val : [String(val)];
-                    return messages.map((msg, idx) => (
-                      <li key={`${key}-${idx}`}>
-                        {key.replace(/_/g, ' ')}: {msg}
-                      </li>
-                    ));
-                  })
-                )}
-              </ul>
-            </div>
+            <div className="text-red-500 bg-red-50 p-4 rounded">{serverErrorText(state.errors)}</div>
           )}
 
           <SubmitButton
             value="Submit Form"
             loading={isPending}
-            disabled={!agreement}
             pendingValue="Processing..."
             className="w-2/3 h-12 bg-red-500 hover:bg-red-600 text-white font-xs py-3 rounded-none transition-colors duration-200 flex items-center justify-center"
           />

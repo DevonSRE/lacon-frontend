@@ -55,3 +55,15 @@ export async function GetInActiveUsers(params: Ipage) {
         return handleApiError(error);
     }
 }
+
+export type RoleSeat = { role: string; holder: { id: string; name: string } | null };
+
+export async function GetRoleSeats() {
+    try {
+        const response = await detailsServices.getRoleSeats();
+        return { data: (response.data?.data ?? []) as RoleSeat[], success: true };
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

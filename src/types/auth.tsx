@@ -37,6 +37,8 @@ export type TUser = {
   state_name: string;
   zone_id: string;
   zone_name: string;
+  // The unit a paralegal or lawyer belongs to (e.g. "PDSS UNIT HEAD"); empty for an office that is a place.
+  department_name?: string;
   role: ROLES;
 };
 
