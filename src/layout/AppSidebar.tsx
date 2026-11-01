@@ -85,6 +85,12 @@ const navItems: NavItem[] = [
     roles: ROUTE_ACCESS["/lawyers"],
   },
   {
+    icon: <Icons.userRole />,
+    name: "My Requests",
+    path: "/users/my-requests",
+    roles: ROUTE_ACCESS["/users/my-requests"],
+  },
+  {
     icon: <Icons.report />,
     name: "Reports",
     path: "/reports",

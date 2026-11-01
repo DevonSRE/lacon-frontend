@@ -86,6 +86,12 @@ export function AddLawyerSheet() {
   // A field office cannot create an account: the API refuses it and the Director
   // General creates it on approval. The same form raises the request.
   const asRequest = !!role && REQUESTER_ROLES.includes(role);
+  // A State or Centre Coordinator may only ask for accounts in their own state,
+  // and the API refuses anything else, so only that state is offered here
+  // (QA 2026-11-01, item 3). This is the sheet a field office actually uses.
+  const ownStateOnly = ["STATE COORDINATOR", "CENTRE COORDINATOR"].includes(role ?? "")
+    ? user?.state_id || ""
+    : "";
   const handleChange = (key: keyof FormDataLawyer, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -101,6 +107,8 @@ export function AddLawyerSheet() {
       });
     } else if (state?.status === 200 || state?.status === 201) {
       queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
+      // A raised request belongs on the requester's own My requests page too.
+      queryClient.invalidateQueries({ queryKey: ["getMyLawyerRequests"] });
 
       toast.success(asRequest ? "Request sent to the Director General for approval." : "User invited successfully!");
       setIsOpen(false);
@@ -307,9 +315,10 @@ export function AddLawyerSheet() {
                   Select State <span className="text-red-500">*</span>
                 </Label>
                 <GetInactiveState
-                  value={selectedState}
+                  value={selectedState || ownStateOnly}
                   onValueChange={(val: string) => setSelectedState(val)}
                   placeholder="Select state"
+                  onlyStateId={ownStateOnly}
                 />
 
                 {serverErrors.state_id && (
@@ -414,10 +423,12 @@ export function AddLawyerSheet() {
                 </div>
               )}
 
+              {/* The sheet already says this is a request; the button said
+                  "Create User", which is the one thing it does not do. */}
               <SubmitButton
-                value="Create User"
+                value={asRequest ? "Send Request" : "Create User"}
                 loading={isPending}
-                pendingValue="Creating User..."
+                pendingValue={asRequest ? "Sending Request..." : "Creating User..."}
                 className="w-full text-white h-12 rounded mt-2"
               />
             </form>
