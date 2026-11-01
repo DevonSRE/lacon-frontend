@@ -20,6 +20,21 @@ const STATUSES: Record<string, StatusBadge> = {
 
 const DECLINED: StatusBadge = { label: "Declined", color: "text-red-800 bg-red-100" };
 
+/**
+ * An account can read "Active" while a suspension for it is already waiting on
+ * the Director General, which is how a coordinator came to raise the same
+ * request twice (QA 2026-11-01, item 25). This is said alongside the status,
+ * not instead of it: the account really is still active until the DG decides.
+ */
+const PENDING_CHANGES: Record<string, string> = {
+  DEACTIVATE: "Suspension requested",
+  REACTIVATE: "Reactivation requested",
+};
+
+export function pendingChangeNote(pendingChange?: string): string | undefined {
+  return PENDING_CHANGES[(pendingChange ?? "").toUpperCase()];
+}
+
 export function userStatusBadge(status?: string, probonoDecision?: string): StatusBadge {
   const value = (status ?? "").toUpperCase();
   // A declined application explains an inactive account; a suspension does not,

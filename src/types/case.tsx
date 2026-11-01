@@ -101,6 +101,10 @@ export interface ILawyerManagement {
   // How this pro bono lawyer's latest application was decided (APPROVED or
   // DECLINED). Absent for everyone else, and for a decision never made.
   probono_decision?: string;
+  // Cases the lawyer is working on now, counted live from the cases.
+  open_cases?: number;
+  // A change the Director General has not decided yet: DEACTIVATE or REACTIVATE.
+  pending_change?: string;
   id: string;
   first_name: string;
   middle_name?: string;

@@ -47,7 +47,18 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.CENTRE_COORDINATOR,
     ...UNIT_HEADS.filter((r) => r !== ROLES.DECONGESTION_UNIT_HEAD),
   ],
-  "/reports": [ROLES.ADMIN, ROLES.PLATFORM_ADMIN, ROLES.DIRECTOR_GENERAL],
+  // The admin report reads /analytics/admin-*, which only these three may call.
+  // A coordinator gets the role-scoped report instead (/analytics/summary),
+  // which the API narrows to their own zone, state or centre — they had no
+  // Reports at all (QA 2026-11-01, item 25).
+  "/reports": [
+    ROLES.ADMIN,
+    ROLES.PLATFORM_ADMIN,
+    ROLES.DIRECTOR_GENERAL,
+    ROLES.ZONAL_DIRECTOR,
+    ROLES.STATE_COORDINATOR,
+    ROLES.CENTRE_COORDINATOR,
+  ],
   "/settings": [ROLES.ADMIN],
   // Zones, states and centres decide where cases are routed and who holds them,
   // so only a platform admin may change them (the API agrees).

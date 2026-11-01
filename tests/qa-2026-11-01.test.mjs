@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
-import { userStatusBadge } from "../src/lib/user-status.ts";
+import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
+import { startOfWeek } from "../src/lib/week.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -148,4 +149,35 @@ test("a value holding a comma is quoted, so the columns do not shift", () => {
   const address = BULK_COLUMNS.find(c => c.header === "Permanent address");
   assert.ok(address.example.includes(","), "the example address exercises the escaping");
   assert.ok(bulkTemplateCsv().includes(`"${address.example}"`));
+});
+
+// QA 2026-11-01, item 25: a coordinator's screens.
+test("a change still waiting on the Director General is said alongside the status", () => {
+  assert.equal(pendingChangeNote("DEACTIVATE"), "Suspension requested");
+  assert.equal(pendingChangeNote("REACTIVATE"), "Reactivation requested");
+  // An ADD is never reported this way: the account it asks for does not exist yet.
+  assert.equal(pendingChangeNote("ADD"), undefined);
+  assert.equal(pendingChangeNote(""), undefined);
+  assert.equal(pendingChangeNote(undefined), undefined);
+});
+
+test("a pending suspension does not change what the account's status says", () => {
+  // The account really is still active until the DG decides, so the badge is
+  // unchanged and the note is extra.
+  assert.equal(userStatusBadge("ACTIVE").label, "Active");
+  assert.equal(pendingChangeNote("DEACTIVATE"), "Suspension requested");
+});
+
+test("the week a case was filed in starts on the Monday, in local time", () => {
+  // Wednesday 2026-10-28 -> Monday 2026-10-26.
+  assert.equal(startOfWeek(new Date(2026, 9, 28, 14, 30)), "2026-10-26");
+  // The Monday itself does not move.
+  assert.equal(startOfWeek(new Date(2026, 9, 26, 9, 0)), "2026-10-26");
+  // Sunday closes the week that began six days earlier, not the next one.
+  assert.equal(startOfWeek(new Date(2026, 10, 1, 23, 59)), "2026-10-26");
+  // Just after midnight: building the day from the local parts keeps it from
+  // slipping back to the previous week east of UTC.
+  assert.equal(startOfWeek(new Date(2026, 10, 2, 0, 30)), "2026-11-02");
+  // Across the turn of a month and a year.
+  assert.equal(startOfWeek(new Date(2027, 0, 1, 12, 0)), "2026-12-28");
 });
