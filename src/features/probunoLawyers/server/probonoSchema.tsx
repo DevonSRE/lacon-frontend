@@ -431,7 +431,10 @@ export const decongestionCaseDetails = z.object({
   court_of_trial: z.string().min(1, "Court of trial is required"),
   arrest_date: z.string().min(1, "Arrest date is required"),
   arraignment_date: z.string().min(1, "Arraignment date is required"),
-  remand_date: z.string().min(1, "Remand date is required"),
+  // Optional, as its own label says ("if different from commencement") and as
+  // the API treats it. Requiring it here blocked the form with no message
+  // against the field (QA 2026-11-01, item 13).
+  remand_date: z.string().optional(),
   last_court_date: z.string().optional(),
   next_adjournment: z.string().min(1, "Next adjournment is required"),
   bail_status: z.string().min(1, "Bail status is required"),

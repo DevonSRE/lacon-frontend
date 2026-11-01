@@ -40,6 +40,26 @@ export const CRIMINAL_COURT_STAGE_OPTIONS = [
     { value: "OTHER", label: "Other" },
 ];
 
+// courtStageOptionsFor mirrors the API's own catalog (GET /casefile/court-stages):
+// civil and criminal cases each have their own stages, and the case types with no
+// court proceedings — PDSS, decongestion, prerogative of mercy — have none. The
+// progress-update form used to offer one criminal-flavoured list to every case
+// type, so a civil case was asked for its plea (QA 2026-11-01, item 17).
+export const courtStageOptionsFor = (caseType?: string) => {
+    switch ((caseType ?? "").trim().replaceAll("_", " ").toUpperCase()) {
+        case "CIVIL CASE":
+            return CIVIL_COURT_STAGE_OPTIONS;
+        case "CRIMINAL CASE":
+            return CRIMINAL_COURT_STAGE_OPTIONS;
+        default:
+            return [];
+    }
+};
+
+/** The label the API would show for a stage code, for the readable copy of it. */
+export const courtStageLabel = (caseType: string | undefined, code: string) =>
+    courtStageOptionsFor(caseType).find(option => option.value === code)?.label ?? code;
+
 // case_update_type on POST /admin/casefile/{id}/case-update (API swagger enum).
 export const CASE_UPDATE_TYPES = ["CASE IN COURT", "MEDIATIONS", "LEGAL ADVICE"] as const;
 export const CASE_UPDATE_TYPE_OPTIONS = [

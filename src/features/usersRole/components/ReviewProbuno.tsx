@@ -15,6 +15,7 @@ import { useRouter } from 'next/navigation';
 
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { displayStateName } from "@/lib/place-names";
 interface DecisionData {
     decision: string;
     reason: string;
@@ -149,7 +150,7 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                         <InfoRow label="State Bar Membership" value={user?.StateBarMembership || "-"} />
                         <InfoRow label="Law Firm/Organization" value={user?.LawFirmName || "-"} />
                         <InfoRow label="Firm Address" value={user?.LawFirmAddress || "-"} />
-                        <InfoRow label="State of Practice" value={user?.StateOfPractice || "-"} />
+                        <InfoRow label="State of Practice" value={displayStateName(user?.StateOfPractice) || "-"} />
                     </div>
                 </div>
 

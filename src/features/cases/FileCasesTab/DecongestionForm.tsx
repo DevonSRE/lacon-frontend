@@ -153,8 +153,9 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         if (validateStep(currentStep ?? 1)) {
             if (currentStep < 2) {
                 if (currentStep === 1) {
-                    // Step 2 asks for "Sex" again; carry over the gender from step 1.
-                    setFormData(prev => ({ ...prev, sex: prev.sex || prev.gender }));
+                    // Step 2 no longer asks for "Sex": it follows the gender given in
+                    // step 1, including when that answer is changed on the way back.
+                    setFormData(prev => ({ ...prev, sex: prev.gender || prev.sex }));
                     setCurrentStep(currentStep + 1);
                 }
             } else {
@@ -388,13 +389,14 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                 {currentStep === 2 && (
                                     <div className="bg-white flex flex-col mt-5">
                                         <div className="space-y-6 ">
-                                            <Label htmlFor="state-select">Where are you filing from?</Label>
+                                            <Label htmlFor="state-select">Where are you filing from?<span className="text-red-500 text-xs">*</span></Label>
                                             <GetState
                                                 value={selectedState}
-                                                onValueChange={(val: string) => setSelectedState(val)}
+                                                onValueChange={(val: string) => { setSelectedState(val); setErrors(prev => ({ ...prev, state_id: '' })); }}
                                                 placeholder="Select your state"
                                                 onLoadingChange={(loading) => setLoading(loading)}
                                             />
+                                            {errors.state_id && <p className="text-red-500 text-xs mt-1">{errors.state_id}</p>}
                                         </div>
                                         <div className="mb-6">
                                             <InputField
@@ -525,6 +527,7 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                                     onChange={(e) => updateField('remand_date', e.target.value)}
                                                     className={`${errors.remand_date ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
                                                 />
+                                                {errors.remand_date && <p className="text-red-500 text-xs mt-1">{errors.remand_date}</p>}
                                             </div>
                                             <div>
                                                 <InputField
@@ -568,22 +571,9 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                             />
                                             {errors.bail_status && <p className="text-red-500 text-xs mt-1">{errors.bail_status}</p>}
                                         </div>
+                                        {/* Sex is not asked again here: step 1 asks Gender and
+                                            handleNext carries it over (QA 2026-11-01, item 13). */}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                                            {/* Sex */}
-                                            <div className="mb-6">
-                                                <SelectField name="sex"
-                                                    label="Sex" placeholder="Select Gender"
-                                                    options={[
-                                                        { value: 'Male', label: 'Male' },
-                                                        { value: 'Female', label: 'Female' }
-                                                    ]} required
-                                                    value={formData.sex}
-                                                    onValueChange={(value) => handleSelectChange(value, 'sex')}
-                                                    error={!!errors.sex}
-                                                    errorMessage={errors.sex}
-                                                />
-                                            </div>
 
                                             {/* Date of Birth/Age */}
 
@@ -603,25 +593,8 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                         </div>
 
 
-                                        {/* Marital status */}
-                                        <div className="mb-6">
-                                            <SelectField
-                                                name="marital_status"
-                                                label="Marital status"
-                                                placeholder=""
-                                                options={[
-                                                    { value: 'Single', label: 'Single' },
-                                                    { value: 'Married', label: 'Married' },
-                                                    { value: 'Divorced', label: 'Divorced' },
-                                                    { value: 'Widowed', label: 'Widowed' }
-                                                ]}
-                                                required
-                                                value={formData.marital_status}
-                                                onValueChange={(value) => handleSelectChange(value, 'marital_status')}
-                                                error={!!errors.marital_status}
-                                                errorMessage={errors.marital_status}
-                                            />
-                                        </div>
+                                        {/* Marital status was asked twice, on the same form field,
+                                            so step 2 simply overwrote step 1's answer. */}
 
                                         {/* Name of Relative */}
 

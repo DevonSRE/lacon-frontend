@@ -4,11 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { GetStates } from "@/server/actions/GetDetails";
+import { displayStateName } from "@/lib/place-names";
 
 type LocationOption = { id: string; title: string };
 
-export const displayStateName = (title: string) =>
-    title.trim().toUpperCase() === "FCT" ? "Federal Capital Territory" : title;
+export { displayStateName } from "@/lib/place-names";
 
 
 // The FCT has no State Coordinator: its civil and criminal cases are held by the
@@ -23,7 +23,8 @@ export const GetState = ({
     className,
     onValueChange, // 🔥 added
     onLoadingChange,
-    excludeFCT
+    excludeFCT,
+    onlyStateId
 }: {
     value: string;
     placeholder: string;
@@ -33,6 +34,10 @@ export const GetState = ({
     onValueChange?: (value: string) => void; // 🔥 added
     onLoadingChange?: (loading: boolean) => void;
     excludeFCT?: boolean;
+    // onlyStateId narrows the list to one state, for an office that may only act
+    // in its own: the request sheet offered all 37 and the API then refused every
+    // one but theirs (QA 2026-11-01, item 3).
+    onlyStateId?: string;
 }) => {
     const { data, isLoading: loading } = useQuery({
         queryKey: ["states"],
@@ -89,6 +94,7 @@ export const GetState = ({
                 <SelectContent className="bg-white text-zinc-900">
                     {data?.data?.data?.length > 0 ? (
                         [...(data?.data?.data ?? [])] // clone to avoid mutating original
+                            .filter((location: LocationOption) => !onlyStateId || location.id === onlyStateId)
                             .filter((location: LocationOption) => !excludeFCT || !isFCT(location.title))
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (

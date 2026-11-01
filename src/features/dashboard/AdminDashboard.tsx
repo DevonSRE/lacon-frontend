@@ -132,8 +132,12 @@ export default function AdminDashboard({ role }: { role: string }) {
                 </div>
 
                 {/* Cases nobody could be routed to (e.g. no State Coordinator for the state yet). The DG
-                    can accept, reject or send them on; a platform admin sees them but does not decide. */}
-                <Queue title="No holder" empty="Every case has a holder."
+                    can accept, reject or send them on; a platform admin sees them but does not decide.
+                    "No holder" meant nothing to the people reading it (QA 2026-11-01, item 24). */}
+                <Queue
+                    title="Cases waiting for someone to take them"
+                    description="No one holds these cases: either the office they were filed to had no one in it, or whoever held them has since been deactivated. Send each one to a holder, or accept or reject it here."
+                    empty="Every case is with an active holder."
                     filters={{ queue: "unrouted" }} actions={["accept", "reject", "route"]} />
 
                 {caseOverview.length > 0 && (

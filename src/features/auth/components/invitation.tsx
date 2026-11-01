@@ -63,10 +63,26 @@ export default function InvitationForm() {
                         {inviteStatus === 'checking' ? 'Checking invitation' : 'Invitation unavailable'}
                     </h1>
                     <p className="mt-3 text-sm text-gray-600">{inviteMessage}</p>
+                    {/* An expired or already-used link used to offer Sign In and nothing
+                        else, which is a dead end for someone who has never had a password
+                        (QA 2026-11-01, item 9). Both real ways forward are offered here. */}
                     {inviteStatus === 'invalid' && (
-                        <Link href="/signin" className="mt-6 inline-flex rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700">
-                            Go to Sign In
-                        </Link>
+                        <>
+                            <p className="mt-4 text-sm text-gray-600">
+                                An invitation link can only be used once, and it expires after seven days.
+                                If your account has already been set up, use <span className="font-medium">Forgot password</span> to
+                                get a code and set a new one. If you have never set a password, ask the
+                                administrator who invited you to send a new invitation.
+                            </p>
+                            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+                                <Link href="/password/forgot" className="inline-flex justify-center rounded bg-[#006458] px-4 py-2 text-sm font-medium text-white hover:bg-[#00514a]">
+                                    Set a password instead
+                                </Link>
+                                <Link href="/signin" className="inline-flex justify-center rounded border border-gray-300 px-4 py-2 text-sm font-medium text-gray-800 hover:bg-gray-50">
+                                    Go to Sign In
+                                </Link>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
-import { caseReference, normalizeCase, statusLabel, type CaseRecord } from "../domain";
+import { caseReference, movementReason, normalizeCase, recordedUpdate, statusLabel, type CaseRecord } from "../domain";
+import { displayStateName } from "@/lib/place-names";
 import { getCase, getCaseHistory, getCaseDocuments } from "../server/lifecycle";
 import CaseActions from "./CaseActions";
 import { CIVIL_COURT_STAGE_OPTIONS, CRIMINAL_COURT_STAGE_OPTIONS } from "@/lib/form-options";
@@ -52,13 +53,17 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
     {!!record.possible_duplicate_of?.length && <div className="rounded border border-amber-300 bg-amber-50 p-4"><h2 className="font-semibold">Possible duplicate</h2><p className="text-sm">These cases share an email or phone number within the last 30 days. Check them before proceeding.</p><div className="mt-2 flex flex-wrap gap-3">{record.possible_duplicate_of.map(ref => <Link key={ref} className="text-sm underline" href={`/cases?search=${encodeURIComponent(ref)}`}>{ref}</Link>)}</div></div>}
     {record.status === "REVISION_REQUESTED" && <div className="rounded bg-amber-50 p-4"><h2 className="font-semibold">Revision requested</h2><p>{revision?.reason || "Review the case history for the assigner’s reason. Add a progress update after making the correction."}</p></div>}
     <CaseActions caseRecord={record} />
-    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, origin: record.origin_channel, filed_level: record.filed_level, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: record.filing_actor?.role, filing_state: record.state_name, zone: record.zone_name, centre: record.center_name, department: record.department_name, current_holder: record.current_holder?.name || "No holder available", holder_role: record.current_holder?.role, assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
+    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, origin: record.origin_channel, filed_level: record.filed_level, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: record.filing_actor?.role, filing_state: displayStateName(record.state_name), zone: record.zone_name, centre: record.center_name, department: record.department_name, current_holder: record.current_holder?.name || "No holder available", holder_role: record.current_holder?.role, assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
     <section className="space-y-3"><h2 className="font-semibold">Client information</h2><Details values={{ gender: record.gender, age: record.age, marital_status: record.marital_status, email: record.email, phone_number: record.phone_number, state_of_origin: record.state_of_origin, permanent_address: record.permanent_address, occupation: record.occupation }} /></section>
     {[record.civil_case, record.criminal_case, record.pdss, record.decongestion_unit, record.perogative_of_mercy].filter(Boolean).map((fields, index) => <section key={index} className="space-y-3"><h2 className="font-semibold">Case details</h2><Details values={fields!} /></section>)}
+    {(record.outcome || record.resolution_report) && <section className="space-y-3"><h2 className="font-semibold">How the case ended</h2>
+      {record.outcome && <div><p className="text-sm text-gray-500">Outcome</p><p className="text-sm">{record.outcome}</p></div>}
+      {record.resolution_report && <div><p className="text-sm text-gray-500">Resolution report</p><p className="whitespace-pre-wrap rounded bg-gray-50 p-3 text-sm">{record.resolution_report}</p></div>}
+    </section>}
     <section className="space-y-3"><h2 className="font-semibold">Movement history</h2>
       {history.isLoading ? <p role="status">Loading history…</p> : history.data && !history.data.success ? <p role="alert">{history.data.message}</p> : <>
         {!movements?.data.length && <p className="text-sm text-gray-500">No movement history recorded.</p>}
-        <ol className="space-y-4 border-l pl-4">{movements?.data.map(m => <li key={m.id} className="space-y-1"><p className="text-sm font-semibold">{m.action.replaceAll("_", " ")} · {m.actor?.name || "Public submission"}</p><p className="text-xs text-gray-500">{dateLabel(m.created_at)}</p>{/* Updates and uploads keep the same holder: no arrow line for them. */}{!(m.from_holder?.id && m.from_holder.id === m.to_holder?.id) && <p className="text-sm">{m.from_holder?.name || "Submitted"} → {m.to_holder?.name || "No change of holder"}</p>}{m.reason && <p className="whitespace-pre-wrap rounded bg-gray-50 p-2 text-sm">{m.reason}</p>}</li>)}</ol>
+        <ol className="space-y-4 border-l pl-4">{movements?.data.map(m => <li key={m.id} className="space-y-1"><p className="text-sm font-semibold">{m.action.replaceAll("_", " ")} · {m.actor?.name || "Public submission"}</p><p className="text-xs text-gray-500">{dateLabel(m.created_at)}</p>{/* Updates and uploads keep the same holder: no arrow line for them. */}{!(m.from_holder?.id && m.from_holder.id === m.to_holder?.id) && <p className="text-sm">{m.from_holder?.name || "Submitted"} → {m.to_holder?.name || "No change of holder"}</p>}{m.reason && <p className="whitespace-pre-wrap rounded bg-gray-50 p-2 text-sm">{movementReason(m.reason)}</p>}</li>)}</ol>
         {movements && movements.total_pages > 1 && <Paging page={historyPage} total={movements.total_pages} onChange={setHistoryPage} />}
       </>}
     </section>
@@ -69,7 +74,7 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
         {docs && docs.total_pages > 1 && <Paging page={documentPage} total={docs.total_pages} onChange={setDocumentPage} />}
       </>}
     </section>
-    {!!record.updated_by?.length && <section className="space-y-2"><h2 className="font-semibold">Recorded updates</h2>{record.updated_by.map((update, index) => <p key={index} className="text-sm">{update.action} · {dateLabel(update.time)}</p>)}</section>}
+    {!!record.updated_by?.length && <section className="space-y-2"><h2 className="font-semibold">Recorded updates</h2>{record.updated_by.map((update, index) => <p key={index} className="text-sm">{recordedUpdate(update.action)} · {dateLabel(update.time)}</p>)}</section>}
   </div>;
 }
 function Paging({ page, total, onChange }: { page: number; total: number; onChange: (page: number) => void }) {

@@ -275,13 +275,14 @@ export default function MercyApplication({
       </div>
 
       <div>
-        <Label htmlFor="state-select">Where are you filing from?</Label>
+        <Label htmlFor="state-select">Where are you filing from?<span className="text-red-500 text-xs">*</span></Label>
         <GetState
           value={selectedState}
-          onValueChange={(val: string) => setSelectedState(val)}
+          onValueChange={(val: string) => { setSelectedState(val); setErrors(prev => ({ ...prev, state_id: '' })); }}
           placeholder="Select your state"
           onLoadingChange={() => { }}
         />
+        {errors.state_id && <p className="text-red-500 text-xs mt-1">{errors.state_id}</p>}
       </div>
 
       <div>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useAppSelector } from "@/hooks/redux";
-import { COURT_STAGE_OPTIONS, CASE_UPDATE_TYPE_OPTIONS } from "@/lib/form-options";
+import { courtStageOptionsFor, CASE_UPDATE_TYPE_OPTIONS } from "@/lib/form-options";
 import { GetStates } from "@/server/actions/GetDetails";
 import { displayStateName } from "@/components/get-state";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
@@ -104,6 +104,7 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
   const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision"].includes(action) || (action === "assign" && !!caseRecord.assignment);
   // Completing a case carries the final report: the API refuses the move without both fields.
   const completing = action === "status" && status === "COMPLETED";
+  const stageOptions = courtStageOptionsFor(caseRecord.case_type);
   const submit = (formData: FormData) => {
     setError(""); setFieldErrors({});
     startTransition(async () => {
@@ -170,7 +171,12 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
     </>}
     {action === "progress" && <>
       <Label htmlFor="update-type">Type of update</Label><select id="update-type" name="case_update_type" required className="w-full rounded border p-2">{CASE_UPDATE_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
-      <Label htmlFor="court-stage">Court stage</Label><select id="court-stage" name="current_status" required defaultValue="" className="w-full rounded border p-2"><option value="" disabled>Select court stage</option>{COURT_STAGE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select>
+      {/* The stages belong to the case type, and the types with no court proceedings
+          get a free-text status instead (QA 2026-11-01, item 17). */}
+      <input type="hidden" name="case_type" value={caseRecord.case_type ?? ""} />
+      {stageOptions.length > 0
+        ? <><Label htmlFor="court-stage">Court stage</Label><select id="court-stage" name="court_stage" required defaultValue="" className="w-full rounded border p-2"><option value="" disabled>Select court stage</option>{stageOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></>
+        : <><Label htmlFor="current-status">Current status</Label><Input id="current-status" name="current_status" required placeholder="Where the matter stands now" /></>}
       <Label htmlFor="progress-summary">Progress summary</Label><textarea id="progress-summary" name="court_progress" required className="min-h-24 w-full rounded border p-2" />
       <Label htmlFor="next-step">Next step / adjournment date</Label><Input id="next-step" name="next_step" required />
     </>}

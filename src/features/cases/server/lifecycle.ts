@@ -3,7 +3,7 @@
 import { isAxiosError } from "axios";
 import { z } from "zod";
 import { axiosInstance } from "@/lib/_api/axios-config";
-import { CASE_UPDATE_TYPES } from "@/lib/form-options";
+import { CASE_UPDATE_TYPES, courtStageLabel } from "@/lib/form-options";
 import { normalizeCase, type CaseRecord, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
 
 type Result<T> = { success: true; data: T } | { success: false; status: number; message: string };
@@ -96,10 +96,23 @@ async function upload(file: FormDataEntryValue | null): Promise<string | undefin
 export async function postCaseProgress(id: string, formData: FormData): Promise<Result<CaseRecord>> {
   try {
     idSchema.parse(id);
-    const payload = z.object({ court_progress: z.string().trim().min(1, "Enter a progress summary"), next_step: z.string().trim().min(1, "Enter the next step"),
-      current_status: z.string().trim().min(1, "Select the court stage"), case_update_type: z.enum(CASE_UPDATE_TYPES) }).parse(Object.fromEntries(formData));
+    // A case type with court proceedings sends the stage code the API validates
+    // against its own catalog; the others send a free-text status. current_status
+    // is required either way, so a stage code supplies its own label for it
+    // (QA 2026-11-01, item 17).
+    const { case_type, ...fields } = z.object({
+      court_progress: z.string().trim().min(1, "Enter a progress summary"),
+      next_step: z.string().trim().min(1, "Enter the next step"),
+      case_type: z.string().trim().optional(),
+      court_stage: z.string().trim().optional(),
+      current_status: z.string().trim().optional(),
+      case_update_type: z.enum(CASE_UPDATE_TYPES),
+    }).parse(Object.fromEntries(formData));
+    const current_status = fields.current_status
+      || (fields.court_stage ? courtStageLabel(case_type, fields.court_stage) : "");
+    if (!current_status) return { success: false, status: 400, message: "Select the court stage." };
     const supporting_documents = await upload(formData.get("file"));
-    const response = await axiosInstance.post<Envelope<CaseRecord>>(`/admin/casefile/${id}/case-update`, { ...payload, casefile_id: id, supporting_documents });
+    const response = await axiosInstance.post<Envelope<CaseRecord>>(`/admin/casefile/${id}/case-update`, { ...fields, current_status, casefile_id: id, supporting_documents });
     return { success: true, data: normalizeCase(response.data.data) };
   } catch (error) { return failure(error); }
 }
