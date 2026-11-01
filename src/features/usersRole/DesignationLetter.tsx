@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getProbunoLawyersRequestSingleAction } from "./userRoleAction";
+import { displayStateName } from "@/lib/place-names";
 
 const DesignationLetter = () => {
   const router = useRouter();
@@ -33,6 +34,13 @@ const DesignationLetter = () => {
   const letterDate = decided && !Number.isNaN(decided.getTime())
     ? decided.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
     : "";
+  // Who approved the application signs the letter. The letter had no signature
+  // block at all, so nothing said who it came from (QA 2026-11-01, item 7).
+  const decidedBy = data?.data?.decided_by;
+  const signatoryName = typeof decidedBy === "object" && decidedBy ? String(decidedBy.name ?? "") : "";
+  const signatoryRole = typeof decidedBy === "object" && decidedBy && decidedBy.role
+    ? String(decidedBy.role)
+    : "For: Director General";
 
   return (
     <div className="max-w-4xl mx-auto bg-gray-100 p-8 print:bg-white">
@@ -115,7 +123,7 @@ const DesignationLetter = () => {
           <div className="space-y-2 text-right">
             <div className="text-sm">{name || "-"}</div>
             <div className="text-sm">{data?.data.law_firm_name || "-"}</div>
-            <div className="text-sm">{data?.data.state_of_practice || "-"}</div>
+            <div className="text-sm">{displayStateName(data?.data.state_of_practice) || "-"}</div>
             <div className="text-sm">
               {data?.data.experience_in_criminal_law || "-"}
             </div>
@@ -201,13 +209,15 @@ const DesignationLetter = () => {
               Council.
             </p>
 
+            {/* The original of this paragraph was ungrammatical to the point of
+                being unreadable (QA 2026-11-01, item 7). This is a plain-English
+                restatement of its evident meaning; LACON should confirm the final
+                wording before the letter is issued. */}
             <p>
-              <strong>6.</strong> There is no fund for witness expenses under
-              any hearing or nomenclature however described, from which may
-              trigger has been met, is being paid or is to be paid or reimbursed
-              for any Pro Bono Legal Services on behalf of the Council, neither
-              is there any drawn up case of remuneration to lawyers exerting for
-              the present or in the future under this scheme.
+              <strong>6.</strong> No funds are available under this scheme for
+              witness expenses or for any other expense, however described, and
+              no remuneration is or will be paid or reimbursed to Counsel for
+              Pro Bono legal services rendered on behalf of the Council.
             </p>
 
             <p>
@@ -232,9 +242,19 @@ const DesignationLetter = () => {
           </div>
 
           <p>
-            The Legal Aid Council looks forward to working with you in order for
-            Pro Bono on behalf of the Legal Aid Council.
+            The Legal Aid Council looks forward to working with you in the
+            provision of Pro Bono legal services on behalf of the Council.
           </p>
+
+          {/* The letter used to end here, with no signatory at all. */}
+          <div className="mt-10">
+            <p>Yours faithfully,</p>
+            <div className="mt-12 w-64 border-t border-black pt-2">
+              <div className="text-sm font-semibold">{signatoryName || "\u00a0"}</div>
+              <div className="text-sm">{signatoryRole}</div>
+              <div className="text-sm">Legal Aid Council of Nigeria</div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

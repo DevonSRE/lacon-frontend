@@ -26,6 +26,7 @@ import { Table } from "@/components/ui/table";
 import { useState } from "react";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { displayStateName } from "@/lib/place-names";
 
 
 // Clickable Row
@@ -106,6 +107,7 @@ export const createLawyersColumns = (
       {
         accessorKey: "state",
         header: "State",
+        cell: ({ row }) => displayStateName(row.original.state),
       },
       {
         accessorKey: "case_assignment",
@@ -229,6 +231,7 @@ export const createLawyersManagementColumns = (
     {
       accessorKey: "state",
       header: "State",
+      cell: ({ row }) => displayStateName(row.original.state),
     },
     {
       accessorKey: "created_at",

@@ -13,7 +13,7 @@ const filedOn = (raw?: string) => {
   return date && !Number.isNaN(date.getTime()) ? date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "-";
 };
 
-export function Queue({ title, empty, filters, actions }: { title: string; empty: string; filters: CaseFilters; actions: Action[] }) {
+export function Queue({ title, empty, filters, actions, description }: { title: string; empty: string; filters: CaseFilters; actions: Action[]; description?: string }) {
   const { data: user } = useAppSelector(s => s.profile);
   const queryClient = useQueryClient();
   const cases = useQuery({
@@ -32,6 +32,7 @@ export function Queue({ title, empty, filters, actions }: { title: string; empty
   return (
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">{title} ({page?.total_rows ?? 0})</h2>
+      {description && <p className="text-sm text-gray-500">{description}</p>}
       {cases.isLoading ? <p role="status" className="text-sm text-gray-500">Loading cases…</p>
         : cases.data && !cases.data.success ? <p role="alert" className="text-sm text-red-600">{cases.data.message}</p>
           : !rows.length ? <p className="rounded border bg-white p-6 text-center text-sm text-gray-500">{empty}</p>

@@ -9,6 +9,8 @@ export type CaseRecord = {
   id: string; case_id: string; first_name: string; middle_name?: string; last_name: string;
   case_type: string; status: string; created_at?: string; filed_date?: string;
   court_stage?: string;
+  // Written when a lawyer completes the case; both are required to do so.
+  outcome?: string; resolution_report?: string;
   state_id?: string; state_name?: string; zone_name?: string; center_name?: string;
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;
@@ -85,6 +87,27 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
 }
 export function caseReference(c: { id: string; case_id?: string }) { return c.case_id || c.id; }
 export function statusLabel(status: string) { return CASE_STATUS_LABELS[status] ?? status; }
+
+// movementReason reads a movement's reason the way people speak. A status change
+// used to be stored as "ASSIGNED -> INPROGRESS: their reason"; the backend now
+// writes the labels itself, but case_movements is append-only, so every row
+// written before that keeps the codes (QA 2026-11-01, item 18).
+const LEGACY_STATUS_CHANGE = /^([A-Z_]+)\s*->\s*([A-Z_]+)([\s\S]*)$/;
+
+// recordedUpdate does the same for the stored "X changed the status to
+// INPROGRESS" lines, which are kept on the case rather than in the movement
+// history and are just as frozen.
+export function recordedUpdate(action?: string) {
+  return (action ?? "").replace(/[A-Z_]{4,}/g, token => CASE_STATUS_LABELS[token] ?? token);
+}
+export function movementReason(reason?: string) {
+  const value = (reason ?? "").trim();
+  const match = LEGACY_STATUS_CHANGE.exec(value);
+  if (!match) return value;
+  const [, from, to, rest] = match;
+  if (!CASE_STATUS_LABELS[from] || !CASE_STATUS_LABELS[to]) return value;
+  return `${statusLabel(from)} \u2192 ${statusLabel(to)}${rest}`;
+}
 
 // Dashboard rows return the model; case endpoints return a DTO.
 export function normalizeCase(raw: CaseRecord & { pdss_station?: Record<string, unknown>; perogative?: Record<string, unknown> }): CaseRecord {

@@ -212,7 +212,6 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 caseReference={state?.data?.case_id ?? state?.data?.id}
                 email={formData.email}
                 holderRole={state?.data?.current_holder?.role}
-                reviewer="the PDSS Unit Head"
             />
             <div className="min-h-screen px-4">
                 <div className="flex items-center justify-between">

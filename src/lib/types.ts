@@ -1,3 +1,4 @@
+import { displayStateName } from "@/lib/place-names";
 export type GENDER = "MALE" | "FEMALE";
 export type STATUS = "ACTIVE" | "INACTIVE";
 export type ROLE = "PLATFORM_ADMIN" | "ADMIN" | "USER";
@@ -83,7 +84,7 @@ export const states = [
 
 export const stateOptions = states.map(state => ({
   value: state,
-  label: state === 'FCT' ? 'Federal Capital Territory' : state
+  label: displayStateName(state)
 }));
 
 

@@ -30,6 +30,7 @@ import { GetInvitationCenter } from "@/components/get-invitation-center";
 import { invitationScope, PARALEGAL_OFFICES } from "@/lib/user-invitation-options";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { useAppSelector } from "@/hooks/redux";
 const defaultFormData: FormDataUser = {
   user_type: "",
   designation: "",
@@ -50,6 +51,15 @@ export function AddUserSheet() {
   const [submittedRole, setSubmittedRole] = useState("");
   const queryClient = useQueryClient();
   const scope = invitationScope(formData.user_type, formData.designation);
+  const { data: actor } = useAppSelector(s => s.profile);
+  // A State or Centre Coordinator may only ask for accounts in their own state,
+  // and the API refuses anything else, so only that state is offered here
+  // (QA 2026-11-01, item 3).
+  const ownStateOnly = ["STATE COORDINATOR", "CENTRE COORDINATOR"].includes(actor?.role ?? "")
+    ? actor?.state_id || ""
+    : "";
+  // With one state on offer there is nothing to choose, so it is already chosen.
+  const stateId = formData.state_id || ownStateOnly;
   const handleChange = (key: keyof FormDataUser, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
@@ -192,9 +202,10 @@ export function AddUserSheet() {
                   </Label>
                   <GetState
                     key={formData.user_type + formData.designation}
-                    value={formData.state_id}
+                    value={stateId}
                     onValueChange={(val: string) => setFormData(prev => ({ ...prev, state_id: val, center_id: "" }))}
                     placeholder="Select state"
+                    onlyStateId={ownStateOnly}
                     // The FCT has no State Coordinator; its cases go to the HQ
                     // justice heads. It stays available for centre roles.
                     excludeFCT={formData.user_type === "STATE COORDINATOR"}
@@ -213,8 +224,8 @@ export function AddUserSheet() {
                     Select Center <span className="text-red-500">*</span>
                   </Label>
                   <GetInvitationCenter
-                    key={formData.state_id}
-                    stateId={formData.state_id}
+                    key={stateId}
+                    stateId={stateId}
                     value={formData.center_id}
                     onValueChange={(val) => handleChange("center_id", val)}
                   />

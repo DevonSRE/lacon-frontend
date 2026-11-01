@@ -16,6 +16,7 @@ interface CaseIntakeDialogProps {
     caseReference?: string
     // Public filings: where the confirmation went and who reviews the case.
     email?: string
+    // Only set when the office is known; left out, the dialog promises no one.
     reviewer?: string
     // The role now holding the case, when the API routed it (FCT cases go to the HQ heads).
     holderRole?: string
@@ -35,10 +36,14 @@ export default function CaseIntakeDialog({
     isHome,
     caseReference,
     email,
-    reviewer = "the State Coordinator for your state",
+    reviewer,
     holderRole,
 }: CaseIntakeDialogProps) {
-    const reviewedBy = (holderRole && REVIEWERS[holderRole]) || reviewer
+    // Only name a reviewer the API actually gave us. The default used to be "the
+    // State Coordinator for your state", so a case filed where that office is
+    // empty told the client someone would review it who does not exist
+    // (QA 2026-11-01, item 27).
+    const reviewedBy = (holderRole && REVIEWERS[holderRole]) || reviewer || "";
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md p-6">
@@ -56,7 +61,12 @@ export default function CaseIntakeDialog({
                                 )}
                                 <p>Quote this reference whenever you contact LACON about your case.</p>
                                 {email && <p>We have sent a confirmation email to <span className="font-medium text-gray-900">{email}</span>.</p>}
-                                <p>Your case will be reviewed by {reviewedBy}. Acceptance is not guaranteed; we will email you the decision.</p>
+                                <p>
+                                    {reviewedBy
+                                        ? <>Your case will be reviewed by {reviewedBy}.</>
+                                        : <>Your case is in the queue for review by the LACON office that handles cases from your state.</>}
+                                    {" "}Acceptance is not guaranteed; we will email you the decision.
+                                </p>
                             </div>
                         ) : caseReference ? (
                             <p className="rounded bg-green-50 px-4 py-2 text-center text-sm font-semibold text-green-800">

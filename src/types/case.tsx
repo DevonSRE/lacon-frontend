@@ -53,6 +53,11 @@ export interface ILawyerRequest {
   DGStatus: string;
   DepartmentName: string;
   Action: string;
+  // The account an ADD request asks for; the list endpoint returns the model,
+  // so these come back PascalCase.
+  ProposedUserType?: string;
+  ProposedPhone?: string;
+  LawyerEmail?: string;
   Otp: number;
   IsOtpVerify: boolean;
   OtpExpiresAt: string;

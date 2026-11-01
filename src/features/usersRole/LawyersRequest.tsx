@@ -315,6 +315,7 @@ export default function LawyersRequest() {
             <div className="justify-center text-center">
               Are you sure you want to approve this request?
             </div>
+            <RequestSummary request={selectedUser} />
             <div className="p-1">
               <TextAreaField
                 name="reason"
@@ -357,6 +358,7 @@ export default function LawyersRequest() {
               <div className="justify-center text-center">
                 Please confirm you want to reject this request
               </div>
+              <RequestSummary request={selectedUser} />
               <div className="p-1">
                 <TextAreaField
                   name="reason"
@@ -391,6 +393,40 @@ export default function LawyersRequest() {
     </>
   );
 }
+
+// RequestSummary names the request being decided. Both confirmation dialogs
+// used to read "this request" and nothing else, so the Director General could
+// not tell what they were approving (QA 2026-11-01, item 4).
+const RequestSummary = ({ request }: { request: ILawyerRequest | null }) => {
+  if (!request) return null;
+  const actions: Record<string, string> = {
+    ADD: "Create an account for",
+    DEACTIVATE: "Deactivate",
+    REACTIVATE: "Reactivate",
+  };
+  const asked = actions[(request.Action ?? "").toUpperCase()] ?? "Change the account of";
+  const role = request.ProposedUserType || request.UserType || "";
+  const email = request.LawyerEmail || request.Email || "";
+  return (
+    <Card className="bg-gray-100">
+      <CardContent className="space-y-2 py-4 text-left text-sm">
+        <SummaryRow label="Request" value={`${asked} ${request.LawyerName || "this user"}`} />
+        {role ? <SummaryRow label="Role" value={role} /> : null}
+        {email ? <SummaryRow label="Email" value={email} /> : null}
+        <SummaryRow label="Requested by" value={[request.RequestedName, request.RequestedByRole].filter(Boolean).join(" · ") || "—"} />
+        {request.Reason?.trim() ? <SummaryRow label="Their reason" value={request.Reason} /> : null}
+      </CardContent>
+    </Card>
+  );
+};
+
+// Not DetailItem: that one title-cases its value, which mangles a sentence.
+const SummaryRow = ({ label, value }: { label: string; value: string }) => (
+  <div className="flex justify-between gap-4">
+    <span className="shrink-0 text-gray-600">{label}</span>
+    <span className="text-right font-medium">{value}</span>
+  </div>
+);
 
 const DetailItem = ({ label, value }: { label: string; value: string }) => (
   <div className="flex justify-between">

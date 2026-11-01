@@ -47,6 +47,10 @@ export default function CaseCreated({ setOpen, openFileACase, details }: Custome
         router.push("/dashboard");
     };
 
+    // The API answers with the public reference; older records only have an id.
+    const filed = details?.details as (ICase & { case_id?: string }) | null;
+    const reference = filed?.case_id || filed?.id || "";
+
     const today = new Date().toLocaleDateString("en-GB", {
         weekday: "long",
         day: "numeric",
@@ -61,6 +65,14 @@ export default function CaseCreated({ setOpen, openFileACase, details }: Custome
                 <div className="flex space-y-2 flex-col items-center">
                     <h1 className="text-xl font-semibold">Created Successfully</h1>
                     <p className="text-gray-600">Your case has been successfully filed</p>
+                    {/* The reference is the only thing a client or a filing officer can
+                        quote later, and this dialog did not show it (QA 2026-11-01, item 14). */}
+                    {reference && (
+                        <p className="text-center text-gray-800">
+                            Case reference{" "}
+                            <span className="font-semibold tracking-wide">{reference}</span>
+                        </p>
+                    )}
                     <p className="text-green-600 font-medium">{`Today, ${today}`}</p>
                 </div>
                 <div className="flex flex-col w-full  space-y-4 mt-6">
