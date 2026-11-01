@@ -6,6 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button";
 import { Eye, MoreVertical, Pencil } from "lucide-react";
 import { ROLES } from "@/types/auth";
+import { userStatusBadge } from "@/lib/user-status";
 
 export const createUserColumns = (
   userRole: ROLES,
@@ -58,17 +59,7 @@ export const createUserColumns = (
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status.toUpperCase();
-        const statusMap: Record<string, { label: string; color: string }> = {
-          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
-          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
-        };
-
-        const current = statusMap[status] || {
-          label: status,
-          color: "bg-gray-100 text-gray-800",
-        };
+        const current = userStatusBadge(row.original.status, row.original.probono_decision);
 
         return (
           <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>

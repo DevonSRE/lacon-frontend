@@ -31,6 +31,14 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
   ],
   "/users/all": [ROLES.PLATFORM_ADMIN, ROLES.ADMIN, ROLES.DIRECTOR_GENERAL],
   "/users/request": [ROLES.ADMIN, ROLES.DIRECTOR_GENERAL],
+  // What a field office asked for and what came back. The API already scopes
+  // this to the caller's own requests (QA 2026-11-01, item 3).
+  "/users/my-requests": [
+    ROLES.ZONAL_DIRECTOR,
+    ROLES.STATE_COORDINATOR,
+    ROLES.CENTRE_COORDINATOR,
+    ...UNIT_HEADS,
+  ],
   "/users/lawyers": [ROLES.DECONGESTION_UNIT_HEAD],
   "/users/probuno-request": [ROLES.DECONGESTION_UNIT_HEAD],
   "/lawyers": [

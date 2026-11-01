@@ -19,7 +19,8 @@ export const GetInactiveState = ({
     error,
     className,
     onValueChange, // 🔥 added
-    onLoadingChange
+    onLoadingChange,
+    onlyStateId
 }: {
     value: string;
     placeholder: string;
@@ -28,6 +29,9 @@ export const GetInactiveState = ({
     className?: string;
     onValueChange?: (value: string) => void; // 🔥 added
     onLoadingChange?: (loading: boolean) => void;
+    // onlyStateId narrows the list to one state, for an office that may only
+    // act in its own (QA 2026-11-01, item 3).
+    onlyStateId?: string;
 }) => {
     const { data, isLoading: loading } = useQuery({
         queryKey: ["InActivestates"],
@@ -84,6 +88,7 @@ export const GetInactiveState = ({
                 <SelectContent className="bg-white text-zinc-900">
                     {data?.data?.data?.length > 0 ? (
                         [...(data?.data?.data ?? [])] // clone to avoid mutating original
+                            .filter((location: LocationOption) => !onlyStateId || location.id === onlyStateId)
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">

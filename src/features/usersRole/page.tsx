@@ -4,6 +4,7 @@ import UserRoles from "./userRole";
 import LawyersRequest from "./LawyersRequest";
 import Lawyers from "../dashboard/Lawyer/_components/lawyersManagement";
 import ProbunoRequest from "./ProbunoRequest";
+import MyRequests from "./MyRequests";
 import DesignationLetter from "./DesignationLetter";
 
 export default function USERROLS() {
@@ -15,6 +16,8 @@ export default function USERROLS() {
         return <UserRoles />;
       case 'request':
         return <LawyersRequest />;
+      case 'my-requests':
+        return <MyRequests />;
       case 'probuno-request':
         return <ProbunoRequest />;
       case 'lawyers':

@@ -8,6 +8,9 @@ export interface ICaseAssignment {
   status?: string;
 }
 export interface IUser {
+  // How this pro bono lawyer's latest application was decided (APPROVED or
+  // DECLINED). Absent for everyone else, and for a decision never made.
+  probono_decision?: string;
   id: string;
   user_id: string;
   user_type: string;
@@ -95,6 +98,9 @@ export interface ILawyerRequest {
 
 
 export interface ILawyerManagement {
+  // How this pro bono lawyer's latest application was decided (APPROVED or
+  // DECLINED). Absent for everyone else, and for a decision never made.
+  probono_decision?: string;
   id: string;
   first_name: string;
   middle_name?: string;

@@ -27,6 +27,7 @@ import { useState } from "react";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { displayStateName } from "@/lib/place-names";
+import { userStatusBadge } from "@/lib/user-status";
 
 
 // Clickable Row
@@ -121,17 +122,7 @@ export const createLawyersColumns = (
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status.toUpperCase();
-        const statusMap: Record<string, { label: string; color: string }> = {
-          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
-          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
-        };
-
-        const current = statusMap[status] || {
-          label: status,
-          color: "bg-gray-100 text-gray-800",
-        };
+        const current = userStatusBadge(row.original.status, row.original.probono_decision);
 
         return (
           <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
@@ -242,17 +233,7 @@ export const createLawyersManagementColumns = (
       accessorKey: "status",
       header: "Status",
       cell: ({ row }) => {
-        const status = row.original.status.toUpperCase();
-        const statusMap: Record<string, { label: string; color: string }> = {
-          ACTIVE: { label: "Active", color: "text-green-700 bg-green-50" },
-          PENDING: { label: "Pending", color: "text-blue-600 bg-blue-50" },
-          INACTIVE: { label: "Inactive", color: "text-red-800 bg-red-100" },
-        };
-
-        const current = statusMap[status] || {
-          label: status,
-          color: "bg-gray-100 text-gray-800",
-        };
+        const current = userStatusBadge(row.original.status, row.original.probono_decision);
 
         return (
           <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
