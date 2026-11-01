@@ -27,7 +27,7 @@ import { useState } from "react";
 
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { displayStateName } from "@/lib/place-names";
-import { userStatusBadge } from "@/lib/user-status";
+import { pendingChangeNote, userStatusBadge } from "@/lib/user-status";
 
 
 // Clickable Row
@@ -216,6 +216,19 @@ export const createLawyersManagementColumns = (
       header: "Role",
     },
     {
+      // The list showed no workload at all, so a coordinator could not tell who
+      // was free before assigning (QA 2026-11-01, item 25). The API counts this
+      // live from the cases, so it cannot drift.
+      accessorKey: "open_cases",
+      header: "Open cases",
+      cell: ({ row }) => {
+        const open = row.original.open_cases;
+        return open === undefined
+          ? <span className="text-sm text-muted-foreground">-</span>
+          : <span className="text-sm">{open}{open === 0 ? " (free)" : ""}</span>;
+      },
+    },
+    {
       accessorKey: "zone_name",
       header: "Zone",
     },
@@ -234,12 +247,16 @@ export const createLawyersManagementColumns = (
       header: "Status",
       cell: ({ row }) => {
         const current = userStatusBadge(row.original.status, row.original.probono_decision);
+        const waiting = pendingChangeNote(row.original.pending_change);
 
         return (
-          <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
-            <span className="h-2 w-2 rounded-full bg-current" />
-            {current.label}
-          </span>
+          <div className="space-y-1">
+            <span className={`inline-flex items-center gap-2 px-2 py-1 text-sm font-medium rounded-md ${current.color}`}>
+              <span className="h-2 w-2 rounded-full bg-current" />
+              {current.label}
+            </span>
+            {waiting && <p className="text-xs text-blue-600">{waiting}</p>}
+          </div>
         );
       },
     },
