@@ -116,6 +116,42 @@ export async function postCaseProgress(id: string, formData: FormData): Promise<
     return { success: true, data: normalizeCase(response.data.data) };
   } catch (error) { return failure(error); }
 }
+/** One row the API refused, with the line of the file it came from. */
+export type BulkRowError = { row: string; error: string };
+export type BulkUploadResult = { created: number; references: string[]; errors: BulkRowError[] };
+
+/**
+ * Files every case in a CSV. The API answers 200 with both lists — the cases it
+ * created and the rows it refused — so a part-successful upload is normal and
+ * the caller shows both.
+ */
+export async function postBulkCases(formData: FormData): Promise<Result<BulkUploadResult>> {
+  try {
+    const file = formData.get("file");
+    if (!(file instanceof Blob) || file.size === 0) {
+      return { success: false, status: 400, message: "Choose a CSV file to upload." };
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      return { success: false, status: 400, message: "That file is larger than 10 MB. Split it and upload again." };
+    }
+    const payload = new FormData();
+    payload.append("file", file);
+    const response = await axiosInstance.post<{ created?: CaseRecord[]; errors?: BulkRowError[] }>(
+      "/casefile/create-bulk-case",
+      payload,
+    );
+    const created = response.data?.created ?? [];
+    return {
+      success: true,
+      data: {
+        created: created.length,
+        references: created.map(c => c.case_id || c.id).filter(Boolean),
+        errors: response.data?.errors ?? [],
+      },
+    };
+  } catch (error) { return failure(error); }
+}
+
 export async function postCaseDocument(id: string, formData: FormData): Promise<Result<null>> {
   try {
     idSchema.parse(id);

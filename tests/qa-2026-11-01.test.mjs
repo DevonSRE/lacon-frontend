@@ -4,6 +4,7 @@ import { movementReason, recordedUpdate, statusLabel } from "../src/features/cas
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { userStatusBadge } from "../src/lib/user-status.ts";
+import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -93,4 +94,58 @@ test("a declined applicant is told apart from a suspended lawyer", () => {
   // Anything unmapped is shown as it arrived rather than hidden.
   assert.equal(userStatusBadge("SOMETHING").label, "SOMETHING");
   assert.equal(userStatusBadge(undefined).label, "");
+});
+
+// QA 2026-11-01, item 11: the bulk upload dialog posted nothing and said the
+// feature did not exist, while POST /casefile/create-bulk-case had been
+// working. That handler reads the CSV by column POSITION (row[0]..row[33]), so
+// the template's order is the contract.
+test("the bulk template matches the column contract the API reads", () => {
+  assert.equal(BULK_COLUMN_COUNT, 34, "the Go handler's expectedCols is 34");
+  assert.equal(BULK_COLUMNS.length, BULK_COLUMN_COUNT);
+  // The positions the handler maps by name, spot-checked at both ends and at
+  // the boundary between client details and court details.
+  assert.equal(BULK_COLUMNS[0].header, "Case type");
+  assert.equal(BULK_COLUMNS[3].header, "State");
+  assert.equal(BULK_COLUMNS[5].header, "Gender");
+  assert.equal(BULK_COLUMNS[19].header, "Number of dependants");
+  assert.equal(BULK_COLUMNS[33].header, "Prosecuting agency");
+  // Every column the API requires is marked, so the template can say so.
+  const required = BULK_COLUMNS.filter(c => c.required).map(c => c.header);
+  assert.deepEqual(required, ["Case type", "First name", "State", "Last name", "Gender"]);
+});
+
+// A quoted cell may hold a comma, so count the parsed row, not a naive split.
+function csvCells(line) {
+  const cells = [];
+  let cell = "";
+  let quoted = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (quoted) {
+      if (char === '"' && line[i + 1] === '"') { cell += '"'; i++; }
+      else if (char === '"') quoted = false;
+      else cell += char;
+    } else if (char === '"') quoted = true;
+    else if (char === ",") { cells.push(cell); cell = ""; }
+    else cell += char;
+  }
+  cells.push(cell);
+  return cells;
+}
+
+test("the template is a header row and one example row", () => {
+  const lines = bulkTemplateCsv().trimEnd().split("\n");
+  assert.equal(lines.length, 2);
+  for (const line of lines) {
+    assert.equal(csvCells(line).length, BULK_COLUMN_COUNT, `"${line.slice(0, 40)}…" has the wrong column count`);
+  }
+  assert.deepEqual(csvCells(lines[0]), BULK_COLUMNS.map(c => c.header));
+  assert.deepEqual(csvCells(lines[1]), BULK_COLUMNS.map(c => c.example));
+});
+
+test("a value holding a comma is quoted, so the columns do not shift", () => {
+  const address = BULK_COLUMNS.find(c => c.header === "Permanent address");
+  assert.ok(address.example.includes(","), "the example address exercises the escaping");
+  assert.ok(bulkTemplateCsv().includes(`"${address.example}"`));
 });

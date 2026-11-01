@@ -12,6 +12,7 @@ import { displayStateName } from "@/components/get-state";
 import { CASE_STATUS_LABELS, caseReference, statusLabel, HEAD_ROLES, COORDINATOR_ROLES } from "../domain";
 import { listCases } from "../server/lifecycle";
 import FileACaseComponent from "@/features/component/FileACase";
+import BulkCaseUploadDialog from "@/features/dashboard/components/BulkUpload";
 
 export default function CaseList({ title = "Cases", initialSearch = "" }: { title?: string; initialSearch?: string }) {
   const { data: user } = useAppSelector(s => s.profile);
@@ -33,7 +34,7 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
   const rows = result?.data ?? [];
   const filter = (setter: (value: string) => void) => (event: React.ChangeEvent<HTMLSelectElement>) => { setter(event.target.value); setPage(1); };
   return <div className="min-w-0 max-w-full space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">{title}</h1>{canFile && <div className="flex flex-wrap gap-2">{/* Bulk Upload stays hidden until the upload works (QA 2026-10-26, item 29). */}<FileACaseComponent userRole={user.role} buttonText="File a Case" showIcon onCaseSubmitted={() => cases.refetch()} buttonClassName="bg-red-600 text-white" /></div>}</div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">{title}</h1>{canFile && <div className="flex flex-wrap gap-2"><BulkCaseUploadDialog onUploaded={() => cases.refetch()} /><FileACaseComponent userRole={user.role} buttonText="File a Case" showIcon onCaseSubmitted={() => cases.refetch()} buttonClassName="bg-red-600 text-white" /></div>}</div>
     {canQueue && <div className="flex flex-wrap gap-2">{[{ value: "all", label: "All cases in scope" }, { value: "mine", label: "My queue" }, { value: "unassigned", label: "Awaiting assignment" }].map(tab => <Button key={tab.value} variant={queue === tab.value ? "default" : "outline"} onClick={() => { setQueue(tab.value); setPage(1); }}>{tab.label}</Button>)}</div>}
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <Input aria-label="Search cases" placeholder="Client name or LACON reference" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
