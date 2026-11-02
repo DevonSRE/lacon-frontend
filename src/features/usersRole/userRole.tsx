@@ -44,7 +44,11 @@ import { toast } from "sonner";
 import { CustomeSheet } from "@/components/CustomSheet";
 import ViewEditLawyer from "@/features/dashboard/Lawyer/_components/sheet/ViewEditLawyer";
 
+import { getHeldCases, resendInvitation } from "./invitation-actions";
+
 export default function UserRoles() {
+  const [heldCases, setHeldCases] = useState<number | null>(null);
+  const [caseLoadError, setCaseLoadError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const { setIsOpen } = useAction();
@@ -90,7 +94,10 @@ export default function UserRoles() {
       setDetailsType(type);
       setDetailsOpen(true);
     }
-    if (type === "suspend") setSheetOpen(true);
+    if (type === "suspend") {
+      setHeldCases(null);setCaseLoadError("");setSheetOpen(true);
+      getHeldCases(user.id).then(r=>{if(r.success)setHeldCases(r.data);else setCaseLoadError(r.message);});
+    }
     if (type === "delete") setdailogOpen(true);
     if (type === "activate") setdailogActiveOpen(true);
   };
@@ -103,7 +110,8 @@ export default function UserRoles() {
         (target) => handleOpenSheet(target, "edit"),
         (user) => handleOpenSheet(user, "activate"),
         (user) => handleOpenSheet(user, "suspend"),
-        (user) => handleOpenSheet(user, "delete")
+        (user) => handleOpenSheet(user, "delete"),
+        async (target) => { const r=await resendInvitation(target.id);if(r.success)toast.success(r.data);else toast.error(r.message); }
       ),
     [user?.id, user?.role]
   );
@@ -286,7 +294,7 @@ export default function UserRoles() {
             <div className="justify-center items-center text-center flex flex-col space-y-2">
               <Button
                 className="bg-white rounded-full"
-                onClick={() => setdailogOpen(false)}
+                onClick={() => setSheetOpen(false)}
               >
                 <ArrowLeft className="h-5 text-red-500 w-5" />
               </Button>
@@ -298,9 +306,14 @@ export default function UserRoles() {
               Suspend User
             </div>
             <div className="justify-center text-center">
-              Are You Sure You Want To Suspend This User
+              Suspend {selectedUser?.first_name} {selectedUser?.last_name}?
+              {heldCases === null && !caseLoadError && <p role="status">Checking open cases…</p>}
+              {caseLoadError && <p role="alert" className="text-red-700">{caseLoadError}</p>}
+              {heldCases !== null && <p className="mt-3 text-sm">This user holds {heldCases} open case{heldCases === 1 ? "" : "s"}. Reassign them before suspension, or confirm to place them in the Director General’s recovery queue.</p>}
+              {!!heldCases && <a href="/dashboard" className="text-sm underline">Review the case queue before suspending</a>}
             </div>
             <Button
+              disabled={isPending || heldCases === null}
               onClick={() => dispatchAction("suspend")}
               className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden"
             >
@@ -318,7 +331,7 @@ export default function UserRoles() {
             <Button
               variant="outline"
               className="w-full h-11 group relative overflow-hidden"
-              onClick={() => setdailogOpen(false)}
+              onClick={() => setSheetOpen(false)}
             >
               <span className="transition-opacity duration-300 group-hover:opacity-0">
                 No, I&apos;ll Do it Later

@@ -104,6 +104,7 @@ export async function postCaseProgress(id: string, formData: FormData): Promise<
       court_progress: z.string().trim().min(1, "Enter a progress summary"),
       next_step: z.string().trim().min(1, "Enter the next step"),
       case_type: z.string().trim().optional(),
+      next_court_date: z.string().optional(),
       court_stage: z.string().trim().optional(),
       current_status: z.string().trim().optional(),
       case_update_type: z.enum(CASE_UPDATE_TYPES),
@@ -112,7 +113,8 @@ export async function postCaseProgress(id: string, formData: FormData): Promise<
       || (fields.court_stage ? courtStageLabel(case_type, fields.court_stage) : "");
     if (!current_status) return { success: false, status: 400, message: "Select the court stage." };
     const supporting_documents = await upload(formData.get("file"));
-    const response = await axiosInstance.post<Envelope<CaseRecord>>(`/admin/casefile/${id}/case-update`, { ...fields, current_status, casefile_id: id, supporting_documents });
+    const next_court_date = fields.next_court_date ? new Date(`${fields.next_court_date}T12:00:00+01:00`).toISOString() : undefined;
+    const response = await axiosInstance.post<Envelope<CaseRecord>>(`/admin/casefile/${id}/case-update`, { ...fields, next_court_date, current_status, casefile_id: id, supporting_documents });
     return { success: true, data: normalizeCase(response.data.data) };
   } catch (error) { return failure(error); }
 }
@@ -162,3 +164,5 @@ export async function postCaseDocument(id: string, formData: FormData): Promise<
     return { success: true, data: null };
   } catch (error) { return failure(error); }
 }
+
+export async function getLawyerWorkSummary(): Promise<Result<{counts:Record<string,number>;needs_action:CaseRecord[];overdue:CaseRecord[];stale_after_days:number}>> {return read("/casefile/work-summary");}

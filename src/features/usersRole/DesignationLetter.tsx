@@ -1,6 +1,8 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useTransition } from "react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { downloadDesignationLetter } from "./letter-download";
 import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { getProbunoLawyersRequestSingleAction } from "./userRoleAction";
@@ -8,6 +10,8 @@ import { displayStateName } from "@/lib/place-names";
 
 const DesignationLetter = () => {
   const router = useRouter();
+  const [downloading,startDownload]=useTransition();
+  const download=()=>startDownload(async()=>{const r=await downloadDesignationLetter(String(id));if(!r.success){toast.error(r.message);return;}const url=URL.createObjectURL(new Blob([Uint8Array.from(atob(r.data),c=>c.charCodeAt(0))],{type:r.contentType}));const a=document.createElement("a");a.href=url;a.download=r.filename;a.click();URL.revokeObjectURL(url);});
   const params = useParams();
   const id = params.id;
 
@@ -44,9 +48,10 @@ const DesignationLetter = () => {
 
   return (
     <div className="max-w-4xl mx-auto bg-gray-100 p-8 print:bg-white">
-      <div className="mb-4 flex justify-end print:hidden">
+      <div className="mb-4 flex justify-end gap-3 print:hidden">
+        <button type="button" disabled={downloading} onClick={download} className="rounded bg-black px-4 py-2 text-sm text-white">{downloading ? "Preparing…" : "Download PDF"}</button>
         <button type="button" onClick={() => window.print()} className="rounded bg-black px-4 py-2 text-sm text-white hover:bg-gray-800">
-          Download / Print
+          Print
         </button>
       </div>
       <h1

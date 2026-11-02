@@ -18,6 +18,6 @@ export default function LawyerUpcomingEvents() {
     enabled: !!user?.id,
   });
   return <section className="mt-8 space-y-3"><h2 className="text-lg font-semibold">Upcoming events</h2>
-    {events.isLoading ? <p>Loading events…</p> : events.isError ? <p>Events could not be loaded.</p> : !events.data?.length ? <p className="text-sm text-gray-500">No upcoming events found.</p> : <ul className="grid gap-3 sm:grid-cols-2">{events.data.map((event, index) => <li key={`${event.casefile_id}-${index}`} className="rounded border p-3 text-sm">{event.event_date} · {event.event_type} · {event.case_title}</li>)}</ul>}
+    {events.isLoading ? <p>Loading events…</p> : events.isError ? <p>Events could not be loaded.</p> : !events.data?.length ? <p className="text-sm text-gray-500">No upcoming events found.</p> : <ul className="grid gap-3 sm:grid-cols-2">{events.data.map((event, index) => <li key={`${event.casefile_id}-${index}`} className="rounded border p-3 text-sm">{new Date(event.event_date).toLocaleDateString("en-GB")} · {event.event_type} · <a className="underline" href={`/cases/${event.casefile_id}`}>{event.case_title}</a></li>)}</ul>}
   </section>;
 }

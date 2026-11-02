@@ -15,7 +15,8 @@ export const createUserColumns = (
   onEdit: (user: IUser) => void,
   onActivate: (user: IUser) => void,
   onSuspend: (user: IUser) => void,
-  onDelete: (user: IUser) => void
+  onDelete: (user: IUser) => void,
+  onResend: (user: IUser) => void
 ): ColumnDef<IUser>[] => {
   return [
     {
@@ -97,6 +98,7 @@ export const createUserColumns = (
                   <Pencil className="mr-2 size-4" /> Edit
                 </DropdownMenuItem>
               )}
+              {status === "PENDING" && <DropdownMenuItem onClick={() => onResend(user)}>Send a new invitation</DropdownMenuItem>}
               {!isSelf && !isProtectedPlatformAdmin && status !== "INACTIVE" && (
                 <DropdownMenuItem onClick={() => onSuspend(user)}>
                   Suspend Account

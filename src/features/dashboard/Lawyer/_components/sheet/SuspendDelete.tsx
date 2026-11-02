@@ -1,141 +1,15 @@
-import { ILawyerManagement } from '@/types/case';
+"use client";
+import { useState, useTransition, type Dispatch, type SetStateAction } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import React, { Dispatch, SetStateAction, useState } from 'react';
-
-
-interface LawyerDetailsProps {
-    lawyer?: ILawyerManagement | null;
-    sheetType?: "view" | "edit" | "suspend" | "delete" | null;
-    setOpen: Dispatch<SetStateAction<boolean>>;
+import { ILawyerManagement } from "@/types/case";
+import { requestAccountChange } from "@/features/usersRole/invitation-actions";
+import { Button } from "@/components/ui/button";
+export default function SuspensionForm({lawyer,setOpen}:{lawyer?:ILawyerManagement|null;sheetType?:string|null;setOpen:Dispatch<SetStateAction<boolean>>}) {
+ const [reason,setReason]=useState("");const [error,setError]=useState("");const [pending,startTransition]=useTransition();const client=useQueryClient();
+ return <form className="space-y-4 p-4" onSubmit={e=>{e.preventDefault();setError("");startTransition(async()=>{const r=await requestAccountChange(lawyer?.id ?? "",reason);if(!r.success){setError(r.message);return;}toast.success(r.data);await Promise.all([client.invalidateQueries({queryKey:["getLaweyersManagement"]}),client.invalidateQueries({queryKey:["getMyLawyerRequests"]})]);setOpen(false);});}}>
+ <h2 className="text-xl font-semibold">Request suspension</h2><p>{lawyer?.first_name} {lawyer?.last_name} · {lawyer?.email}</p>
+ <p className="text-sm">The Director General must approve this request. The lawyer remains active until then.</p>
+ <label htmlFor="suspension-reason">Reason (required)</label><textarea id="suspension-reason" value={reason} onChange={e=>setReason(e.target.value)} required className="min-h-28 w-full rounded border p-2" />
+ {error && <p role="alert" className="text-red-700">{error}</p>}<Button disabled={pending || !reason.trim()}>{pending?"Sending…":"Send request to the Director General"}</Button><Button type="button" variant="outline" onClick={()=>setOpen(false)}>Cancel</Button></form>;
 }
-
-export default function SuspensionForm({ lawyer : lawyerInfo, setOpen: OpenSheet, sheetType }: LawyerDetailsProps) {
-
-    
-
-    // const SuspensionForm: React.FC = () => {
-    const [reason, setReason] = useState<string>('');
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
-
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!reason.trim()) {
-            alert('Please provide a reason for suspension');
-            return;
-        }
-
-        // No suspension API is wired up yet; this used to fake a success after a delay.
-        toast.info('Suspending lawyers is not available yet', { description: 'This feature is not available yet. Nothing was saved.' });
-    };
-
-    const handleCancel = () => {
-        setReason('');
-        // In a real app, you might navigate back or close a modal
-    };
-
-    return (
-        <div className="bg-white overflow-hidden">
-            {/* Header */}
-            <div className="bg-white px-6 py-4 border-b border-gray-200">
-                <h1 className="text-xl font-semibold text-gray-900">
-                    Reason For Suspension
-                </h1>
-            </div>
-
-            {/* Lawyer Information Section */}
-            <div className="bg-gray-50 px-6 py-4">
-                <h2 className="text-sm font-medium text-gray-700 mb-4">
-                    Lawyer Information
-                </h2>
-
-                <div className="grid grid-cols-1 gap-4">
-                    <div className="space-y-3">
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Full Name:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                                {lawyerInfo?.first_name} {lawyerInfo?.last_name}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">LACON Email Address:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                                {lawyerInfo?.email}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Phone Number:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                                {lawyerInfo?.phone_number}
-                            </span>
-                        </div>
-             
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Role:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                                {lawyerInfo?.user_type ?? "-"}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Status:</span>
-                            <span className="text-sm font-medium text-green-600">
-                                {lawyerInfo?.status}
-                            </span>
-                        </div>
-
-                        <div className="flex justify-between">
-                            <span className="text-sm text-gray-600">Max. Case Load:</span>
-                            <span className="text-sm font-medium text-gray-900">
-                                {lawyerInfo?.max_case_load ?? "-"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Form Section */}
-            <form onSubmit={handleSubmit} className="px-6 py-6">
-                <div className="mb-6">
-                    <label
-                        htmlFor="reason"
-                        className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                        Reason For Suspension <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                        id="reason"
-                        name="reason"
-                        rows={6}
-                        value={reason}
-                        onChange={(e) => setReason(e.target.value)}
-                        placeholder="Type the Reason for This Action Here"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                        required
-                    />
-                </div>
-
-                {/* Action Buttons */}
-                <div className="space-y-3">
-                    <button
-                        type="submit"
-                        disabled={isSubmitting}
-                        className="w-full bg-black text-white py-3 px-4 rounded-md font-medium hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isSubmitting ? 'Submitting...' : 'Yes, Submit Now'}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={handleCancel}
-                        className="w-full bg-white text-gray-700 py-3 px-4 rounded-md font-medium border border-gray-300 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200"
-                    >
-                        No, Cancel Request
-                    </button>
-                </div>
-            </form>
-        </div>
-    );
-};

@@ -126,3 +126,12 @@ test("empty document upload fails before a document record is posted", async () 
   const result = await api.postCaseDocument(id, form);
   assert.equal(result.success, false); assert.equal(calls.length, 0);
 });
+
+test("progress sends the structured next hearing date separately from next-step text", async () => {
+  const { api, calls } = setup();
+  const form = new FormData();
+  for (const [key, value] of Object.entries({ court_progress: "Adjourned", next_step: "Call witness", current_status: "Hearing", case_update_type: "CASE IN COURT", next_court_date: "2026-12-01" })) form.set(key, value);
+  assert.equal((await api.postCaseProgress(id, form)).success, true);
+  assert.equal(calls[0].args[1].next_court_date, "2026-12-01T11:00:00.000Z");
+  assert.equal(calls[0].args[1].next_step, "Call witness");
+});

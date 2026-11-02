@@ -130,6 +130,7 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
         if (!result.success) { setError(result.message); return; }
         await Promise.all([
           client.invalidateQueries({ queryKey: ["case-lifecycle"] }),
+          client.invalidateQueries({ queryKey: ["scope-summary"] }),
           client.invalidateQueries({ queryKey: ["case-targets"] }),
           client.invalidateQueries({ queryKey: ["getCases"] }),
           client.invalidateQueries({ queryKey: ["getCasesInternal"] }),
@@ -178,10 +179,12 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
         ? <><Label htmlFor="court-stage">Court stage</Label><select id="court-stage" name="court_stage" required defaultValue="" className="w-full rounded border p-2"><option value="" disabled>Select court stage</option>{stageOptions.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></>
         : <><Label htmlFor="current-status">Current status</Label><Input id="current-status" name="current_status" required placeholder="Where the matter stands now" /></>}
       <Label htmlFor="progress-summary">Progress summary</Label><textarea id="progress-summary" name="court_progress" required className="min-h-24 w-full rounded border p-2" />
-      <Label htmlFor="next-step">Next step / adjournment date</Label><Input id="next-step" name="next_step" required />
+      <Label htmlFor="next-step">Next step</Label><Input id="next-step" name="next_step" required />
+      <Label htmlFor="next-court-date">Next court date (optional)</Label><Input id="next-court-date" name="next_court_date" type="date" />
     </>}
     {action === "document" && <><Label htmlFor="document-title">Document title</Label><Input id="document-title" name="document_title" required /><Label htmlFor="document-type">Document type</Label><Input id="document-type" name="document_type" required placeholder="e.g. Court order" /></>}
     {["progress", "document"].includes(action) && <div className="space-y-2"><Label htmlFor="case-file">{action === "progress" ? "Supporting document (optional)" : "Document"}</Label><Input id="case-file" name="file" type="file" accept=".jpeg,.jpg,.png,.webp,.pdf,.doc,.docx,.xlsx" required={action === "document"} /><p className="text-sm text-gray-500">Images, PDF, Word or Excel. Maximum 10 MB.</p></div>}
+    {action === "status" && status === "CLOSED" && <section className="space-y-2 rounded border bg-gray-50 p-3"><h3 className="font-semibold">Completion report</h3><p>{caseRecord.outcome}</p><p className="whitespace-pre-wrap">{caseRecord.resolution_report}</p>{caseRecord.completed_by && <p>Completed by {caseRecord.completed_by.name}</p>}<p className="text-sm">If this report needs correction, cancel and choose Request revision.</p></section>}
     {completing && <>
       <div className="space-y-1">
         <Label htmlFor="case-outcome">Outcome (required)</Label>

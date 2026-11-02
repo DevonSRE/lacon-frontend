@@ -284,15 +284,11 @@ export const createLawyersManagementColumns = (
                   </DropdownMenuItem>
                 </>
               )}
-              <DropdownMenuItem onClick={() => onSuspend(user)}>
-                Suspend Lawyer
+              <DropdownMenuItem disabled={!!user.pending_change} onClick={() => onSuspend(user)}>
+                Request suspension
               </DropdownMenuItem>
 
-              {(userRole === ROLES.PLATFORM_ADMIN || userRole === ROLES.ZONAL_DIRECTOR || userRole === ROLES.DIRECTOR_GENERAL || userRole === ROLES.DECONGESTION_UNIT_HEAD) && (
-                <DropdownMenuItem onClick={() => onDelete(user)} className="text-red-600">
-                  Delete Lawyer
-                </DropdownMenuItem>
-              )}
+
             </DropdownMenuContent>
           </DropdownMenu>
         );
