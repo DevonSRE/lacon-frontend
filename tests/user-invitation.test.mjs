@@ -58,18 +58,29 @@ function centerApi(pages, failure = false) {
   }).outputText, { exports: api, require: name => name === "@/lib/_api/axios-config" ? { axiosInstance } : require(name) });
   return { api, calls };
 }
-test("centre picker reads every page, filters by state UUID and uses real IDs", async () => {
-  const centerId = "00000000-0000-4000-8000-000000000051";
+// The state is now the server's filter, not ours: /centers takes a state id,
+// and sending the state means one page instead of every centre in the country
+// (QA 2026-11-01, item 1). The paging loop stays, because the page size is the
+// API's promise and a state with more centres than one page would lose the rest.
+test("centre picker asks the API for one state and reads every page it is given", async () => {
+  const first = "00000000-0000-4000-8000-000000000051";
+  const second = "00000000-0000-4000-8000-000000000052";
   const { api, calls } = centerApi([
-    [{ id: centerId, title: "Other state", state_id: centerId }],
-    [{ id: centerId, title: "Abia Centre", state_id: id }, { id: "Center A", title: "Placeholder", state_id: id }],
+    [{ id: first, title: "Abia Centre", state_id: id }],
+    [{ id: "Center A", title: "Placeholder", state_id: id }, { id: second, title: "Second Centre", state_id: id }],
   ]);
   const result = await api.getInvitationCenters(id);
   assert.equal(result.success, true);
-  assert.equal(result.data.length, 1);
-  assert.equal(result.data[0].id, centerId);
+  // Both real centres, in title order; the row whose id is not an id is dropped.
+  // Compared element-wise: the array comes from another vm realm, so a strict
+  // deep-equal against a plain array fails on the prototype alone.
+  assert.equal(result.data.length, 2);
+  assert.equal(result.data[0].title, "Abia Centre");
+  assert.equal(result.data[1].title, "Second Centre");
   assert.equal(calls.length, 2);
   assert.ok(calls.every(call => call.path === "/centers" && call.params.size === 100 && !call.params.status));
+  // Every page asks for the one state, so the API does the filtering.
+  assert.ok(calls.every(call => call.params.state === id));
 });
 test("invalid state never queries centres", async () => {
   const { api, calls } = centerApi([[]]);
