@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAppSelector } from "@/hooks/redux";
 import { statusLabel } from "@/features/cases/domain";
 import { displayStateName } from "@/lib/place-names";
-import { getScopeSummary, type SummaryRow } from "../server/scope-report";
+import { exportScopeSummary, getScopeSummary, type SummaryFilters, type SummaryRow } from "../server/scope-report";
 
 /**
  * The role-scoped report, for a reader the admin report is not meant for.
@@ -25,6 +26,45 @@ const SCOPE_NOTES: Record<string, string> = {
   unit: "Every case in your unit, broken down by the lawyers working on them.",
   national: "Every case on the platform.",
 };
+
+// The action hands back base64 so the bytes survive the server boundary intact.
+function save(data: string, filename: string, contentType: string) {
+  const bytes = Uint8Array.from(atob(data), char => char.charCodeAt(0));
+  const url = URL.createObjectURL(new Blob([bytes], { type: contentType }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function Download({ range }: { range: SummaryFilters }) {
+  const [pending, startTransition] = useTransition();
+  const [busy, setBusy] = useState<"xlsx" | "pdf" | null>(null);
+  const download = (format: "xlsx" | "pdf") => {
+    setBusy(format);
+    startTransition(async () => {
+      const result = await exportScopeSummary(format, range);
+      setBusy(null);
+      if (!result.success) {
+        toast.error("The report could not be downloaded.", { description: result.message });
+        return;
+      }
+      save(result.data, result.filename, result.contentType);
+    });
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      {(["xlsx", "pdf"] as const).map(format => (
+        <Button key={format} type="button" variant="outline" disabled={pending} onClick={() => download(format)}>
+          {busy === format ? "Preparing…" : format === "xlsx" ? "Download Excel" : "Download PDF"}
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 function Rows({ title, rows, label, translate }: { title: string; rows: SummaryRow[]; label: string; translate?: (value: string) => string }) {
   return (
@@ -84,13 +124,17 @@ export default function ScopeReport() {
 
   return (
     <div className="min-w-0 max-w-full space-y-8">
-      <div>
-        <h1 className="text-2xl font-semibold">
-          {data?.scope.name ? `${displayStateName(data.scope.name)} report` : "Report"}
-        </h1>
-        <p className="text-sm text-gray-500">
-          {SCOPE_NOTES[data?.scope.level ?? ""] ?? "The part of the data your role covers."}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold">
+            {data?.scope.name ? `${displayStateName(data.scope.name)} report` : "Report"}
+          </h1>
+          <p className="text-sm text-gray-500">
+            {SCOPE_NOTES[data?.scope.level ?? ""] ?? "The part of the data your role covers."}
+          </p>
+        </div>
+        {/* The file carries the dates on screen, so it matches what was read. */}
+        <Download range={range} />
       </div>
 
       <form
