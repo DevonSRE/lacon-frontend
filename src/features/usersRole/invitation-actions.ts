@@ -1,5 +1,6 @@
 "use server";
 
+import { isAxiosError } from "axios";
 import { z } from "zod";
 import { axiosInstance } from "@/lib/_api/axios-config";
 
@@ -39,5 +40,57 @@ export async function getInvitationCenters(stateId: string): Promise<
     return { success: true, data: options.sort((a, b) => a.title.localeCompare(b.title)) };
   } catch {
     return { success: false, message: "Could not load centres. Please try again." };
+  }
+}
+
+/**
+ * Accounts that were invited and have never signed in.
+ *
+ * Routing wants an ACTIVE holder, so an office held by one of these is an
+ * office with nobody in it: cases filed to it are stored unrouted and wait in
+ * the Director General's queue. The queue showed the cases and never the
+ * person, so nothing said that one unaccepted invitation was the reason
+ * (QA 2026-11-01, item 20).
+ */
+export type PendingInvitation = {
+  id: string;
+  name: string;
+  email: string;
+  user_type: string;
+  place: string;
+  invited_at: string;
+  days_waiting: number;
+  invite_expired: boolean;
+  cases_waiting: number;
+};
+
+type Answer<T> = { success: true; data: T } | { success: false; message: string };
+
+function said(error: unknown, fallback: string): { success: false; message: string } {
+  if (isAxiosError(error)) {
+    if (error.response?.status === 403) return { success: false, message: "Only the Director General and the admins can do this." };
+    const body = error.response?.data as { message?: string; data?: { error?: string } } | undefined;
+    return { success: false, message: body?.data?.error || body?.message || fallback };
+  }
+  return { success: false, message: fallback };
+}
+
+export async function getPendingInvitations(): Promise<Answer<PendingInvitation[]>> {
+  try {
+    const response = await axiosInstance.get("/users/pending-invitations");
+    const rows = response.data?.data;
+    return { success: true, data: Array.isArray(rows) ? rows : [] };
+  } catch (error) {
+    return said(error, "The invitations could not be loaded.");
+  }
+}
+
+export async function resendInvitation(userId: string): Promise<Answer<string>> {
+  if (!z.uuid().safeParse(userId).success) return { success: false, message: "That is not an account." };
+  try {
+    const response = await axiosInstance.post(`/users/${userId}/resend-invitation`);
+    return { success: true, data: response.data?.message || "A new invitation is on its way" };
+  } catch (error) {
+    return said(error, "The invitation could not be sent.");
   }
 }
