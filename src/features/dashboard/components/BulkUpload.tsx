@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Upload, FileText, CircleFadingArrowUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { BULK_COLUMN_COUNT, bulkTemplateCsv } from '@/features/cases/bulk-template';
+import { downloadBulkTemplate } from "@/features/cases/server/bulk-download";
 import { postBulkCases, type BulkRowError } from '@/features/cases/server/lifecycle';
 
 /**
@@ -20,6 +20,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
   const [isOpen, setIsOpen] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [references,setReferences]=useState<string[]>([]);
   const [rowErrors, setRowErrors] = useState<BulkRowError[]>([]);
   const [pending, startTransition] = useTransition();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -52,14 +53,9 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
 
   // Built in the browser from the column contract, so the template can never
   // drift from the order the API reads.
-  const handleDownloadTemplate = () => {
-    const blob = new Blob([bulkTemplateCsv()], { type: "text/csv;charset=utf-8" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "lacon-bulk-cases-template.csv";
-    link.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadTemplate = async () => {
+    const r=await downloadBulkTemplate();if(!r.success){toast.error(r.message);return;}
+    const bytes=Uint8Array.from(atob(r.data),c=>c.charCodeAt(0));const url=URL.createObjectURL(new Blob([bytes],{type:r.contentType}));const link=document.createElement("a");link.href=url;link.download=r.filename;link.click();URL.revokeObjectURL(url);
   };
 
   const handleUpload = () => {
@@ -73,7 +69,8 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
         toast.error("The file could not be uploaded", { description: result.message });
         return;
       }
-      const { created, errors } = result.data;
+      const { created, errors, references } = result.data;
+      setReferences(references);setSelectedFile(null);
       setRowErrors(errors);
       if (created > 0) {
         onUploaded?.();
@@ -87,11 +84,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
           description: errors.length ? "Every row was refused; the details are in the dialog." : "The file had no rows to read.",
         });
       }
-      // Rows that failed stay on screen to be corrected; a clean run closes.
-      if (created > 0 && errors.length === 0) {
-        setIsOpen(false);
-        setSelectedFile(null);
-      }
+
     });
   };
 
@@ -101,7 +94,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
     if (!open) {
       setSelectedFile(null);
       setIsDragOver(false);
-      setRowErrors([]);
+      setRowErrors([]);setReferences([]);
     }
   };
 
@@ -121,7 +114,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
 
         <div className="space-y-6">
           <p className="text-gray-600 text-sm">
-            Upload several cases at once. Download the template, fill one case per row and
+            Upload several cases at once. Download the Excel template, fill one case per row and
             upload it. Every row is checked on its own, so the rows that are right are filed
             even if others are not.
           </p>
@@ -160,7 +153,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
                 <>
                   <p className="text-gray-600 mb-2 font-medium">Choose a file or drag and drop it here.</p>
                   <p className="text-xs text-gray-500 mb-4">
-                    CSV saved from the template, {BULK_COLUMN_COUNT} columns, up to 10MB
+                    Excel workbook (.xlsx) or CSV, up to 10 MB
                   </p>
                 </>
               )}
@@ -169,7 +162,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
                 ref={fileInputRef}
                 type="file"
                 className="hidden"
-                accept=".csv,text/csv"
+                accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={handleFileSelect}
               />
 
@@ -181,6 +174,7 @@ export default function BulkCaseUploadDialog({ onUploaded }: { onUploaded?: () =
             </div>
           </div>
 
+          {references.length>0 && <section className="max-h-40 overflow-auto rounded border border-green-200 bg-green-50 p-3"><h3 className="font-medium">Cases filed ({references.length})</h3><ul>{references.map(ref=><li key={ref}>{ref}</li>)}</ul><p className="text-sm">Upload only corrected rejected rows again.</p></section>}
           {rowErrors.length > 0 && (
             <div role="alert" className="max-h-48 space-y-2 overflow-y-auto rounded border border-red-200 bg-red-50 p-3">
               <p className="text-sm font-medium text-red-800">

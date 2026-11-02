@@ -8,9 +8,9 @@ export type Actor = { id: string; name: string; email: string; role: string };
 export type CaseRecord = {
   id: string; case_id: string; first_name: string; middle_name?: string; last_name: string;
   case_type: string; status: string; created_at?: string; filed_date?: string;
-  court_stage?: string;
+  court_stage?: string; next_court_date?: string; holder_unavailable?: boolean; routing_warning?: string;
   // Written when a lawyer completes the case; both are required to do so.
-  outcome?: string; resolution_report?: string;
+  outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
   state_id?: string; state_name?: string; zone_name?: string; center_name?: string;
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;
@@ -40,7 +40,7 @@ export type MovementCommand = {
   action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status";
   target_user_id?: string; assignee_id?: string; reason?: string; status?: string;
   // Both are required when status is COMPLETED; the API refuses the move without them.
-  outcome?: string; resolution_report?: string;
+  outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
 };
 export const HEAD_ROLES = ["CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "DECONGESTION UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "OSCAR UNIT HEAD", "PDSS UNIT HEAD", "DIO UNIT HEAD"];
 export const COORDINATOR_ROLES = ["ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR"];
@@ -63,14 +63,14 @@ export function reviewerRole(c: Pick<CaseRecord, "case_type" | "state_name">): s
 }
 export function casePermissions(c: CaseRecord, user: { id: string; role: string } | undefined) {
   const role = user?.role ?? "";
-  const holder = !!user && (!c.current_holder || c.current_holder.id === user.id || c.assignment?.assignor_id === user.id);
+  const holder = !!user && ((role === "DIRECTOR GENERAL" && c.holder_unavailable) || !c.current_holder || c.current_holder.id === user.id || c.assignment?.assignor_id === user.id);
   const assigner = HEAD_ROLES.includes(role) || COORDINATOR_ROLES.includes(role);
   const assigned = !!user && c.assignment?.assignee_id === user.id;
   const open = !["CLOSED", "DENIED"].includes(c.status);
   const waitingReview = c.status === "SUBMITTED";
   const reviewRole = !!role && role === reviewerRole(c);
   // The DG may pick up a case nobody holds (no coordinator existed for it): review it or send it on.
-  const pickup = role === "DIRECTOR GENERAL" && !c.current_holder;
+  const pickup = role === "DIRECTOR GENERAL" && (!c.current_holder || !!c.holder_unavailable);
   return {
     route: open && holder && (!waitingReview || pickup) && routeRoles(role).length > 0,
     assign: open && holder && !waitingReview && assigner,
@@ -80,7 +80,7 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
     start: assigned && ["ASSIGNED", "REVISION_REQUESTED"].includes(c.status),
     complete: assigned && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
     close: holder && assigner && ["COMPLETED", "RESOLVED"].includes(c.status),
-    revision: assigner && c.assignment?.assignor_id === user?.id && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
+    revision: assigner && c.assignment?.assignor_id === user?.id && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED", "COMPLETED", "RESOLVED"].includes(c.status),
     update: assigned && open,
     upload: open && !!user && (assigned || c.current_holder?.id === user.id || c.assignment?.assignor_id === user.id || c.filing_actor?.id === user.id || ["DIRECTOR GENERAL", "PLATFORM ADMIN", "SUPER ADMIN"].includes(role)),
   };

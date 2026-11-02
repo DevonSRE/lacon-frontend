@@ -115,10 +115,12 @@ export default function CoordinatorHome({ role }: { role: string }) {
                 <h2 className="text-lg font-semibold">
                   {report?.scope.name ? `${displayStateName(report.scope.name)} at a glance` : "At a glance"}
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <Card label="Pending review" value={report?.by_status.find(r=>r.id === "SUBMITTED")?.count ?? 0} />
+                  <Card label="New this week" value={filedThisWeek ?? 0} />
                   <Card label="Total cases" value={totals?.total ?? 0}
                     note={filedThisWeek === undefined ? undefined : `${filedThisWeek} filed this week`} />
-                  <Card label="Waiting for a lawyer" value={totals?.pending ?? 0} note="Accepted, not yet assigned" />
+                  <Card label="Waiting for a lawyer" value={Math.max(0,(totals?.pending ?? 0)-(report?.by_status.find(r=>r.id === "SUBMITTED")?.count ?? 0))} note="Accepted, not yet assigned" />
                   <Card label="With a lawyer" value={totals?.assigned ?? 0} note="Assigned, in progress or in revision" />
                   <Card label="Resolved" value={totals?.resolved ?? 0} note="Completed or closed" />
                 </div>

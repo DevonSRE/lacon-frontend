@@ -94,3 +94,16 @@ export async function resendInvitation(userId: string): Promise<Answer<string>> 
     return said(error, "The invitation could not be sent.");
   }
 }
+
+export async function getHeldCases(userId: string): Promise<Answer<number>> {
+ if(!z.uuid().safeParse(userId).success) return {success:false,message:"Invalid account."};
+ try {const res=await axiosInstance.get(`/users/${userId}`);return {success:true,data:res.data.data.held_cases ?? 0};} catch(error){return said(error,"Could not check this account's cases.");}
+}
+
+export async function requestAccountChange(userId: string, reason: string) : Promise<Answer<string>> {
+ if(!z.uuid().safeParse(userId).success || !reason.trim()) return {success:false,message:"Choose an account and give a reason."};
+ try {await axiosInstance.post("/users/lawyer-unit-request",{action:"DEACTIVATE",lawyer_id:userId,reason:reason.trim()});return {success:true,data:"Suspension requested. The account stays active until the Director General decides."};}catch(error){return said(error,"The request could not be sent.");}
+}
+export async function getPendingAccountRequests(): Promise<Answer<Array<{ID:string;LawyerName:string;LawyerEmail:string;Status:string;Action:string}>>> {
+ try {const rows=[];for(let page=1;;page++){const res=await axiosInstance.get("/users/lawyer-unit-request",{params:{page,size:100}});const data=res.data.data;rows.push(...(data.data ?? []));if(page >= (data.total_pages || 1))break;}return {success:true,data:rows.filter(r=>r.Status==="PENDING" && r.Action==="ADD")};}catch(error){return said(error,"Pending requests could not be loaded.");}
+}

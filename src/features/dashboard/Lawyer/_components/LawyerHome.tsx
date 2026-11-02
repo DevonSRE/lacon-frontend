@@ -3,14 +3,13 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { useAppSelector } from "@/hooks/redux";
-import { caseReference, statusLabel, type CaseRecord } from "@/features/cases/domain";
-import { listCases } from "@/features/cases/server/lifecycle";
+import { caseReference, statusLabel } from "@/features/cases/domain";
+import { getLawyerWorkSummary } from "@/features/cases/server/lifecycle";
 import LawyerUpcomingEvents from "./LawyerUpcomingEvents";
 
 // Home used to render the Cases page itself — the same table, the same filters —
 // so a lawyer had two identical screens (QA 2026-11-01, item 21). This is a
 // summary: what is on their desk, what needs them first, and what is coming up.
-const NEEDS_ACTION = ["REVISION_REQUESTED", "ASSIGNED"];
 
 const filedOn = (raw?: string) => {
   const date = raw ? new Date(raw) : null;
@@ -21,25 +20,17 @@ const filedOn = (raw?: string) => {
 
 export default function LawyerHome() {
   const { data: user } = useAppSelector(s => s.profile);
-  // A lawyer's list is already scoped to the cases assigned to them, and their
-  // case load is capped, so one page covers it.
-  const cases = useQuery({
-    queryKey: ["case-lifecycle", user?.id, "lawyer-home"],
-    queryFn: () => listCases({ page: 1, size: 50, search: "all" }),
-    enabled: !!user?.id,
-  });
-  const rows: CaseRecord[] = cases.data?.success ? cases.data.data.data : [];
-  const count = (statuses: string[]) => rows.filter(row => statuses.includes(row.status)).length;
-  const attention = rows
-    .filter(row => NEEDS_ACTION.includes(row.status))
-    .sort((a, b) => NEEDS_ACTION.indexOf(a.status) - NEEDS_ACTION.indexOf(b.status))
-    .slice(0, 5);
-
-  const cards = [
-    { label: "Open cases", value: count(["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"]) },
-    { label: "In progress", value: count(["INPROGRESS"]) },
-    { label: "Revision requested", value: count(["REVISION_REQUESTED"]) },
-    { label: "Completed", value: count(["COMPLETED", "RESOLVED", "CLOSED"]) },
+  const cases=useQuery({queryKey:["case-lifecycle",user?.id,"lawyer-home"],queryFn:getLawyerWorkSummary,enabled:!!user?.id});
+  const data=cases.data?.success ? cases.data.data : undefined;
+  const count=(statuses:string[])=>statuses.reduce((n,status)=>n+(data?.counts[status] ?? 0),0);
+  const attention=data?.needs_action ?? [];
+  const cards=[
+    {label:"Assigned",value:count(["ASSIGNED"])},
+    {label:"In progress",value:count(["INPROGRESS"])},
+    {label:"Revision requested",value:count(["REVISION_REQUESTED"])},
+    {label:"Returned by you",value:count(["RETURNED"])},
+    {label:"Completed",value:count(["COMPLETED","RESOLVED","CLOSED"])},
+    {label:"Needs an update",value:count(["OVERDUE"])},
   ];
 
   return (
@@ -93,6 +84,8 @@ export default function LawyerHome() {
             </>
           )}
 
+      <section className="space-y-3"><h2 className="font-semibold">Cases needing an update</h2><p className="text-sm">No progress update for at least {data?.stale_after_days ?? 14} days.</p>
+      {data?.overdue.length ? <ul>{data.overdue.map(c=><li key={c.id}><Link className="underline" href={`/cases/${c.id}`}>{caseReference(c)} · {c.first_name} {c.last_name}</Link></li>)}</ul>:<p>No overdue updates.</p>}</section>
       <LawyerUpcomingEvents />
     </div>
   );

@@ -28,6 +28,8 @@ import TablePagination from "@/components/TablePagination";
 import { CustomDialog } from "@/components/CustomDialog";
 import SuspensionForm from "./sheet/SuspendDelete";
 
+import { getPendingAccountRequests } from "@/features/usersRole/invitation-actions";
+
 export default function Lawyers() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
@@ -61,6 +63,7 @@ export default function Lawyers() {
         }
     }, []); // Empty dependency array since it doesn't depend on any external values
 
+    const pendingRequests=useQuery({queryKey:["pending-account-requests",user?.id],queryFn:getPendingAccountRequests,enabled:!!user?.id});
     const columns = useMemo(
         () =>
             createLawyersManagementColumns(
@@ -142,6 +145,9 @@ export default function Lawyers() {
                     data={data?.data?.data}
                 />
 
+                <section className="space-y-2"><h2 className="font-semibold">Pending creation</h2>
+                {pendingRequests.data?.success ? (pendingRequests.data.data.length ? <ul>{pendingRequests.data.data.map(r=><li key={r.ID} className="rounded border p-3">{r.LawyerName} · {r.LawyerEmail} · Pending creation — awaiting the Director General</li>)}</ul> : <p className="text-sm text-gray-500">No account creation is waiting for approval.</p>) : pendingRequests.data ? <p role="alert">{pendingRequests.data.message}</p> : <p>Loading requests…</p>}
+                </section>
                 {data?.data?.data.length > 0 && (
                     <div className="flex justify-end pt-4">
                         <TablePagination
