@@ -2,6 +2,7 @@
 
 import { isAxiosError } from "axios";
 import { axiosInstance } from "@/lib/_api/axios-config";
+import { toDownload, type Download, type DownloadFailure } from "./to-download";
 
 /**
  * The role-scoped report (`GET /analytics/summary`, RPT-01 to RPT-05).
@@ -44,4 +45,52 @@ export async function getScopeSummary(filters: SummaryFilters = {}): Promise<Res
     }
     return { success: false, message: "The report could not be loaded." };
   }
+}
+
+/**
+ * The same report as a file: an Excel workbook, or an A4 PDF.
+ *
+ * `/analytics/summary/export` takes the same parameters as the report itself
+ * and has always been there; nothing called it, so a coordinator could read
+ * their report on screen and had no way to take it to a meeting.
+ *
+ * 'arraybuffer' is required: in a server action the default response type
+ * decodes the bytes as UTF-8 text and corrupts the file.
+ */
+export async function exportScopeSummary(
+  format: "xlsx" | "pdf",
+  filters: SummaryFilters = {},
+): Promise<Download | DownloadFailure> {
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>("/analytics/summary/export", {
+      params: { ...filters, format },
+      responseType: "arraybuffer",
+    });
+    return toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      `lacon-report.${format}`,
+    );
+  } catch (error) {
+    const result = await failureOf(error);
+    return result;
+  }
+}
+
+// The error path is shared with getScopeSummary, but an export fails as bytes:
+// axios hands back an ArrayBuffer body even for the JSON error envelope.
+async function failureOf(error: unknown): Promise<DownloadFailure> {
+  if (isAxiosError(error)) {
+    const status = error.response?.status ?? 504;
+    if (status === 401) return { success: false, status, message: "Your session has expired. Please sign in again." };
+    if (status === 403) return { success: false, status, message: "Your account has no reports. Ask the Director General to set your state, zone or centre." };
+    const body = error.response?.data;
+    if (body instanceof ArrayBuffer || Buffer.isBuffer(body)) {
+      try {
+        const parsed = JSON.parse(Buffer.from(body as ArrayBuffer).toString("utf8"));
+        if (parsed?.message) return { success: false, status, message: String(parsed.message) };
+      } catch { }
+    }
+    return { success: false, status, message: "The report could not be exported." };
+  }
+  return { success: false, status: 500, message: "The report could not be exported." };
 }

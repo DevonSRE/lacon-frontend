@@ -48,9 +48,11 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ...UNIT_HEADS.filter((r) => r !== ROLES.DECONGESTION_UNIT_HEAD),
   ],
   // The admin report reads /analytics/admin-*, which only these three may call.
-  // A coordinator gets the role-scoped report instead (/analytics/summary),
-  // which the API narrows to their own zone, state or centre — they had no
-  // Reports at all (QA 2026-11-01, item 25).
+  // Everyone else gets the role-scoped report instead (/analytics/summary),
+  // which the API narrows from their own account: a zone, a state, a centre or
+  // a unit. `policy.ReportScopeFor` has always answered all of them; the page
+  // simply was not open to anyone but the DG and the admins
+  // (QA 2026-11-01, item 25).
   "/reports": [
     ROLES.ADMIN,
     ROLES.PLATFORM_ADMIN,
@@ -58,6 +60,7 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.ZONAL_DIRECTOR,
     ROLES.STATE_COORDINATOR,
     ROLES.CENTRE_COORDINATOR,
+    ...UNIT_HEADS,
   ],
   "/settings": [ROLES.ADMIN],
   // Zones, states and centres decide where cases are routed and who holds them,

@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { GetAdminReport } from "../report/server/reportAction";
 import { CaseOverview } from "@/types/case";
 import { Queue } from "./components/UnitCaseQueues";
+import PendingInvitations from "./components/PendingInvitations";
 
 interface StatCardProps {
     title: string;
@@ -139,6 +140,10 @@ export default function AdminDashboard({ role }: { role: string }) {
                     description="No one holds these cases: either the office they were filed to had no one in it, or whoever held them has since been deactivated. Send each one to a holder, or accept or reject it here."
                     empty="Every case is with an active holder."
                     filters={{ queue: "unrouted" }} actions={["accept", "reject", "route"]} />
+
+                {/* Who those cases are waiting for: an office whose holder was invited
+                    and never signed in has nobody in it (QA 2026-11-01, item 20). */}
+                <PendingInvitations />
 
                 {caseOverview.length > 0 && (
                 <div className="flex flex-1 flex-col gap-4 pt-0">
