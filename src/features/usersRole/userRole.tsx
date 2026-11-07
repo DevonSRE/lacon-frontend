@@ -148,14 +148,19 @@ export default function UserRoles() {
     <div className="flex flex-1 flex-col gap-6 pt-0 mx-4 lg:mx-0">
       <div className="row flex justify-between">
         <div className="text-2xl font-semibold">Users</div>
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="bg-red-600 hover:bg-red-700 text-white h-11 rounded-sm"
-        >
-          <Icons.plusIcon className="mr-2" />
-          New User
-        </Button>
-        <AddUserSheet />
+        {/* Statistics reads the directory and creates nobody (T1). */}
+        {user?.role !== ROLES.STATISTICS && (
+          <>
+            <Button
+              onClick={() => setIsOpen(true)}
+              className="bg-red-600 hover:bg-red-700 text-white h-11 rounded-sm"
+            >
+              <Icons.plusIcon className="mr-2" />
+              New User
+            </Button>
+            <AddUserSheet />
+          </>
+        )}
       </div>
 
       {/* <CasesDataTableToolbar /> */}

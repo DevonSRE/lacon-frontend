@@ -29,6 +29,7 @@ const ROLE_LABELS: Record<string, string> = {
   "LACON LAWYER": "LACON Lawyer",
   "PLATFORM ADMIN": "Platform Administrator",
   "SUPER ADMIN": "Super Administrator",
+  STATISTICS: "Statistics",
 };
 
 /** The office as a reader sees it, falling back to whatever was stored. */

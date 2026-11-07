@@ -9,12 +9,19 @@ import UnitHeadDashboard from "./UnitHeadDashboard";
 import AdminDashboard from "./AdminDashboard";
 import CaseList from "@/features/cases/_components/CaseList";
 import CoordinatorHome, { COORDINATOR_HOME_ROLES } from "./Coordinator/CoordinatorHome";
+import ScopeReport from "@/features/report/_components/ScopeReport";
 
 
 
 export default function Dashboard() {
     const { data: user } = useAppSelector((state) => state.profile);
     const role = user?.role;
+
+    // Statistics reads and changes nothing, so their home is the national
+    // summary rather than a queue of work they cannot act on (T1).
+    if (role === ROLES.STATISTICS) {
+        return <ScopeReport />;
+    }
 
     // A coordinator's home was the Cases page itself (QA 2026-11-01, item 25).
     if (role && COORDINATOR_HOME_ROLES.includes(role)) {

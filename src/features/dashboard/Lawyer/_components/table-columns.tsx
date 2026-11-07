@@ -267,6 +267,8 @@ export const createLawyersManagementColumns = (
       id: "actions",
       header: "",
       cell: ({ row }) => {
+        // Statistics reads the list and changes nothing (T1).
+        if (userRole === ROLES.STATISTICS) return null;
         const user = row.original;
 
         return (

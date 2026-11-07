@@ -67,6 +67,9 @@ export const createUserColumns = (
       id: "actions",
       header: "",
       cell: ({ row }) => {
+        // Statistics reads the directory and changes nothing (T1), so the row
+        // offers nothing — the server refuses these anyway.
+        if (userRole === ROLES.STATISTICS) return null;
         const user = row.original;
         const isSelf = user.id === currentUserId;
         const isProtectedPlatformAdmin = userRole === ROLES.DIRECTOR_GENERAL && user.user_type === ROLES.PLATFORM_ADMIN;

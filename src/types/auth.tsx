@@ -16,7 +16,9 @@ export enum ROLES {
   DIO = "DIO UNIT HEAD",
   LACON_LAWYER = "LACON LAWYER",
   USER = "USER",
-  EXTERNAL_PARALEGAL = "EXTERNAL PARALEGAL"
+  EXTERNAL_PARALEGAL = "EXTERNAL PARALEGAL",
+  // Reads the whole country and changes nothing (T1).
+  STATISTICS = "STATISTICS"
 }
 
 export type TSessionData = {
