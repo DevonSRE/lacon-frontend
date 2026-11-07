@@ -252,3 +252,33 @@ test("the Director General can send any open case on", () => {
   const head = { id: "h1", role: "OSCAR UNIT HEAD" };
   assert.equal(casePermissions(heldByCoordinator, head).route, false);
 });
+
+// T6: a case that left Legal Aid, or moved to another LACON office, had no
+// status to say so, so it stayed open for ever.
+test("a referred or transferred case is finished here", () => {
+  assert.equal(statusLabel("REFERRED"), "Referred out");
+  assert.equal(statusLabel("TRANSFERRED"), "Transferred");
+
+  const holder = { id: "sc-1", role: "STATE COORDINATOR" };
+  const mine = {
+    id: "c1", case_id: "LACON-1", first_name: "A", last_name: "B",
+    case_type: "CIVIL CASE", status: "INPROGRESS",
+    current_holder: { id: "sc-1", name: "A Coordinator", email: "", role: "STATE COORDINATOR" },
+  };
+  // At any stage, unlike closing, which waits for the lawyer to finish.
+  assert.equal(casePermissions(mine, holder).endCase, true);
+  assert.equal(casePermissions(mine, holder).close, false);
+  assert.equal(casePermissions({ ...mine, status: "SUBMITTED" }, holder).endCase, true);
+
+  // Once it has gone, nothing more happens here.
+  for (const status of ["REFERRED", "TRANSFERRED"]) {
+    const gone = casePermissions({ ...mine, status }, holder);
+    assert.equal(gone.endCase, false, `${status} should offer nothing`);
+    assert.equal(gone.route, false);
+    assert.equal(gone.assign, false);
+  }
+
+  // And it is not a lawyer's to do.
+  const lawyer = { id: "lawyer-1", role: "LACON LAWYER" };
+  assert.equal(casePermissions(mine, lawyer).endCase, false);
+});

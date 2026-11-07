@@ -58,6 +58,14 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
     <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, next_court_date: record.next_court_date, filed_from: filedFrom(record), filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: roleLabel(record.filing_actor?.role), filing_state: displayStateName(record.state_name), zone: record.zone_name, centre: record.center_name, department: roleLabel(record.department_name), current_holder: record.current_holder?.name || "No holder available", holder_role: roleLabel(record.current_holder?.role), assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
     <section className="space-y-3"><h2 className="font-semibold">Client information</h2><Details values={{ gender: record.gender, age: record.age, marital_status: record.marital_status, email: record.email, phone_number: record.phone_number, state_of_origin: record.state_of_origin, permanent_address: record.permanent_address, occupation: record.occupation }} /></section>
     {[record.civil_case, record.criminal_case, record.pdss, record.decongestion_unit, record.perogative_of_mercy].filter(Boolean).map((fields, index) => <section key={index} className="space-y-3"><h2 className="font-semibold">Case details</h2><Details values={fields!} /></section>)}
+    {/* The case left Legal Aid, or left this office (T6). Where it went
+        belongs beside the status, not buried in the history. */}
+    {(record.referred_to || record.transferred_to) && <section className="space-y-3">
+      <h2 className="font-semibold">Where this case went</h2>
+      <div><p className="text-sm text-gray-500">{record.referred_to ? "Referred out of Legal Aid to" : "Transferred to"}</p>
+        <p className="text-sm">{record.referred_to || record.transferred_to}</p></div>
+      <p className="text-sm text-gray-500">No further action is taken here. The reason is in the movement history below.</p>
+    </section>}
     {(record.outcome || record.resolution_report) && <section className="space-y-3"><h2 className="font-semibold">Completion report</h2>
       {record.completed_by && <p className="text-sm text-gray-500">Completed by {record.completed_by.name} · {dateLabel(record.completed_at)}</p>}
       {record.outcome && <div><p className="text-sm text-gray-500">Outcome</p><p className="text-sm">{record.outcome}</p></div>}

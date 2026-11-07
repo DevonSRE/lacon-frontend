@@ -74,9 +74,10 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
   try {
     idSchema.parse(id);
     const request = z.object({
-      action: z.enum(["route", "assign", "escalate", "lawyer-reject", "accept", "reject", "request-revision", "status"]),
+      action: z.enum(["route", "assign", "escalate", "lawyer-reject", "accept", "reject", "request-revision", "status", "refer", "transfer"]),
       target_user_id: z.uuid().optional(), assignee_id: z.uuid().optional(), reason: z.string().trim().optional(),
       status: z.enum(["INPROGRESS", "COMPLETED", "CLOSED"]).optional(),
+      destination: z.string().trim().optional(),
       outcome: z.string().trim().optional(), resolution_report: z.string().trim().optional(),
     }).parse(command);
     const { action, ...body } = request;
@@ -86,6 +87,9 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
     if (action === "route" && !body.target_user_id) return { success: false, status: 400, message: "Choose a recipient." };
     if (action === "assign" && !body.assignee_id) return { success: false, status: 400, message: "Choose a lawyer." };
     if (action === "status" && !body.status) return { success: false, status: 400, message: "Choose a status." };
+    if ((action === "refer" || action === "transfer") && !body.destination) {
+      return { success: false, status: 400, message: action === "refer" ? "Name the organisation the case goes to." : "Name the LACON office the case goes to." };
+    }
     if (body.status === "COMPLETED" && (!body.outcome || !body.resolution_report)) {
       return { success: false, status: 400, message: "An outcome and a resolution report are required to complete a case." };
     }

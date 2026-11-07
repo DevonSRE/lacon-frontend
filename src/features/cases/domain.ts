@@ -2,6 +2,9 @@ export const CASE_STATUS_LABELS: Record<string, string> = {
   SUBMITTED: "Pending review", UNASSIGNED: "Unassigned", ROUTED: "Assigned to department",
   ASSIGNED: "Assigned to lawyer", INPROGRESS: "In progress", REVISION_REQUESTED: "Revision requested",
   RETURNED: "Returned", COMPLETED: "Completed", RESOLVED: "Completed", CLOSED: "Closed", DENIED: "Rejected",
+  // A case that left Legal Aid, or moved to another LACON office. Both end it
+  // here as surely as closing it (T6).
+  REFERRED: "Referred out", TRANSFERRED: "Transferred",
 };
 
 export type Actor = { id: string; name: string; email: string; role: string };
@@ -11,6 +14,9 @@ export type CaseRecord = {
   court_stage?: string; next_court_date?: string; holder_unavailable?: boolean; routing_warning?: string;
   // Written when a lawyer completes the case; both are required to do so.
   outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
+  // Where the case went when it left: the organisation it was referred to, or
+  // the LACON office it was transferred to (T6).
+  referred_to?: string; transferred_to?: string;
   state_id?: string; state_name?: string; zone_name?: string; center_name?: string;
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;
@@ -42,8 +48,10 @@ export type CaseFilters = { page?: number; size?: number; search?: string; state
 /** One person who has filed a case, for the "Filed by" filter (T4). */
 export type CaseFiler = { id: string; name: string; role: string; office: string };
 export type MovementCommand = {
-  action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status";
+  action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status" | "refer" | "transfer";
   target_user_id?: string; assignee_id?: string; reason?: string; status?: string;
+  // Where a referred or transferred case is going (T6).
+  destination?: string;
   // Both are required when status is COMPLETED; the API refuses the move without them.
   outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
 };
@@ -71,7 +79,8 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
   const holder = !!user && ((role === "DIRECTOR GENERAL" && c.holder_unavailable) || !c.current_holder || c.current_holder.id === user.id || c.assignment?.assignor_id === user.id);
   const assigner = HEAD_ROLES.includes(role) || COORDINATOR_ROLES.includes(role);
   const assigned = !!user && c.assignment?.assignee_id === user.id;
-  const open = !["CLOSED", "DENIED"].includes(c.status);
+  // A referred or transferred case is finished here, like a closed one (T6).
+  const open = !["CLOSED", "DENIED", "REFERRED", "TRANSFERRED"].includes(c.status);
   const waitingReview = c.status === "SUBMITTED";
   const reviewRole = !!role && role === reviewerRole(c);
   // The DG may pick up a case nobody holds (no coordinator existed for it): review it or send it on.
@@ -89,6 +98,9 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
     start: assigned && ["ASSIGNED", "REVISION_REQUESTED"].includes(c.status),
     complete: assigned && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
     close: holder && assigner && ["COMPLETED", "RESOLVED"].includes(c.status),
+    // Referring out or transferring is the holder's, at any stage — unlike
+    // closing, which waits for the lawyer to finish (T6).
+    endCase: open && holder && assigner,
     revision: assigner && c.assignment?.assignor_id === user?.id && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED", "COMPLETED", "RESOLVED"].includes(c.status),
     update: assigned && open,
     upload: open && !!user && (assigned || c.current_holder?.id === user.id || c.assignment?.assignor_id === user.id || c.filing_actor?.id === user.id || ["DIRECTOR GENERAL", "PLATFORM ADMIN", "SUPER ADMIN"].includes(role)),
