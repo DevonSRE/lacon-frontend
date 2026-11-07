@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { filedFrom, movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
+import { casePermissions, filedFrom, movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
@@ -232,4 +232,23 @@ test("a case says which office it was filed from", () => {
   assert.equal(filedFrom({ origin_channel: "online" }), "Online");
   // Whitespace is not an office.
   assert.match(filedFrom({ filing_office: "   ", origin_channel: "INTERNAL" }), /Not recorded/);
+});
+
+// T15: a case a coordinator had started work on could be moved by nobody but them.
+test("the Director General can send any open case on", () => {
+  const dg = { id: "dg-1", role: "DIRECTOR GENERAL" };
+  const heldByCoordinator = {
+    id: "c1", case_id: "LACON-1", first_name: "A", last_name: "B",
+    case_type: "CIVIL CASE", status: "INPROGRESS",
+    current_holder: { id: "sc-1", name: "A Coordinator", email: "", role: "STATE COORDINATOR" },
+    assignment: { assignee_id: "lawyer-1", assignor_id: "sc-1" },
+  };
+  assert.equal(casePermissions(heldByCoordinator, dg).route, true);
+  // Still not an assignment: the DG routes, it never assigns a lawyer.
+  assert.equal(casePermissions(heldByCoordinator, dg).assign, false);
+  // A closed case is nobody's to move.
+  assert.equal(casePermissions({ ...heldByCoordinator, status: "CLOSED" }, dg).route, false);
+  // And it is the DG's privilege alone: a head still needs to hold it.
+  const head = { id: "h1", role: "OSCAR UNIT HEAD" };
+  assert.equal(casePermissions(heldByCoordinator, head).route, false);
 });

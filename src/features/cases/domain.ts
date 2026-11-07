@@ -76,8 +76,12 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
   const reviewRole = !!role && role === reviewerRole(c);
   // The DG may pick up a case nobody holds (no coordinator existed for it): review it or send it on.
   const pickup = role === "DIRECTOR GENERAL" && (!c.current_holder || !!c.holder_unavailable);
+  // The DG may also send any open case on, whoever holds it and whatever stage
+  // it has reached (T15). Until now a case a coordinator or head had started
+  // work on could be moved by nobody but them.
+  const reroute = role === "DIRECTOR GENERAL" && open;
   return {
-    route: open && holder && (!waitingReview || pickup) && routeRoles(role).length > 0,
+    route: open && (reroute || (holder && (!waitingReview || pickup))) && routeRoles(role).length > 0,
     assign: open && holder && !waitingReview && assigner,
     escalate: open && holder && !waitingReview && assigner,
     acceptReject: waitingReview && holder && (reviewRole || pickup),
