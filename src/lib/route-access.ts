@@ -32,7 +32,9 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
   ],
   // Statistics reads the directory; every action on the page is hidden for them.
   "/users/all": [ROLES.PLATFORM_ADMIN, ROLES.ADMIN, ROLES.DIRECTOR_GENERAL, ROLES.STATISTICS],
-  "/users/request": [ROLES.ADMIN, ROLES.DIRECTOR_GENERAL],
+  // The request queue is an approval queue, and the Platform Admin works it
+  // too (T2). It used to send them back to Home.
+  "/users/request": [ROLES.ADMIN, ROLES.DIRECTOR_GENERAL, ROLES.PLATFORM_ADMIN],
   // What a field office asked for and what came back. The API already scopes
   // this to the caller's own requests (QA 2026-11-01, item 3).
   "/users/my-requests": [

@@ -201,6 +201,9 @@ export const createLawyerRequestColumns = (
       header: "Action",
       cell: ({ row }) => {
         const user = row.original;
+        // A request is decided once. The server refuses a second decision
+        // (T2); offering the buttons anyway only wastes a click.
+        const pending = (user.Status ?? "").toUpperCase() === "PENDING";
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -212,12 +215,16 @@ export const createLawyerRequestColumns = (
               <DropdownMenuItem onClick={() => onDetails(user)}>
                 Details
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onApprove(user)}>
-                Approve
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onRejeect(user)}>
-                Reject
-              </DropdownMenuItem>
+              {pending && (
+                <>
+                  <DropdownMenuItem onClick={() => onApprove(user)}>
+                    Approve
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => onRejeect(user)}>
+                    Reject
+                  </DropdownMenuItem>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
