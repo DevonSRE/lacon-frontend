@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { displayStateName } from "@/lib/place-names";
+import { roleLabel } from "@/lib/role-labels";
 import { getPendingInvitations, resendInvitation, type PendingInvitation } from "@/features/usersRole/invitation-actions";
 
 /**
@@ -45,7 +46,7 @@ function Row({ row, onResent }: { row: PendingInvitation; onResent: () => void }
         <p className="text-xs text-gray-500">{row.email}</p>
       </td>
       <td className="p-3">
-        <p>{row.user_type}</p>
+        <p>{roleLabel(row.user_type)}</p>
         {row.place && <p className="text-xs text-gray-500">{displayStateName(row.place)}</p>}
       </td>
       <td className="whitespace-nowrap p-3">

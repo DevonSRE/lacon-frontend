@@ -28,6 +28,7 @@ import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { displayStateName } from "@/lib/place-names";
 import { pendingChangeNote, userStatusBadge } from "@/lib/user-status";
+import { roleLabel } from "@/lib/role-labels";
 
 
 // Clickable Row
@@ -100,6 +101,7 @@ export const createLawyersColumns = (
     {
       accessorKey: "user_type",
       header: "Role",
+      cell: ({ row }) => roleLabel(row.original.user_type),
     },
   ];
 
@@ -214,6 +216,7 @@ export const createLawyersManagementColumns = (
     {
       accessorKey: "user_type",
       header: "Role",
+      cell: ({ row }) => roleLabel(row.original.user_type),
     },
     {
       // The list showed no workload at all, so a coordinator could not tell who
