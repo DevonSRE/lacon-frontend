@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { custodyDateMissing } from "@/lib/custody";
 import {
   CAPACITY_OPTIONS,
   COURT_PREFERENCE_OPTIONS,
@@ -30,10 +31,15 @@ const age = z.coerce
   .max(120, { message: "Age must be 120 or less" });
 
 // A Nigerian phone number: 11 digits starting with 0, or +234 and 10 digits.
+// "Enter a valid phone number" did not say what a valid one is, so a paralegal
+// blocked on it had to guess (T19). The rule itself is unchanged, and the
+// server holds every form to the same one.
 export const nigerianPhone = z
   .string()
   .trim()
-  .regex(/^(0\d{10}|\+234\d{10})$/, { message: "Enter a valid phone number" });
+  .regex(/^(0\d{10}|\+234\d{10})$/, {
+    message: "Enter an 11-digit phone number starting with 0, or +234 and 10 digits",
+  });
 
 const filingState = z.string().min(1, { message: "Select the state you are filing from" });
 
@@ -54,7 +60,9 @@ export const publicContactSchema = z.object({
 const optionalPhone = z
   .string()
   .trim()
-  .refine((v) => !v || /^(0\d{10}|\+234\d{10})$/.test(v), { message: "Enter a valid phone number" })
+  .refine((v) => !v || /^(0\d{10}|\+234\d{10})$/.test(v), {
+    message: "Enter an 11-digit phone number starting with 0, or +234 and 10 digits",
+  })
   .optional();
 
 // The public pro bono registration form. The server action sends the same data to the API.
@@ -226,6 +234,19 @@ export const legalAidFormSchema = z.object({
   prosecuting_agency: z
     .string()
     .min(1, { message: "Prosecuting agency is required" }),
+});
+
+/**
+ * The same fields, plus the rule that only applies when the client is held
+ * (T19). The plain object above keeps its `.shape` for the schemas that
+ * spread it; the rule itself lives in `@/lib/custody` so it can be tested
+ * without pulling this file through zod.
+ */
+export const legalAidFormSchemaChecked = legalAidFormSchema.superRefine((data, ctx) => {
+  const missing = custodyDateMissing(data.bail_status, data.date_of_admission);
+  if (missing) {
+    ctx.addIssue({ code: "custom", path: ["date_of_admission"], message: missing });
+  }
 });
 
 export const pdssCaseSchema = z.object({

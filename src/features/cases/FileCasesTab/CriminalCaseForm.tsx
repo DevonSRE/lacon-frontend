@@ -10,7 +10,8 @@ import { Button } from '@/components/ui/button'
 import { stateOptions } from '@/lib/types'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import useSubmitLock from '@/hooks/use-submit-lock'
-import { FormDataCivilCase, legalAidFormSchema, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema'
+import { FormDataCivilCase, legalAidFormSchemaChecked, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema'
+import { CUSTODY_STATUSES, isInCustody } from '@/lib/custody'
 import { CRIMINAL_COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { toast } from 'sonner'
@@ -124,7 +125,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
       if (step === 1) {
         (isPublic ? personalInfoSchema.extend(publicContactSchema.shape) : needsFilingState ? personalInfoSchema.extend(filingStateSchema.shape) : personalInfoSchema).parse(needsFilingState ? { ...formData, state_id: selectedState } : formData);
       } else if (step === 2) {
-        legalAidFormSchema.parse(formData);
+        legalAidFormSchemaChecked.parse(formData);
       }
       setErrors({});
       return true;
@@ -450,17 +451,23 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                   {errors.client_location && <p className="text-red-500 text-xs -mt-4">{errors.client_location}</p>}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <InputField
-                        label="Date of Admission in custody"
-                        type="date"
-                        max={todayISO()}
-                        value={formData.date_of_admission}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_of_admission', e.target.value)}
-                        className={`${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
-                      />
-                      {errors.date_of_admission && <p className="text-red-500 text-xs mt-1">{errors.date_of_admission}</p>}
-                    </div>
+                    {/* Only asked of a client who is actually held: it used to
+                        be on the form for everyone and blocked nobody, so it
+                        read as required and answered nothing (T19). */}
+                    {isInCustody(formData.bail_status) && (
+                      <div>
+                        <InputField
+                          label="Date of Admission in custody"
+                          required
+                          type="date"
+                          max={todayISO()}
+                          value={formData.date_of_admission}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('date_of_admission', e.target.value)}
+                          className={`${errors.date_of_admission ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                        />
+                        {errors.date_of_admission && <p className="text-red-500 text-xs mt-1">{errors.date_of_admission}</p>}
+                      </div>
+                    )}
 
                     <div>
                       <InputField
@@ -517,13 +524,22 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                       className="border-gray-300"
                     />
 
-                    <InputField
-                      label="Bail status, (If this exist, add it)"
-                      type="text"
-                      value={formData.bail_status}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateField('bail_status', e.target.value)}
-                      className="border-gray-300"
-                    />
+                    {/* Asked as a choice so the form knows whether the client
+                        is held, which decides the custody date below (T19). */}
+                    <div>
+                      <label className="block text-sm mb-1" htmlFor="bail_status">Custody status</label>
+                      <select
+                        id="bail_status"
+                        className="w-full rounded border border-gray-300 p-2 h-11"
+                        value={formData.bail_status}
+                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => updateField('bail_status', e.target.value)}
+                      >
+                        <option value="">Not known</option>
+                        {CUSTODY_STATUSES.map(option => (
+                          <option key={option.value} value={option.value}>{option.label}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

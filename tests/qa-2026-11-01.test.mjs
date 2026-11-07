@@ -6,6 +6,7 @@ import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.t
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
 import { roleLabel } from "../src/lib/role-labels.ts";
+import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -200,4 +201,20 @@ test("a role that is not ours is shown as it was stored", () => {
   assert.equal(roleLabel(null), "");
   // The stored form is upper case; a label never replaces it on the way back.
   assert.equal(roleLabel("state coordinator"), "State Coordinator");
+});
+
+// T19: the custody date is asked only of a client who is actually held.
+test("the custody date is required only when the client is in custody", () => {
+  // On bail, or not known: nothing is asked, and nothing blocks Submit.
+  assert.equal(custodyDateMissing("BAILED", ""), undefined);
+  assert.equal(custodyDateMissing("", ""), undefined);
+  assert.equal(custodyDateMissing(undefined, undefined), undefined);
+  // In custody with no date: blocked, and the message says what is wanted.
+  assert.match(custodyDateMissing("UNBAILED", "") ?? "", /admitted into custody/);
+  assert.match(custodyDateMissing("unbailed", "   ") ?? "", /admitted into custody/);
+  // In custody with a date: fine.
+  assert.equal(custodyDateMissing("UNBAILED", "2026-10-01"), undefined);
+  assert.equal(isInCustody("UNBAILED"), true);
+  assert.equal(isInCustody("BAILED"), false);
+  assert.equal(isInCustody(undefined), false);
 });
