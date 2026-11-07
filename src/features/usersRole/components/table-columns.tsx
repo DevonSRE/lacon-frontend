@@ -159,7 +159,7 @@ export const createLawyerRequestColumns = (
     {
       accessorKey: "RequestedByRole",
       header: "Requester Role",
-      cell: ({ row }) => <span>{row.original.RequestedByRole ?? "-"}</span>,
+      cell: ({ row }) => <span>{roleLabel(row.original.RequestedByRole) || "-"}</span>,
     },
     {
       accessorKey: "Date",
