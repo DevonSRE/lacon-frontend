@@ -51,17 +51,19 @@ const navItems: NavItem[] = [
     path: "/users/all",
     // Statistics has one tab here and no actions on it, so a flat entry
     // rather than a sub-menu (T1).
-    roles: ["PLATFORM ADMIN", "STATISTICS"],
+    roles: ["STATISTICS"],
   },
   {
     icon: <Icons.userRole />,
     name: "Users Role",
-    roles: ["ADMIN", "DIRECTOR GENERAL", "DECONGESTION UNIT HEAD"],
+    // The Platform Admin has a Request tab now (T2), so they get the sub-menu
+    // rather than a flat link to All Users.
+    roles: ["ADMIN", "DIRECTOR GENERAL", "DECONGESTION UNIT HEAD", "PLATFORM ADMIN"],
     subItems: [
       {
         name: "All Users",
         path: "/users/all",
-        roles: ["ADMIN", "DIRECTOR GENERAL"],
+        roles: ["ADMIN", "DIRECTOR GENERAL", "PLATFORM ADMIN"],
       },
       {
         name: "Lawyers",

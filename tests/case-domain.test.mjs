@@ -85,13 +85,20 @@ test("the DG can pick up an online case nobody holds", () => {
   assert.equal(casePermissions({ ...unrouted, current_holder: { id: "sc", name: "SC", email: "", role: "STATE COORDINATOR" } }, dg).acceptReject, false);
 });
 
-test("DG can recover an inactive holder but cannot take an active holder's case", () => {
+test("DG can recover a stranded case and reroute any open one", () => {
   const dg = { id: "dg", role: "DIRECTOR GENERAL" };
   const stranded = { ...base, holder_unavailable: true };
   assert.equal(casePermissions(stranded, dg).route, true);
-  assert.equal(casePermissions(base, dg).route, false);
+  // T15: a case an active holder is working on is the DG's to move too. It
+  // used to be movable by nobody but its holder, so one sitting with the
+  // wrong office stayed there.
+  assert.equal(casePermissions(base, dg).route, true);
   assert.equal(casePermissions({ ...stranded, status: "SUBMITTED" }, dg).acceptReject, true);
-  assert.equal(casePermissions({ ...stranded, status: "CLOSED" }, dg).route, false);
+  // A finished case is nobody's to move, however it finished.
+  for (const status of ["CLOSED", "DENIED", "REFERRED", "TRANSFERRED"]) {
+    assert.equal(casePermissions({ ...stranded, status }, dg).route, false, status);
+    assert.equal(casePermissions({ ...base, status }, dg).route, false, status);
+  }
 });
 
 test("only the assigner can request revision after completion, never after closure", () => {

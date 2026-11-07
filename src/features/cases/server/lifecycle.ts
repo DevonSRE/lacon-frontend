@@ -3,8 +3,9 @@
 import { isAxiosError } from "axios";
 import { z } from "zod";
 import { axiosInstance } from "@/lib/_api/axios-config";
+import { toDownload } from "@/features/report/server/to-download";
 import { CASE_UPDATE_TYPES, courtStageLabel } from "@/lib/form-options";
-import { normalizeCase, type CaseRecord, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
+import { normalizeCase, type CaseRecord, type CaseFiler, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
 
 type Result<T> = { success: true; data: T } | { success: false; status: number; message: string };
 type Envelope<T> = { data: T; success?: boolean; message?: string };
@@ -37,6 +38,114 @@ export async function listCases(filters: CaseFilters): Promise<Result<PageResult
   const result = await read<PageResult<CaseRecord>>("/casefile", filters);
   return result.success ? { success: true, data: { ...result.data, data: result.data.data.map(normalizeCase) } } : result;
 }
+/**
+ * The people who have filed a case the caller can see, for the "Filed by"
+ * filter (T4). The API reads them off the cases rather than the user
+ * directory, so it names only people who have actually filed something, and
+ * only within what the caller may already see.
+ */
+export async function getCaseFilers(keyword = ""): Promise<Result<CaseFiler[]>> {
+  const result = await read<CaseFiler[]>("/casefile/filers", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
+ * The case record as a PDF (T7). Anyone who can open the case can take a copy;
+ * the API refuses it otherwise and records who took it, because the record
+ * carries the client's details.
+ *
+ * 'arraybuffer' is required: in a server action the default response type
+ * decodes the bytes as UTF-8 text and corrupts the file.
+ */
+export async function downloadCase(id: string): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  if (!idSchema.safeParse(id).success) return { success: false, message: "Invalid case reference." };
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>(`/casefile/${id}/pdf`, { responseType: "arraybuffer" });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "case.pdf",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    const failed = failure(error);
+    return { success: false, message: failed.message };
+  }
+}
+
+/**
+ * The stamped copy the client keeps and shows in court (T8).
+ *
+ * It is not the case record: it says an application was received and nothing
+ * about what LACON has done with it since. The API decides who may print one.
+ */
+export async function downloadAcknowledgement(id: string): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  if (!idSchema.safeParse(id).success) return { success: false, message: "Invalid case reference." };
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>(`/casefile/${id}/acknowledgement`, { responseType: "arraybuffer" });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "acknowledgement.pdf",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    return { success: false, message: failure(error).message };
+  }
+}
+
+/**
+ * Everyone who has had a hand in the cases the caller can see (T3).
+ *
+ * "Filed by" names only whoever entered the case (T4), which is not the
+ * question Statistics asks: a case passes through a holder, an assigner and a
+ * lawyer, and the officer whose workload is being counted is often none of
+ * them at filing.
+ */
+export async function getPeopleOnCases(keyword = ""): Promise<Result<CaseFiler[]>> {
+  const result = await read<CaseFiler[] | null>("/casefile/people", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
+ * The offences recorded on the cases the caller can see (T3).
+ *
+ * The options come from the cases, not from a fixed list: the offence list
+ * LACON agreed is not loaded yet, and a filter whose options do not match the
+ * data finds nothing and tells the reader nothing.
+ */
+export async function getOffences(keyword = ""): Promise<Result<Array<{ offence: string; count: number }>>> {
+  const result = await read<Array<{ offence: string; count: number }> | null>("/casefile/offences", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
+ * The case list as a spreadsheet (T17).
+ *
+ * The API answers the same filters the list was read with and scopes it the
+ * same way, so the export is a copy of what is on screen rather than a second,
+ * wider question.
+ */
+export async function exportCases(filters: CaseFilters): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>("/casefile/export", {
+      params: filters,
+      responseType: "arraybuffer",
+    });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "LACON-cases.xlsx",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    return { success: false, message: failure(error).message };
+  }
+}
+
 export async function getCase(id: string): Promise<Result<CaseRecord>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   const result = await read<CaseRecord>(`/casefile/${id}`);
@@ -63,9 +172,10 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
   try {
     idSchema.parse(id);
     const request = z.object({
-      action: z.enum(["route", "assign", "escalate", "lawyer-reject", "accept", "reject", "request-revision", "status"]),
+      action: z.enum(["route", "assign", "escalate", "lawyer-reject", "accept", "reject", "request-revision", "status", "refer", "transfer"]),
       target_user_id: z.uuid().optional(), assignee_id: z.uuid().optional(), reason: z.string().trim().optional(),
       status: z.enum(["INPROGRESS", "COMPLETED", "CLOSED"]).optional(),
+      destination: z.string().trim().optional(),
       outcome: z.string().trim().optional(), resolution_report: z.string().trim().optional(),
     }).parse(command);
     const { action, ...body } = request;
@@ -75,6 +185,9 @@ export async function moveCase(id: string, command: MovementCommand): Promise<Re
     if (action === "route" && !body.target_user_id) return { success: false, status: 400, message: "Choose a recipient." };
     if (action === "assign" && !body.assignee_id) return { success: false, status: 400, message: "Choose a lawyer." };
     if (action === "status" && !body.status) return { success: false, status: 400, message: "Choose a status." };
+    if ((action === "refer" || action === "transfer") && !body.destination) {
+      return { success: false, status: 400, message: action === "refer" ? "Name the organisation the case goes to." : "Name the LACON office the case goes to." };
+    }
     if (body.status === "COMPLETED" && (!body.outcome || !body.resolution_report)) {
       return { success: false, status: 400, message: "An outcome and a resolution report are required to complete a case." };
     }

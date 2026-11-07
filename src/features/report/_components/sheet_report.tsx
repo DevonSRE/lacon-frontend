@@ -16,22 +16,56 @@ import DecongestionUnitReport from './DecongestionUnitReport';
 import PDSSReport from './PDSSReport';
 import { Button } from '@/components/ui/button';
 import { Download } from 'lucide-react';
-import { ExportAdminOverview, ExportCaseType } from '../server/reportAction';
+import { ExportAdminLawyer, ExportAdminOverview, ExportAdminUnit, ExportCaseType, ExportDemography } from '../server/reportAction';
+import { Ipage } from '@/lib/constants';
+import { NATIONAL_READERS } from '../readers';
+import ManagementReportTab from './ManagementReport';
 import { useAction } from '@/context/ActionContext';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/hooks/redux';
 import { ROLES } from '@/types/auth';
 
+/**
+ * Which export answers each tab (T11, criterion 3).
+ *
+ * The unit tabs share one endpoint, told apart by the unit they name; the rest
+ * have their own. Anything unaccounted for falls back to the overview, which is
+ * the whole report rather than nothing.
+ */
+const UNIT_EXPORTS: Record<string, string> = {
+    'All Units': '',
+    'PDSS': 'pdss unit',
+    'Oscar unit': 'oscar unit',
+    'perogative of mercy': 'perogative of mercy unit',
+    'Decongestion unit': 'decongestion unit',
+    'DIO': 'dio unit',
+};
+
+async function exportFor(tab: string, filters: Ipage) {
+    if (tab === 'Case Types') return ExportCaseType(filters);
+    if (tab === 'Lawyers') return ExportAdminLawyer(filters);
+    if (tab === 'Demographics') return ExportDemography(filters);
+    if (tab === 'Unit' || tab in UNIT_EXPORTS) {
+        const unit = UNIT_EXPORTS[tab] ?? '';
+        return ExportAdminUnit(unit ? { ...filters, unit } : filters);
+    }
+    return ExportAdminOverview(filters);
+}
+
 export default function SheetReport() {
-    const [activeTab, setActiveTab] = useState('Overview');
+    const [activeTab, setActiveTab] = useState('Management');
     const [isDownloading, setIsDownloading] = useState(false);
     const { selectedZoneId, selectedStateId, selectedDuration, selectedCentreId } = useAction();
     const { data: user } = useAppSelector((state) => state.profile);
-    // The export API only allows these two roles; everyone else gets 401.
-    const canExport = user?.role === ROLES.DIRECTOR_GENERAL || user?.role === ROLES.PLATFORM_ADMIN;
+    // Who the export API answers: the same readers as the report itself. It was
+    // narrowed to two roles here, so Statistics — who may read the whole
+    // country — was shown a page it could not take a copy of (T11).
+    const canExport = NATIONAL_READERS.includes(user?.role ?? "");
 
     const renderTabContent = () => {
         switch (activeTab) {
+            case 'Management':
+                return <ManagementReportTab />;
             case 'Overview':
                 return <Overview />;
             case 'Case Types':
@@ -69,9 +103,10 @@ export default function SheetReport() {
                 duration: selectedDuration,
                 center: selectedCentreId,
             };
-            const result = activeTab === 'Case Types'
-                ? await ExportCaseType(filters)
-                : await ExportAdminOverview(filters);
+            // Every tab exports what it shows (T11). Export Report used to appear
+            // on Overview and Case Types alone, so nine tabs could be read and
+            // not taken away.
+            const result = await exportFor(activeTab, filters);
             if (
                 result.success &&
                 typeof result.data === 'string' &&
@@ -113,9 +148,10 @@ export default function SheetReport() {
     return (
         <>
             <div className="flex justify-between items-center ">
-                <h1 className="text-2xl font-bold text-gray-900">Report</h1>
+                {/* The Management tab carries its own title, period and area (T11). */}
+                <h1 className="text-2xl font-bold text-gray-900">{activeTab === 'Management' ? '' : 'Report'}</h1>
                 <div className="flex gap-3">
-                    {canExport && (activeTab === 'Overview' || activeTab === 'Case Types') && (
+                    {canExport && activeTab !== 'Management' && (
 
                     <Button
                         onClick={downloadOverviewReportWithServerAction}

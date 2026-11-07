@@ -103,6 +103,10 @@ export interface ILawyerManagement {
   probono_decision?: string;
   // Cases the lawyer is working on now, counted live from the cases.
   open_cases?: number;
+  // Work the lawyer finished: cases they were assigned that reached Completed
+  // or Closed (T9). A referred or transferred case left LACON's hands rather
+  // than being finished, so it is not counted here.
+  completed_cases?: number;
   // A change the Director General has not decided yet: DEACTIVATE or REACTIVATE.
   pending_change?: string;
   id: string;

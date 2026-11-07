@@ -2,6 +2,9 @@ export const CASE_STATUS_LABELS: Record<string, string> = {
   SUBMITTED: "Pending review", UNASSIGNED: "Unassigned", ROUTED: "Assigned to department",
   ASSIGNED: "Assigned to lawyer", INPROGRESS: "In progress", REVISION_REQUESTED: "Revision requested",
   RETURNED: "Returned", COMPLETED: "Completed", RESOLVED: "Completed", CLOSED: "Closed", DENIED: "Rejected",
+  // A case that left Legal Aid, or moved to another LACON office. Both end it
+  // here as surely as closing it (T6).
+  REFERRED: "Referred out", TRANSFERRED: "Transferred",
 };
 
 export type Actor = { id: string; name: string; email: string; role: string };
@@ -11,13 +14,28 @@ export type CaseRecord = {
   court_stage?: string; next_court_date?: string; holder_unavailable?: boolean; routing_warning?: string;
   // Written when a lawyer completes the case; both are required to do so.
   outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
+  // Where the case went when it left: the organisation it was referred to, or
+  // the LACON office it was transferred to (T6).
+  referred_to?: string; transferred_to?: string;
   state_id?: string; state_name?: string; zone_name?: string; center_name?: string;
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;
   department_name?: string; origin_channel?: string; filed_level?: string;
+  // Where the case was filed from, in words: "Lagos State Office", "Ikeja
+  // centre", "Online · Lagos". Empty on cases filed before it was recorded.
+  filing_office?: string;
   filing_actor?: Actor | null; current_holder?: Actor | null; assigned_by?: string; forwarded_by?: string;
   assignment?: { assignee_id?: string; assignor_id?: string; assignee?: string; assignor?: string; assign_date?: string } | null;
   possible_duplicate_of?: string[];
+  // Why the filer went ahead although this client already had a case (T10).
+  // Read beside the duplicate flag, which is the only place it is of use.
+  duplicate_reason?: string;
+  // What each flagged pair shares, in the Duplicates view (T5).
+  duplicate_links?: Array<{ reference: string; shared_on: string[] }>;
+  // Where the case came from and who brought it (T17). Empty on cases filed
+  // before it was asked, which read as "not recorded".
+  case_source?: string; case_source_label?: string; brought_by?: string;
+  facility_name?: string; visit_date?: string;
   civil_case?: Record<string, unknown>; criminal_case?: Record<string, unknown>; pdss?: Record<string, unknown>;
   decongestion_unit?: Record<string, unknown>; perogative_of_mercy?: Record<string, unknown>;
   updated_by?: Array<Actor & { time?: string; action: string }>;
@@ -35,10 +53,18 @@ export type DirectoryUser = {
 };
 export type CaseDocument = { id: string; document_title: string; document_type: string; document_url?: string; document_path?: string; created_at?: string; created_by?: Actor | null };
 export type PageResult<T> = { data: T[]; total_rows: number; total_pages: number; page: number; size: number };
-export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string };
+export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string; filed_by?: string; /** The Duplicates view, and the date range it is filtered by (T5). */ duplicates?: boolean; from?: string; to?: string;
+  /** Where the case came from (T17). */ case_source?: string;
+  /** The Statistics filters (T3): offence, age bracket, sex, and anyone who
+   * had a hand in the case. */
+  offence?: string; age_min?: number; age_max?: number; sex?: string; worked_on?: string };
+/** One person who has filed a case, for the "Filed by" filter (T4). */
+export type CaseFiler = { id: string; name: string; role: string; office: string };
 export type MovementCommand = {
-  action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status";
+  action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status" | "refer" | "transfer";
   target_user_id?: string; assignee_id?: string; reason?: string; status?: string;
+  // Where a referred or transferred case is going (T6).
+  destination?: string;
   // Both are required when status is COMPLETED; the API refuses the move without them.
   outcome?: string; resolution_report?: string; completed_by?: Actor; completed_at?: string;
 };
@@ -53,26 +79,43 @@ export function routeRoles(role: string): string[] {
 }
 const FCT_NAMES = ["FCT", "FEDERAL CAPITAL TERRITORY", "ABUJA"];
 const FCT_HEADS: Record<string, string> = { "CIVIL CASE": "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL CASE": "CRIMINAL JUSTICE DEPT. HEAD" };
-/** Who accepts or rejects an online case (the backend's policy.CanAcceptReject). The FCT has no State
- * Coordinator: its civil and criminal cases are reviewed by the HQ Civil and Criminal Justice heads. */
+/**
+ * Who accepts or rejects an online case (the backend's policy.CanAcceptReject).
+ * The FCT office works like a state office since 6 Nov 2026, so its civil and
+ * criminal cases are reviewed by the FCT State Coordinator like any other
+ * state's (T12).
+ */
 export function reviewerRole(c: Pick<CaseRecord, "case_type" | "state_name">): string | undefined {
-  if (FCT_NAMES.includes((c.state_name ?? "").trim().toUpperCase()) && FCT_HEADS[c.case_type]) return FCT_HEADS[c.case_type];
   if (c.case_type === "PDSS ORGANIZATION") return "PDSS UNIT HEAD";
   if (["CIVIL CASE", "CRIMINAL CASE"].includes(c.case_type)) return "STATE COORDINATOR";
   return undefined;
+}
+/**
+ * An HQ justice head still holding an FCT case from before that change may
+ * decide it too: those cases stay where they were sent, and a case nobody can
+ * decide is a case nobody can close. Holding it is checked separately, which is
+ * what keeps this from widening to every FCT case.
+ */
+export function standsInForFCT(c: Pick<CaseRecord, "case_type" | "state_name">, role: string): boolean {
+  return FCT_NAMES.includes((c.state_name ?? "").trim().toUpperCase()) && FCT_HEADS[c.case_type] === role;
 }
 export function casePermissions(c: CaseRecord, user: { id: string; role: string } | undefined) {
   const role = user?.role ?? "";
   const holder = !!user && ((role === "DIRECTOR GENERAL" && c.holder_unavailable) || !c.current_holder || c.current_holder.id === user.id || c.assignment?.assignor_id === user.id);
   const assigner = HEAD_ROLES.includes(role) || COORDINATOR_ROLES.includes(role);
   const assigned = !!user && c.assignment?.assignee_id === user.id;
-  const open = !["CLOSED", "DENIED"].includes(c.status);
+  // A referred or transferred case is finished here, like a closed one (T6).
+  const open = !["CLOSED", "DENIED", "REFERRED", "TRANSFERRED"].includes(c.status);
   const waitingReview = c.status === "SUBMITTED";
-  const reviewRole = !!role && role === reviewerRole(c);
+  const reviewRole = !!role && (role === reviewerRole(c) || standsInForFCT(c, role));
   // The DG may pick up a case nobody holds (no coordinator existed for it): review it or send it on.
   const pickup = role === "DIRECTOR GENERAL" && (!c.current_holder || !!c.holder_unavailable);
+  // The DG may also send any open case on, whoever holds it and whatever stage
+  // it has reached (T15). Until now a case a coordinator or head had started
+  // work on could be moved by nobody but them.
+  const reroute = role === "DIRECTOR GENERAL" && open;
   return {
-    route: open && holder && (!waitingReview || pickup) && routeRoles(role).length > 0,
+    route: open && (reroute || (holder && (!waitingReview || pickup))) && routeRoles(role).length > 0,
     assign: open && holder && !waitingReview && assigner,
     escalate: open && holder && !waitingReview && assigner,
     acceptReject: waitingReview && holder && (reviewRole || pickup),
@@ -80,11 +123,31 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
     start: assigned && ["ASSIGNED", "REVISION_REQUESTED"].includes(c.status),
     complete: assigned && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
     close: holder && assigner && ["COMPLETED", "RESOLVED"].includes(c.status),
+    // Referring out or transferring is the holder's, at any stage — unlike
+    // closing, which waits for the lawyer to finish (T6).
+    endCase: open && holder && assigner,
     revision: assigner && c.assignment?.assignor_id === user?.id && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED", "COMPLETED", "RESOLVED"].includes(c.status),
     update: assigned && open,
     upload: open && !!user && (assigned || c.current_holder?.id === user.id || c.assignment?.assignor_id === user.id || c.filing_actor?.id === user.id || ["DIRECTOR GENERAL", "PLATFORM ADMIN", "SUPER ADMIN"].includes(role)),
   };
 }
+/**
+ * Where a case was filed from, for a reader.
+ *
+ * The screens printed the channel beside the level code — "INTERNAL · HQ" — so
+ * a case filed by a Lagos state paralegal read as Headquarters (T20). The API
+ * records the office at filing time; this is only the fallback for cases filed
+ * before it did, which say so rather than guess.
+ */
+export function filedFrom(c: Pick<CaseRecord, "filing_office" | "origin_channel" | "state_name">): string {
+  const office = (c.filing_office ?? "").trim();
+  if (office) return office;
+  if ((c.origin_channel ?? "").toUpperCase() === "ONLINE") {
+    return c.state_name ? `Online · ${c.state_name}` : "Online";
+  }
+  return "Not recorded (filed before this was kept)";
+}
+
 export function caseReference(c: { id: string; case_id?: string }) { return c.case_id || c.id; }
 export function statusLabel(status: string) { return CASE_STATUS_LABELS[status] ?? status; }
 

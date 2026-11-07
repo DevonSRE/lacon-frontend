@@ -5,9 +5,11 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
-import { caseReference, movementReason, normalizeCase, recordedUpdate, statusLabel, type CaseRecord } from "../domain";
+import DownloadCase from "./DownloadCase";
+import { caseReference, filedFrom, movementReason, normalizeCase, recordedUpdate, statusLabel, type CaseRecord } from "../domain";
 import { displayStateName } from "@/lib/place-names";
 import { roleLabel } from "@/lib/role-labels";
+import { caseSourceLabel } from "@/lib/case-source";
 import { getCase, getCaseHistory, getCaseDocuments } from "../server/lifecycle";
 import CaseActions from "./CaseActions";
 import { CIVIL_COURT_STAGE_OPTIONS, CRIMINAL_COURT_STAGE_OPTIONS } from "@/lib/form-options";
@@ -50,14 +52,29 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
   const filedAt = record.created_at ?? record.filed_date ?? (firstHistory.data?.success ? firstHistory.data.data.data.find(m => m.action === "FILE")?.created_at : undefined);
   const revision = revisionHistory.data?.success ? revisionHistory.data.data.data.filter(m => m.action === "REVISION").at(-1) : undefined;
   return <div className="space-y-7 py-4">
-    <div className="space-y-2"><h1 className="break-words text-xl font-semibold">{caseReference(record)}</h1><p>{record.first_name} {record.middle_name} {record.last_name} · {record.case_type}</p><span className="inline-block rounded bg-gray-100 px-3 py-1 text-sm">{statusLabel(record.status)}</span><p className="text-sm text-gray-500">Filed: {dateLabel(filedAt)}</p></div>
-    {!!record.possible_duplicate_of?.length && <div className="rounded border border-amber-300 bg-amber-50 p-4"><h2 className="font-semibold">Possible duplicate</h2><p className="text-sm">These cases share an email or phone number within the last 30 days. Check them before proceeding.</p><div className="mt-2 flex flex-wrap gap-3">{record.possible_duplicate_of.map(ref => <Link key={ref} className="text-sm underline" href={`/cases?search=${encodeURIComponent(ref)}`}>{ref}</Link>)}</div></div>}
+    <div className="space-y-2"><h1 className="break-words text-xl font-semibold">{caseReference(record)}</h1><p>{record.first_name} {record.middle_name} {record.last_name} · {record.case_type}</p><span className="inline-block rounded bg-gray-100 px-3 py-1 text-sm">{statusLabel(record.status)}</span><p className="text-sm text-gray-500">Filed: {dateLabel(filedAt)}</p>
+      {/* Anyone who can open the case can take a copy of the record (T7); the
+          client's stamped receipt is a different document (T8), and the API
+          refuses it to anyone who should not hand one over. */}
+      <div className="flex flex-wrap gap-2 pt-1">
+        <DownloadCase caseId={id} reference={caseReference(record)} />
+        <DownloadCase caseId={id} reference={caseReference(record)} copy="acknowledgement" />
+      </div></div>
+    {!!record.possible_duplicate_of?.length && <div className="rounded border border-amber-300 bg-amber-50 p-4"><h2 className="font-semibold">Possible duplicate</h2><p className="text-sm">These cases share an email or phone number within the last 30 days. Check them before proceeding.</p>{record.duplicate_reason && <p className="mt-2 text-sm"><span className="font-medium">Filed anyway because:</span> {record.duplicate_reason}</p>}<div className="mt-2 flex flex-wrap gap-3">{record.possible_duplicate_of.map(ref => <Link key={ref} className="text-sm underline" href={`/cases?search=${encodeURIComponent(ref)}`}>{ref}</Link>)}</div></div>}
     {record.status === "REVISION_REQUESTED" && <div className="rounded bg-amber-50 p-4"><h2 className="font-semibold">Revision requested</h2><p>{revision?.reason || "Review the case history for the assigner’s reason. Add a progress update after making the correction."}</p></div>}
     {record.routing_warning && <div role="status" className="rounded border border-amber-300 bg-amber-50 p-4 text-sm">{record.routing_warning}</div>}
     <CaseActions caseRecord={record} />
-    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, next_court_date: record.next_court_date, origin: record.origin_channel, filed_level: record.filed_level, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: roleLabel(record.filing_actor?.role), filing_state: displayStateName(record.state_name), zone: record.zone_name, centre: record.center_name, department: roleLabel(record.department_name), current_holder: record.current_holder?.name || "No holder available", holder_role: roleLabel(record.current_holder?.role), assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
+    <section className="space-y-3"><h2 className="font-semibold">Filing and assignment</h2><Details values={{ court_stage: record.court_stage, next_court_date: record.next_court_date, filed_from: filedFrom(record), case_source: caseSourceLabel(record.case_source), brought_by: record.brought_by, facility_visited: record.facility_name, visit_date: record.visit_date, filing_actor: record.filing_actor?.name ?? record.forwarded_by, filing_role: roleLabel(record.filing_actor?.role), filing_state: displayStateName(record.state_name), zone: record.zone_name, centre: record.center_name, department: roleLabel(record.department_name), current_holder: record.current_holder?.name || "No holder available", holder_role: roleLabel(record.current_holder?.role), assigned_by: record.assigned_by || record.assignment?.assignor, assigned_lawyer: record.assignment?.assignee, assigned_on: record.assignment?.assign_date }} /></section>
     <section className="space-y-3"><h2 className="font-semibold">Client information</h2><Details values={{ gender: record.gender, age: record.age, marital_status: record.marital_status, email: record.email, phone_number: record.phone_number, state_of_origin: record.state_of_origin, permanent_address: record.permanent_address, occupation: record.occupation }} /></section>
     {[record.civil_case, record.criminal_case, record.pdss, record.decongestion_unit, record.perogative_of_mercy].filter(Boolean).map((fields, index) => <section key={index} className="space-y-3"><h2 className="font-semibold">Case details</h2><Details values={fields!} /></section>)}
+    {/* The case left Legal Aid, or left this office (T6). Where it went
+        belongs beside the status, not buried in the history. */}
+    {(record.referred_to || record.transferred_to) && <section className="space-y-3">
+      <h2 className="font-semibold">Where this case went</h2>
+      <div><p className="text-sm text-gray-500">{record.referred_to ? "Referred out of Legal Aid to" : "Transferred to"}</p>
+        <p className="text-sm">{record.referred_to || record.transferred_to}</p></div>
+      <p className="text-sm text-gray-500">No further action is taken here. The reason is in the movement history below.</p>
+    </section>}
     {(record.outcome || record.resolution_report) && <section className="space-y-3"><h2 className="font-semibold">Completion report</h2>
       {record.completed_by && <p className="text-sm text-gray-500">Completed by {record.completed_by.name} · {dateLabel(record.completed_at)}</p>}
       {record.outcome && <div><p className="text-sm text-gray-500">Outcome</p><p className="text-sm">{record.outcome}</p></div>}

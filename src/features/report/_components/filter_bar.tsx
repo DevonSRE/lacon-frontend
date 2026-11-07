@@ -13,7 +13,8 @@ type StateOption = { id: string; title: string };
 type ZoneOption = StateOption & { states?: StateOption[] };
 
 export default function FilterBar({ activeTab, setActiveTab }: { activeTab: string, setActiveTab: (tab: string) => void }) {
-    const tabs = ["Overview", "Case Types", "Lawyers", "Demographics"];
+    // Management first: it is the report, and the rest are the workings (T11).
+    const tabs = ["Management", "Overview", "Case Types", "Lawyers", "Demographics"];
     const { data, isLoading: loading } = useQuery({
         queryKey: ["zones"],
         queryFn: async () => {
@@ -193,12 +194,16 @@ export default function FilterBar({ activeTab, setActiveTab }: { activeTab: stri
                         <SelectValue placeholder="Units" />
                     </SelectTrigger>
                     <SelectContent className="border-2 p-2 space-y-2 border-black text-xs">
-                        <SelectItem value="All Units">All Units</SelectItem>
-                        <SelectItem value="PDSS">PDSS</SelectItem>
-                        <SelectItem value="Oscar unit">Oscar unit</SelectItem>
-                        <SelectItem value="perogative of mercy">Prerogative of mercy</SelectItem>
+                        {/* The official names: DIO and Prerogative of Mercy are
+                            departments, Decongestion is a unit (T11, criterion 4;
+                            LACON's answer to QA 2026-11-01 item 22). The values
+                            are what the API matches on and do not change. */}
+                        <SelectItem value="All Units">All departments and units</SelectItem>
+                        <SelectItem value="PDSS">PDSS Unit</SelectItem>
+                        <SelectItem value="Oscar unit">OSCAR Unit</SelectItem>
+                        <SelectItem value="perogative of mercy">Prerogative of Mercy Department</SelectItem>
                         <SelectItem value="Decongestion unit">Decongestion Unit</SelectItem>
-                        <SelectItem value="DIO">DIO</SelectItem>
+                        <SelectItem value="DIO">DIO Department</SelectItem>
                     </SelectContent>
                 </Select>
             </div>

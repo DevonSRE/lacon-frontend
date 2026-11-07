@@ -16,6 +16,10 @@ import { submitPublicCaseForm } from '../../probunoLawyers/server/action'
 import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import useSubmitLock from '@/hooks/use-submit-lock'
+import useDuplicateGuard from '@/hooks/use-duplicate-guard'
+import CaseSourceFields from './CaseSourceFields'
+import { caseSourceProblem } from '@/lib/case-source'
+import DuplicateWarningDialog from '@/features/cases/_components/DuplicateWarningDialog'
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants'
 import { GetState } from '@/components/get-state'
@@ -36,6 +40,21 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     const router = useRouter();
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const acquireSubmit = useSubmitLock(state);
+    // Where this case came from and who brought it (T17). Held apart from the
+    // client details because only an internal filing is asked: a public one has
+    // nobody at a desk to ask, and the API sets it itself.
+    const [caseSource, setCaseSource] = useState({ case_source: '', brought_by: '', facility_name: '', visit_date: '' });
+    const updateCaseSource = (field: string, value: string) => {
+        setCaseSource(prev => ({ ...prev, [field]: value }));
+        setErrors(prev => ({ ...prev, [field]: '' }));
+    };
+    // The duplicate check stands between the form and the filing (T10): it
+    // submits straight through when the client has no earlier case, and
+    // otherwise holds this filing until the filer answers the warning.
+    const duplicates = useDuplicateGuard(data => {
+        if (!acquireSubmit()) return;
+        startTransition(() => formAction(data));
+    });
     const { selectedStateId, setIsOpen } = useAction();
     const [open, setOpen] = useState(false);
     const [selectedState, setSelectedState] = useState<string>("");
@@ -122,6 +141,15 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
             } else if (step === 2) {
                 pdssCaseSchema.parse(formData);
             }
+            // The API checks the same rules; asking here means the filer is told
+            // before the case is sent rather than after (T17).
+            if (step === 1 && !isPublic) {
+                const sourceErrors = caseSourceProblem(caseSource);
+                if (Object.keys(sourceErrors).length > 0) {
+                    setErrors(sourceErrors as Record<string, string>);
+                    return false;
+                }
+            }
             setErrors({});
             return true;
         } catch (error: unknown) {
@@ -184,8 +212,10 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                         fd.append(key, String(v));
                     }
                 });
-                if (!acquireSubmit()) return;
-                startTransition(() => formAction(fd));
+                if (!isPublic) {
+                    Object.entries(caseSource).forEach(([key, value]) => { if (value) fd.append(key, value); });
+                }
+                void duplicates.guard(fd, { enabled: !isPublic });
             }
         }
     };
@@ -204,6 +234,12 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
     }
     return (
         <>
+            <DuplicateWarningDialog
+                open={duplicates.open}
+                matches={duplicates.matches}
+                onCancel={duplicates.cancel}
+                onContinue={duplicates.continueAnyway}
+            />
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
@@ -441,6 +477,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                     /> */}
                                 </div>
                                 
+                                {!isPublic && <CaseSourceFields values={caseSource} errors={errors} onChange={updateCaseSource} />}
                             </div>
                         )}
 
@@ -572,8 +609,8 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                                 Back
                             </Button>
                         )}
-                        <Button type="submit" disabled={isPending} className="h-11  w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
-                            {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
+                        <Button type="submit" disabled={isPending || duplicates.checking} className="h-11  w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
+                            {duplicates.checking ? 'Checking...' : isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
                         </Button>
                     </div>
 

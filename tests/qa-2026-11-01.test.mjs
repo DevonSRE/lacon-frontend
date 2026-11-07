@@ -1,11 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
+import { casePermissions, filedFrom, movementReason, recordedUpdate, reviewerRole, standsInForFCT, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
 import { roleLabel } from "../src/lib/role-labels.ts";
+import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
+import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
+import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
+import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
+import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -200,4 +205,296 @@ test("a role that is not ours is shown as it was stored", () => {
   assert.equal(roleLabel(null), "");
   // The stored form is upper case; a label never replaces it on the way back.
   assert.equal(roleLabel("state coordinator"), "State Coordinator");
+});
+
+// T19: the custody date is asked only of a client who is actually held.
+test("the custody date is required only when the client is in custody", () => {
+  // On bail, or not known: nothing is asked, and nothing blocks Submit.
+  assert.equal(custodyDateMissing("BAILED", ""), undefined);
+  assert.equal(custodyDateMissing("", ""), undefined);
+  assert.equal(custodyDateMissing(undefined, undefined), undefined);
+  // In custody with no date: blocked, and the message says what is wanted.
+  assert.match(custodyDateMissing("UNBAILED", "") ?? "", /admitted into custody/);
+  assert.match(custodyDateMissing("unbailed", "   ") ?? "", /admitted into custody/);
+  // In custody with a date: fine.
+  assert.equal(custodyDateMissing("UNBAILED", "2026-10-01"), undefined);
+  assert.equal(isInCustody("UNBAILED"), true);
+  assert.equal(isInCustody("BAILED"), false);
+  assert.equal(isInCustody(undefined), false);
+});
+
+// T20: a case filed by a Lagos state paralegal read as "INTERNAL · HQ".
+test("a case says which office it was filed from", () => {
+  assert.equal(filedFrom({ filing_office: "Lagos State Office" }), "Lagos State Office");
+  assert.equal(filedFrom({ filing_office: "Ikeja centre" }), "Ikeja centre");
+  assert.equal(filedFrom({ filing_office: "Online · Lagos" }), "Online · Lagos");
+  // Filed before the office was recorded: say so rather than guess.
+  assert.match(filedFrom({ filing_office: "", origin_channel: "INTERNAL" }), /Not recorded/);
+  assert.match(filedFrom({}), /Not recorded/);
+  // An older online case can still be named from what it does carry.
+  assert.equal(filedFrom({ origin_channel: "ONLINE", state_name: "Kano" }), "Online · Kano");
+  assert.equal(filedFrom({ origin_channel: "online" }), "Online");
+  // Whitespace is not an office.
+  assert.match(filedFrom({ filing_office: "   ", origin_channel: "INTERNAL" }), /Not recorded/);
+});
+
+// T15: a case a coordinator had started work on could be moved by nobody but them.
+test("the Director General can send any open case on", () => {
+  const dg = { id: "dg-1", role: "DIRECTOR GENERAL" };
+  const heldByCoordinator = {
+    id: "c1", case_id: "LACON-1", first_name: "A", last_name: "B",
+    case_type: "CIVIL CASE", status: "INPROGRESS",
+    current_holder: { id: "sc-1", name: "A Coordinator", email: "", role: "STATE COORDINATOR" },
+    assignment: { assignee_id: "lawyer-1", assignor_id: "sc-1" },
+  };
+  assert.equal(casePermissions(heldByCoordinator, dg).route, true);
+  // Still not an assignment: the DG routes, it never assigns a lawyer.
+  assert.equal(casePermissions(heldByCoordinator, dg).assign, false);
+  // A closed case is nobody's to move.
+  assert.equal(casePermissions({ ...heldByCoordinator, status: "CLOSED" }, dg).route, false);
+  // And it is the DG's privilege alone: a head still needs to hold it.
+  const head = { id: "h1", role: "OSCAR UNIT HEAD" };
+  assert.equal(casePermissions(heldByCoordinator, head).route, false);
+});
+
+// T6: a case that left Legal Aid, or moved to another LACON office, had no
+// status to say so, so it stayed open for ever.
+test("a referred or transferred case is finished here", () => {
+  assert.equal(statusLabel("REFERRED"), "Referred out");
+  assert.equal(statusLabel("TRANSFERRED"), "Transferred");
+
+  const holder = { id: "sc-1", role: "STATE COORDINATOR" };
+  const mine = {
+    id: "c1", case_id: "LACON-1", first_name: "A", last_name: "B",
+    case_type: "CIVIL CASE", status: "INPROGRESS",
+    current_holder: { id: "sc-1", name: "A Coordinator", email: "", role: "STATE COORDINATOR" },
+  };
+  // At any stage, unlike closing, which waits for the lawyer to finish.
+  assert.equal(casePermissions(mine, holder).endCase, true);
+  assert.equal(casePermissions(mine, holder).close, false);
+  assert.equal(casePermissions({ ...mine, status: "SUBMITTED" }, holder).endCase, true);
+
+  // Once it has gone, nothing more happens here.
+  for (const status of ["REFERRED", "TRANSFERRED"]) {
+    const gone = casePermissions({ ...mine, status }, holder);
+    assert.equal(gone.endCase, false, `${status} should offer nothing`);
+    assert.equal(gone.route, false);
+    assert.equal(gone.assign, false);
+  }
+
+  // And it is not a lawyer's to do.
+  const lawyer = { id: "lawyer-1", role: "LACON LAWYER" };
+  assert.equal(casePermissions(mine, lawyer).endCase, false);
+});
+
+// T10: the same client filed twice. The warning has to show the filer the
+// earlier case, not just say one exists, and the newest filing is the one most
+// likely to be the same matter.
+test("the duplicate warning shows the five newest matches", () => {
+  const made = n => Array.from({ length: n }, (_, i) => ({
+    reference: `LACON-2026-${String(i + 1).padStart(6, "0")}`,
+    client_name: "Chidi Obi",
+    filed_at: `2026-0${(i % 9) + 1}-01T09:00:00Z`,
+    filing_office: "Lagos State Office",
+    status: "UNASSIGNED",
+    filed_by_name: "A Filer",
+    filed_by_role: "INTERNAL PARALEGAL",
+  }));
+
+  // Newest first, whatever order the API answered in.
+  const three = made(3);
+  assert.deepEqual(
+    topMatches(three).map(m => m.filed_at),
+    ["2026-03-01T09:00:00Z", "2026-02-01T09:00:00Z", "2026-01-01T09:00:00Z"],
+  );
+  // The call does not reorder what it was given.
+  assert.equal(three[0].filed_at, "2026-01-01T09:00:00Z");
+
+  // Capped: eight matches are a list, not evidence.
+  const eight = topMatches(made(8));
+  assert.equal(eight.length, MAX_SHOWN);
+  assert.equal(eight[0].filed_at, "2026-08-01T09:00:00Z");
+
+  // Nothing found is not a warning.
+  assert.equal(hasDuplicates([]), false);
+  assert.equal(hasDuplicates(undefined), false);
+  assert.equal(hasDuplicates(made(1)), true);
+  assert.deepEqual(topMatches([]), []);
+});
+
+// T10: filing anyway is allowed, but a reviewer later reads the reason, so an
+// empty or token answer is refused.
+test("continuing past the warning needs a reason in words", () => {
+  assert.match(reasonProblem("") ?? "", /why/i);
+  assert.match(reasonProblem("   ") ?? "", /why/i);
+  assert.match(reasonProblem("new one") ?? "", /detail/i);
+  assert.equal(reasonProblem("Different landlord dispute, unrelated matter"), undefined);
+});
+
+// T5: the flag showed on a case, but there was no one place to review the
+// flagged pairs. The view is review only, and only the platform admins and
+// Statistics keep the national picture it serves.
+test("the duplicates view belongs to the admins and Statistics", () => {
+  for (const role of ["PLATFORM ADMIN", "SUPER ADMIN", "STATISTICS", "statistics"]) {
+    assert.equal(canReviewDuplicates(role), true, role);
+  }
+  for (const role of ["DIRECTOR GENERAL", "STATE COORDINATOR", "INTERNAL PARALEGAL", "LACON LAWYER", "", undefined]) {
+    assert.equal(canReviewDuplicates(role), false, String(role));
+  }
+});
+
+// T5, criterion 2: a reviewer is told why a pair was flagged, not merely that
+// it was — and never told a reason the API did not give.
+test("a flagged pair says what the two cases share", () => {
+  assert.equal(sharedLabel(["email"]), "same email");
+  assert.equal(sharedLabel(["email", "phone number"]), "same email and phone number");
+  assert.equal(sharedLabel([]), "");
+  assert.equal(sharedLabel(["", null].filter(Boolean)), "");
+});
+
+// T17: the record said only how a case was entered — online or in an office —
+// which is not where it came from.
+test("a case source is read in words, including the ones never recorded", () => {
+  assert.equal(caseSourceLabel("WALK_IN"), "Walk-in at LACON office");
+  assert.equal(caseSourceLabel("custodial_visit"), "Detention / custodial centre visit");
+  assert.equal(caseSourceLabel("ONLINE"), "Online (public website)");
+  // Filed before this was asked: say so rather than guess.
+  assert.equal(caseSourceLabel(""), "Not recorded (filed before this change)");
+  assert.equal(caseSourceLabel(undefined), "Not recorded (filed before this change)");
+  // A source we do not know is shown as it was stored, not hidden.
+  assert.equal(caseSourceLabel("FROM THE MOON"), "FROM THE MOON");
+});
+
+test("only a walk-in client brought themselves", () => {
+  assert.equal(needsBroughtBy("WALK_IN"), false);
+  assert.equal(needsBroughtBy("ONLINE"), false);
+  assert.equal(needsBroughtBy(""), false);
+  for (const source of ["CUSTODIAL_VISIT", "COURT_REFERRAL", "ORGANISATION_REFERRAL", "OTHER"]) {
+    assert.equal(needsBroughtBy(source), true, source);
+  }
+  assert.equal(needsVisitDetails("CUSTODIAL_VISIT"), true);
+  assert.equal(needsVisitDetails("COURT_REFERRAL"), false);
+});
+
+// T17, criteria 2 and 3: a visit nobody can place is not a record.
+test("the filer is told what is missing before the case is sent", () => {
+  assert.deepEqual(caseSourceProblem({}), { case_source: "Say where this case came from." });
+  assert.deepEqual(caseSourceProblem({ case_source: "WALK_IN" }), {});
+  assert.deepEqual(Object.keys(caseSourceProblem({ case_source: "COURT_REFERRAL" })), ["brought_by"]);
+  assert.deepEqual(caseSourceProblem({ case_source: "COURT_REFERRAL", brought_by: "Barr. A. Musa, LACON lawyer" }), {});
+  assert.deepEqual(
+    Object.keys(caseSourceProblem({ case_source: "CUSTODIAL_VISIT", brought_by: "welfare officer" })),
+    ["facility_name", "visit_date"],
+  );
+  assert.deepEqual(
+    caseSourceProblem({ case_source: "CUSTODIAL_VISIT", brought_by: "welfare officer", facility_name: "Kuje Custodial Centre", visit_date: "2026-10-31" }),
+    {},
+  );
+  // Whitespace is not an answer.
+  assert.deepEqual(Object.keys(caseSourceProblem({ case_source: "OTHER", brought_by: "   " })), ["brought_by"]);
+});
+
+// T12: the FCT office works like a state office since 6 Nov 2026. Its public
+// civil and criminal filings used to go to the HQ Civil and Criminal Justice
+// heads, because the FCT had no coordinator of its own.
+test("an FCT case is reviewed by the FCT coordinator", () => {
+  for (const state of ["FCT", "Federal Capital Territory", "Abuja"]) {
+    assert.equal(reviewerRole({ case_type: "CIVIL CASE", state_name: state }), "STATE COORDINATOR");
+    assert.equal(reviewerRole({ case_type: "CRIMINAL CASE", state_name: state }), "STATE COORDINATOR");
+  }
+  // Nothing about other states or other case types changed.
+  assert.equal(reviewerRole({ case_type: "CIVIL CASE", state_name: "Lagos" }), "STATE COORDINATOR");
+  assert.equal(reviewerRole({ case_type: "PDSS ORGANIZATION", state_name: "FCT" }), "PDSS UNIT HEAD");
+  assert.equal(reviewerRole({ case_type: "DECONGESTION", state_name: "Lagos" }), undefined);
+});
+
+// T12, criterion 4: the cases already with the HQ heads stay there, and a case
+// nobody can decide is a case nobody can close.
+test("an HQ justice head may still decide the FCT case they hold", () => {
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "FCT" }, "CIVIL JUSTICE DEPT. HEAD"), true);
+  assert.equal(standsInForFCT({ case_type: "CRIMINAL CASE", state_name: " abuja " }, "CRIMINAL JUSTICE DEPT. HEAD"), true);
+  // Not the other head, not another state, not another case type.
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "FCT" }, "CRIMINAL JUSTICE DEPT. HEAD"), false);
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "Lagos" }, "CIVIL JUSTICE DEPT. HEAD"), false);
+  assert.equal(standsInForFCT({ case_type: "PDSS ORGANIZATION", state_name: "FCT" }, "CIVIL JUSTICE DEPT. HEAD"), false);
+});
+
+// T11: the report is read by management, so every figure is set against the
+// period before it — and a figure with nothing to compare against says so
+// rather than claiming a rise from nothing.
+test("a change is only reported when there is something to compare", () => {
+  assert.equal(changeText(12.5), "+12.5%");
+  assert.equal(changeText(-8), "-8.0%");
+  assert.equal(changeText(0), "no change");
+  assert.equal(changeText(null), "no comparison");
+  assert.equal(changeText(undefined), "no comparison");
+});
+
+// Only the figures that have a better and a worse direction are coloured.
+test("the page does not judge a figure it cannot judge", () => {
+  // More cases received is neither good nor bad; it is the workload.
+  assert.equal(changeTone("received", 40), "neutral");
+  // Finishing more is better; finishing fewer is worse.
+  assert.equal(changeTone("completed", 40), "good");
+  assert.equal(changeTone("completed", -40), "bad");
+  // Waiting longer is worse, whichever figure it is.
+  assert.equal(changeTone("days_to_assign", 40), "bad");
+  assert.equal(changeTone("days_to_close", -40), "good");
+  assert.equal(changeTone("still_open", 40), "bad");
+  // No change, and nothing to compare, are never coloured.
+  assert.equal(changeTone("completed", 0), "neutral");
+  assert.equal(changeTone("completed", null), "neutral");
+});
+
+// LACON reports to the Presidency by quarter, so that is what the page offers.
+test("the period picker offers past quarters, newest first", () => {
+  const now = new Date(2026, 10, 7); // 7 November 2026, in Q4
+  assert.deepEqual(quarterOf(now), { quarter: 4, year: 2026, label: "Q4 2026" });
+  assert.deepEqual(quarterOf(new Date(2026, 0, 1)), { quarter: 1, year: 2026, label: "Q1 2026" });
+  assert.deepEqual(quarterOf(new Date(2026, 8, 30)), { quarter: 3, year: 2026, label: "Q3 2026" });
+
+  const quarters = recentQuarters(now, 2);
+  assert.equal(quarters.length, 8);
+  assert.equal(quarters[0].label, "Q4 2026");
+  // It runs backwards across the year boundary and never forwards: a quarter
+  // that has not happened has nothing in it.
+  assert.equal(quarters[4].label, "Q4 2025");
+  assert.ok(quarters.every(q => q.year < 2026 || q.quarter <= 4));
+});
+
+// T3: Statistics asks "rape cases, victims aged 0-6, in Q1 2026". Nothing could
+// be narrowed by offence, age or sex, so none of those questions had an answer.
+test("an age bracket becomes the bounds the API filters on", () => {
+  assert.deepEqual(ageBounds("0-6"), { age_min: 0, age_max: 6 });
+  assert.deepEqual(ageBounds("13-17"), { age_min: 13, age_max: 17 });
+  // Open-ended at the top: an upper limit there would quietly drop the oldest.
+  assert.deepEqual(ageBounds("51-"), { age_min: 51 });
+  // No bracket chosen is no filter, not a bracket of zero.
+  assert.deepEqual(ageBounds(""), {});
+  assert.deepEqual(ageBounds("nonsense"), {});
+  // Every bracket the page offers can be turned into bounds.
+  for (const bracket of AGE_BRACKETS) {
+    assert.notDeepEqual(ageBounds(bracket.value), {}, bracket.value);
+  }
+});
+
+test("several offences are asked for as either", () => {
+  assert.equal(offenceParam(["Rape"]), "Rape");
+  assert.equal(offenceParam(["Rape", "Defilement"]), "Rape,Defilement");
+  // Nothing chosen is no filter at all, not an empty one.
+  assert.equal(offenceParam([]), undefined);
+  assert.equal(offenceParam(["", "  "]), undefined);
+});
+
+// A filtered report that does not say so reads as the whole picture.
+test("the page says what it has been narrowed to", () => {
+  assert.equal(
+    filterSummary({ offences: ["Rape"], ageBracket: "0-6", sex: "FEMALE" }),
+    "Rape, aged 0 to 6, female",
+  );
+  assert.equal(filterSummary({ offences: ["Rape", "Defilement"] }), "Rape or Defilement");
+  assert.equal(filterSummary({ ageBracket: "13-17" }), "aged 13 to 17");
+  assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
+  // Nothing narrowed, nothing said.
+  assert.equal(filterSummary({}), "");
 });

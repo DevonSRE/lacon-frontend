@@ -43,7 +43,7 @@ function emptyPoolMessage(action: Action, role: string) {
   if (role) return `No active ${role.toLowerCase()} is available for this case. Assign a lawyer instead, or ask the Director General to create one.`;
   return "No eligible recipients found.";
 }
-const titles: Record<Action, string> = { route: "Route case", assign: "Assign lawyer", escalate: "Send back up the chain", "lawyer-reject": "Return assignment", accept: "Accept case", reject: "Reject case", "request-revision": "Request revision", status: "Update status", progress: "Add progress update", document: "Upload document" };
+const titles: Record<Action, string> = { route: "Route case", assign: "Assign lawyer", escalate: "Send back up the chain", "lawyer-reject": "Return assignment", accept: "Accept case", reject: "Reject case", "request-revision": "Request revision", status: "Update status", progress: "Add progress update", document: "Upload document", refer: "Refer out of Legal Aid", transfer: "Transfer to another LACON office" };
 
 // `only` narrows the buttons to some actions (the dashboard queues offer review or assignment only).
 export default function CaseActions({ caseRecord, onChanged, only }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[] }) {
@@ -62,6 +62,10 @@ export default function CaseActions({ caseRecord, onChanged, only }: { caseRecor
     { action: "document", label: "Upload document", allowed: permissions.upload },
     { action: "status", label: "Mark completed", status: "COMPLETED", allowed: permissions.complete },
     { action: "status", label: "Close case", status: "CLOSED", allowed: permissions.close },
+    // The case leaves Legal Aid, or this office. Either may happen at any
+    // stage, unlike closing, which waits for the lawyer to finish (T6).
+    { action: "refer", label: "Refer out", allowed: permissions.endCase },
+    { action: "transfer", label: "Transfer", allowed: permissions.endCase },
     { action: "lawyer-reject", label: "Return assignment", allowed: permissions.lawyerReject },
   ];
   return <>
@@ -102,7 +106,7 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
     .map((s: { id: string; title: string }) => ({ id: s.id, title: displayStateName(s.title) }))
     .sort((a, b) => a.title.localeCompare(b.title));
   const candidates = targets.data?.success ? targets.data.data : undefined;
-  const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision"].includes(action) || (action === "assign" && !!caseRecord.assignment);
+  const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision", "refer", "transfer"].includes(action) || (action === "assign" && !!caseRecord.assignment);
   // Completing a case carries the final report: the API refuses the move without both fields.
   const completing = action === "status" && status === "COMPLETED";
   const stageOptions = courtStageOptionsFor(caseRecord.case_type);
@@ -123,10 +127,16 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
           };
           if (Object.keys(missing).length > 0) { setFieldErrors(missing); return; }
         }
+        const destination = String(formData.get("destination") ?? "").trim();
+        if ((action === "refer" || action === "transfer") && !destination) {
+          setError(action === "refer" ? "Name the organisation the case goes to." : "Name the LACON office the case goes to.");
+          return;
+        }
         const result = action === "progress" ? await postCaseProgress(caseRecord.id, formData)
           : action === "document" ? await postCaseDocument(caseRecord.id, formData)
           : await moveCase(caseRecord.id, { action, status, reason: reason || undefined,
             ...(completing ? { outcome, resolution_report: resolutionReport } : {}),
+            ...(action === "refer" || action === "transfer" ? { destination } : {}),
             ...(action === "assign" ? { assignee_id: target } : target ? { target_user_id: target } : {}) });
         if (!result.success) { setError(result.message); return; }
         await Promise.all([
@@ -183,6 +193,16 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
       <Label htmlFor="next-step">Next step</Label><Input id="next-step" name="next_step" required />
       <Label htmlFor="next-court-date">Next court date (optional)</Label><Input id="next-court-date" name="next_court_date" type="date" />
     </>}
+    {(action === "refer" || action === "transfer") && <div className="space-y-1">
+      <Label htmlFor="end-destination">{action === "refer" ? "Referred to (organisation)" : "LACON office it goes to"}</Label>
+      <Input id="end-destination" name="destination" required
+        placeholder={action === "refer" ? "e.g. FIDA Nigeria" : "e.g. Kano State Office"} />
+      <p className="text-sm text-gray-500">
+        {action === "refer"
+          ? "The case leaves Legal Aid. It can no longer be worked on here."
+          : "The case moves to another LACON office. It leaves your open work."}
+      </p>
+    </div>}
     {action === "document" && <><Label htmlFor="document-title">Document title</Label><Input id="document-title" name="document_title" required /><Label htmlFor="document-type">Document type</Label><Input id="document-type" name="document_type" required placeholder="e.g. Court order" /></>}
     {["progress", "document"].includes(action) && <div className="space-y-2"><Label htmlFor="case-file">{action === "progress" ? "Supporting document (optional)" : "Document"}</Label><Input id="case-file" name="file" type="file" accept=".jpeg,.jpg,.png,.webp,.pdf,.doc,.docx,.xlsx" required={action === "document"} /><p className="text-sm text-gray-500">Images, PDF, Word or Excel. Maximum 10 MB.</p></div>}
     {action === "status" && status === "CLOSED" && <section className="space-y-2 rounded border bg-gray-50 p-3"><h3 className="font-semibold">Completion report</h3><p>{caseRecord.outcome}</p><p className="whitespace-pre-wrap">{caseRecord.resolution_report}</p>{caseRecord.completed_by && <p>Completed by {caseRecord.completed_by.name}</p>}<p className="text-sm">If this report needs correction, cancel and choose Request revision.</p></section>}
