@@ -32,45 +32,37 @@ interface PieChartData {
     color: string;
 }
 
-// Color mapping for different demographic combinations
-const colorMap: Record<string, string> = {
-    'MALE-single': '#BD2B12',
-    'MALE-married': '#6B788E',
-    'MALE-divorced': '#8E44AD',
-    'FEMALE-single': '#34B53A',
-    'FEMALE-married': '#FBBC04',
-    'FEMALE-divorced': '#E67E22'
-};
+/**
+ * One colour per row, in a fixed order (T11).
+ *
+ * The map used to be keyed on the six buckets the API then counted; any other
+ * combination fell through to grey, and several rows shared it. The palette is
+ * walked in the order the rows arrive instead, so a slice and its legend swatch
+ * always match and no two rows look alike until the palette runs out.
+ */
+const PALETTE = ['#BD2B12', '#6B788E', '#34B53A', '#FBBC04', '#8E44AD', '#E67E22', '#2980B9', '#16A085', '#7F8C8D'];
 
-// Transform API data to pie chart format
-function transformToPieData(data: DemographicBreakdown[]): PieChartData[] {
-    return data
-        .filter(item => item.count > 0) // Only include categories with data
-        .map(item => {
-            const key = `${item.sex}-${item.marital_status}`;
-            const label = `${item.sex.charAt(0) + item.sex.slice(1).toLowerCase()} - ${item.marital_status.charAt(0).toUpperCase() + item.marital_status.slice(1)
-                }`;
-
-            return {
-                label,
-                value: item.percent,
-                color: colorMap[key] || '#95A5A6' // Default color if not found
-            };
-        });
+function sentence(value: string): string {
+    const given = (value ?? '').trim();
+    if (given === '') return 'Not recorded';
+    return given.charAt(0).toUpperCase() + given.slice(1).toLowerCase();
 }
 
-// Generate legend items from API data
-function generateLegendItems(data: DemographicBreakdown[]) {
-    return data.map(item => {
-        const key = `${item.sex}-${item.marital_status}`;
-        const label = `${item.sex.charAt(0) + item.sex.slice(1).toLowerCase()} - ${item.marital_status.charAt(0).toUpperCase() + item.marital_status.slice(1)}`;
-        return {
-            color: colorMap[key] || '#95A5A6',
-            label,
+/**
+ * The rows the pie draws and the legend reads: the same list, the same
+ * percentages. They used to be built twice — the pie from the rows with cases
+ * in them and the legend from all of them — so the two disagreed.
+ */
+function readRows(data: DemographicBreakdown[]) {
+    return data
+        .filter(item => item.count > 0)
+        .map((item, index) => ({
+            label: `${sentence(item.sex)} - ${sentence(item.marital_status)}`,
+            value: item.percent,
             count: item.count,
-            percent: item.percent
-        };
-    });
+            percent: item.percent,
+            color: PALETTE[index % PALETTE.length],
+        }));
 }
 
 export default function Demographics() {
@@ -89,15 +81,10 @@ export default function Demographics() {
         staleTime: 100000,
     });
 
-    // Transform data for pie chart
-    const pieData = data?.data?.department_case_breakdown
-        ? transformToPieData(data.data.department_case_breakdown)
-        : [];
-
-    // Generate legend items
-    const legendItems = data?.data?.department_case_breakdown
-        ? generateLegendItems(data.data.department_case_breakdown)
-        : [];
+    // One reading, shown twice: the pie and the legend cannot disagree.
+    const rows = readRows(data?.data?.department_case_breakdown ?? []);
+    const pieData: PieChartData[] = rows.map(({ label, value, color }) => ({ label, value, color }));
+    const legendItems = rows;
 
     // Handle loading state
     if (isLoading) {

@@ -9,6 +9,7 @@ import { roleLabel } from "../src/lib/role-labels.ts";
 import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
 import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
+import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -415,4 +416,47 @@ test("an HQ justice head may still decide the FCT case they hold", () => {
   assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "FCT" }, "CRIMINAL JUSTICE DEPT. HEAD"), false);
   assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "Lagos" }, "CIVIL JUSTICE DEPT. HEAD"), false);
   assert.equal(standsInForFCT({ case_type: "PDSS ORGANIZATION", state_name: "FCT" }, "CIVIL JUSTICE DEPT. HEAD"), false);
+});
+
+// T11: the report is read by management, so every figure is set against the
+// period before it — and a figure with nothing to compare against says so
+// rather than claiming a rise from nothing.
+test("a change is only reported when there is something to compare", () => {
+  assert.equal(changeText(12.5), "+12.5%");
+  assert.equal(changeText(-8), "-8.0%");
+  assert.equal(changeText(0), "no change");
+  assert.equal(changeText(null), "no comparison");
+  assert.equal(changeText(undefined), "no comparison");
+});
+
+// Only the figures that have a better and a worse direction are coloured.
+test("the page does not judge a figure it cannot judge", () => {
+  // More cases received is neither good nor bad; it is the workload.
+  assert.equal(changeTone("received", 40), "neutral");
+  // Finishing more is better; finishing fewer is worse.
+  assert.equal(changeTone("completed", 40), "good");
+  assert.equal(changeTone("completed", -40), "bad");
+  // Waiting longer is worse, whichever figure it is.
+  assert.equal(changeTone("days_to_assign", 40), "bad");
+  assert.equal(changeTone("days_to_close", -40), "good");
+  assert.equal(changeTone("still_open", 40), "bad");
+  // No change, and nothing to compare, are never coloured.
+  assert.equal(changeTone("completed", 0), "neutral");
+  assert.equal(changeTone("completed", null), "neutral");
+});
+
+// LACON reports to the Presidency by quarter, so that is what the page offers.
+test("the period picker offers past quarters, newest first", () => {
+  const now = new Date(2026, 10, 7); // 7 November 2026, in Q4
+  assert.deepEqual(quarterOf(now), { quarter: 4, year: 2026, label: "Q4 2026" });
+  assert.deepEqual(quarterOf(new Date(2026, 0, 1)), { quarter: 1, year: 2026, label: "Q1 2026" });
+  assert.deepEqual(quarterOf(new Date(2026, 8, 30)), { quarter: 3, year: 2026, label: "Q3 2026" });
+
+  const quarters = recentQuarters(now, 2);
+  assert.equal(quarters.length, 8);
+  assert.equal(quarters[0].label, "Q4 2026");
+  // It runs backwards across the year boundary and never forwards: a quarter
+  // that has not happened has nothing in it.
+  assert.equal(quarters[4].label, "Q4 2025");
+  assert.ok(quarters.every(q => q.year < 2026 || q.quarter <= 4));
 });

@@ -56,6 +56,20 @@ const reportServices = {
             responseType: 'arraybuffer',
         });
     },
+    // The Lawyers and Demographics tabs had no export, so Export Report could
+    // only appear on two of eleven (T11).
+    async exportAdminLawyer(filters: Ipage) {
+        return await axiosInstance.get("export/admin-lawyer", {
+            params: filters,
+            responseType: 'arraybuffer',
+        });
+    },
+    async exportAdminDemography(filters: Ipage) {
+        return await axiosInstance.get("export/admin-demography", {
+            params: filters,
+            responseType: 'arraybuffer',
+        });
+    },
     async exportAdminUnit(filters: Ipage) {
         return await axiosInstance.get("export/admin-unit", {
             params: filters,

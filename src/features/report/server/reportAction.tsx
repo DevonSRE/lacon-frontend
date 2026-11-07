@@ -107,3 +107,19 @@ export async function ExportAdminUnit(filters: Ipage) {
         return handleApiError(error);
     }
 }
+export async function ExportAdminLawyer(filters: Ipage) {
+    try {
+        return toDownload(await reportServices.exportAdminLawyer(filters), 'lawyer-report.xlsx');
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+export async function ExportDemography(filters: Ipage) {
+    try {
+        return toDownload(await reportServices.exportAdminDemography(filters), 'demographics-report.xlsx');
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}

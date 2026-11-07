@@ -168,19 +168,21 @@ export default function Overview() {
                 </div>
                 <div className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
+                        {/* Straight lines, not curves: a smoothed line invents
+                            months between the points it was drawn from (T11). */}
                         <LineChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                             <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#666' }} />
                             <YAxis tick={{ fontSize: 12, fill: '#666' }} />
                             <Line
-                                type="monotone"
+                                type="linear"
                                 dataKey="received"
                                 stroke="#dc2626"
                                 strokeWidth={2}
                                 dot={{ r: 4, fill: '#dc2626' }}
                             />
                             <Line
-                                type="monotone"
+                                type="linear"
                                 dataKey="completed"
                                 stroke="#374151"
                                 strokeWidth={2}
@@ -214,9 +216,14 @@ export default function Overview() {
                 </div>
             </div>
 
-            {/* Bi-Annual Statistics */}
+            {/* The "Bi-Annual Statistic" block is gone (T11, criterion 12).
+                Half-years are not a period LACON works in, and the block said
+                nothing the Management report's period comparison does not say
+                better: every figure there is set against the period before it.
+                The breakdown underneath stays, with a heading that says what it
+                is. */}
             <div className="mt-6">
-                <h1 className="text-left font-semibold text-xl text-black">Bi-Annual Statistic</h1>
+                <h1 className="text-left font-semibold text-xl text-black">Received and completed by period</h1>
                 <Chart
                     categories={biAnnualChartData.categories}
                     series={biAnnualChartData.series}

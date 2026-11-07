@@ -90,8 +90,10 @@ export default function AllUnitsReport() {
                     bgColor='text-red-500'
                     value={getStatValue(adminSummary, "PDSS Cases")}
                 />
+                {/* The official name (T11, criterion 4). The key the API answers
+                    with is unchanged. */}
                 <StatCard
-                    title="Oscar unit"
+                    title="OSCAR Unit"
                     value={getStatValue(adminSummary, "Oscar unit")}
                 />
                 <StatCard

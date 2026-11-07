@@ -78,7 +78,7 @@ export const laconLawyerColumns: ColumnDef<StateData>[] = [
     { accessorKey: "case_granted", ...centerCell("Cases granted") },
     { accessorKey: "completed", ...centerCell("Completed") },
     { accessorKey: "state_name", ...centerCell("State") },
-    { accessorKey: "success_rate", ...centerCell("Success Rate") },
+    { accessorKey: "success_rate", ...centerCell("Completion rate") },
 ];
 export const ProbunoLawyerColumns: ColumnDef<StateData>[] = [
     {
@@ -90,7 +90,7 @@ export const ProbunoLawyerColumns: ColumnDef<StateData>[] = [
     { accessorKey: "case_granted", ...centerCell("Cases granted") },
     { accessorKey: "completed", ...centerCell("Completed") },
     { accessorKey: "state_name", ...centerCell("State") },
-    { accessorKey: "success_rate", ...centerCell("Success Rate") },
+    { accessorKey: "success_rate", ...centerCell("Completion rate") },
 ];
 
 
