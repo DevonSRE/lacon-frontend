@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
+import { filedFrom, movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
@@ -217,4 +217,19 @@ test("the custody date is required only when the client is in custody", () => {
   assert.equal(isInCustody("UNBAILED"), true);
   assert.equal(isInCustody("BAILED"), false);
   assert.equal(isInCustody(undefined), false);
+});
+
+// T20: a case filed by a Lagos state paralegal read as "INTERNAL · HQ".
+test("a case says which office it was filed from", () => {
+  assert.equal(filedFrom({ filing_office: "Lagos State Office" }), "Lagos State Office");
+  assert.equal(filedFrom({ filing_office: "Ikeja centre" }), "Ikeja centre");
+  assert.equal(filedFrom({ filing_office: "Online · Lagos" }), "Online · Lagos");
+  // Filed before the office was recorded: say so rather than guess.
+  assert.match(filedFrom({ filing_office: "", origin_channel: "INTERNAL" }), /Not recorded/);
+  assert.match(filedFrom({}), /Not recorded/);
+  // An older online case can still be named from what it does carry.
+  assert.equal(filedFrom({ origin_channel: "ONLINE", state_name: "Kano" }), "Online · Kano");
+  assert.equal(filedFrom({ origin_channel: "online" }), "Online");
+  // Whitespace is not an office.
+  assert.match(filedFrom({ filing_office: "   ", origin_channel: "INTERNAL" }), /Not recorded/);
 });

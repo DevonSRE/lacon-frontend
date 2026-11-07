@@ -15,6 +15,9 @@ export type CaseRecord = {
   state_of_origin?: string; permanent_address?: string; gender?: string; age?: number;
   marital_status?: string; phone_number?: string; email?: string; occupation?: string;
   department_name?: string; origin_channel?: string; filed_level?: string;
+  // Where the case was filed from, in words: "Lagos State Office", "Ikeja
+  // centre", "Online · Lagos". Empty on cases filed before it was recorded.
+  filing_office?: string;
   filing_actor?: Actor | null; current_holder?: Actor | null; assigned_by?: string; forwarded_by?: string;
   assignment?: { assignee_id?: string; assignor_id?: string; assignee?: string; assignor?: string; assign_date?: string } | null;
   possible_duplicate_of?: string[];
@@ -85,6 +88,23 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
     upload: open && !!user && (assigned || c.current_holder?.id === user.id || c.assignment?.assignor_id === user.id || c.filing_actor?.id === user.id || ["DIRECTOR GENERAL", "PLATFORM ADMIN", "SUPER ADMIN"].includes(role)),
   };
 }
+/**
+ * Where a case was filed from, for a reader.
+ *
+ * The screens printed the channel beside the level code — "INTERNAL · HQ" — so
+ * a case filed by a Lagos state paralegal read as Headquarters (T20). The API
+ * records the office at filing time; this is only the fallback for cases filed
+ * before it did, which say so rather than guess.
+ */
+export function filedFrom(c: Pick<CaseRecord, "filing_office" | "origin_channel" | "state_name">): string {
+  const office = (c.filing_office ?? "").trim();
+  if (office) return office;
+  if ((c.origin_channel ?? "").toUpperCase() === "ONLINE") {
+    return c.state_name ? `Online · ${c.state_name}` : "Online";
+  }
+  return "Not recorded (filed before this was kept)";
+}
+
 export function caseReference(c: { id: string; case_id?: string }) { return c.case_id || c.id; }
 export function statusLabel(status: string) { return CASE_STATUS_LABELS[status] ?? status; }
 
