@@ -31,7 +31,7 @@ const navItems: NavItem[] = [
     icon: <Icons.home />,
     name: "Home",
     path: "/dashboard",
-    roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "PDSS UNIT HEAD", "PRO_BONO_LAWYER", "EXTERNAL PARALEGAL", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD", "INTERNAL PARALEGAL"],
+    roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "PDSS UNIT HEAD", "PRO_BONO_LAWYER", "EXTERNAL PARALEGAL", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD", "INTERNAL PARALEGAL", "STATISTICS"],
   },
   {
     icon: <Icons.casesIcon />,
@@ -49,7 +49,9 @@ const navItems: NavItem[] = [
     icon: <Icons.userRole />,
     name: "Users Role",
     path: "/users/all",
-    roles: ["PLATFORM ADMIN"],
+    // Statistics has one tab here and no actions on it, so a flat entry
+    // rather than a sub-menu (T1).
+    roles: ["PLATFORM ADMIN", "STATISTICS"],
   },
   {
     icon: <Icons.userRole />,

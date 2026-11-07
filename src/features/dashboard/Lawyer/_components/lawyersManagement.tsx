@@ -100,10 +100,13 @@ export default function Lawyers() {
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-semibold">Lawyer Management</h1>
-                    <Button onClick={() => setIsOpen(true)} className="bg-red-600 text-white h-11">
-                        <Icons.plusIcon />
-                        Add New Lawyer
-                    </Button>
+                    {/* Statistics reads the list and adds nobody (T1). */}
+                    {user?.role !== ROLES.STATISTICS && (
+                        <Button onClick={() => setIsOpen(true)} className="bg-red-600 text-white h-11">
+                            <Icons.plusIcon />
+                            Add New Lawyer
+                        </Button>
+                    )}
                 </div>
 
                 <div className="flex items-center mt-6 gap-6 w-full justify-between">

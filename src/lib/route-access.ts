@@ -27,9 +27,11 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.STATE_COORDINATOR,
     ROLES.CENTRE_COORDINATOR,
     ROLES.INTERNAL_PARALEGAL,
+    ROLES.STATISTICS,
     ...UNIT_HEADS,
   ],
-  "/users/all": [ROLES.PLATFORM_ADMIN, ROLES.ADMIN, ROLES.DIRECTOR_GENERAL],
+  // Statistics reads the directory; every action on the page is hidden for them.
+  "/users/all": [ROLES.PLATFORM_ADMIN, ROLES.ADMIN, ROLES.DIRECTOR_GENERAL, ROLES.STATISTICS],
   "/users/request": [ROLES.ADMIN, ROLES.DIRECTOR_GENERAL],
   // What a field office asked for and what came back. The API already scopes
   // this to the caller's own requests (QA 2026-11-01, item 3).
@@ -45,6 +47,7 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.ZONAL_DIRECTOR,
     ROLES.STATE_COORDINATOR,
     ROLES.CENTRE_COORDINATOR,
+    ROLES.STATISTICS,
     ...UNIT_HEADS.filter((r) => r !== ROLES.DECONGESTION_UNIT_HEAD),
   ],
   // The admin report reads /analytics/admin-*, which only these three may call.
@@ -60,6 +63,7 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.ZONAL_DIRECTOR,
     ROLES.STATE_COORDINATOR,
     ROLES.CENTRE_COORDINATOR,
+    ROLES.STATISTICS,
     ...UNIT_HEADS,
   ],
   "/settings": [ROLES.ADMIN],
