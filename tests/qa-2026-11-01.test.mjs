@@ -7,6 +7,7 @@ import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
 import { roleLabel } from "../src/lib/role-labels.ts";
 import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
+import { MAX_SHOWN, hasDuplicates, reasonProblem, topMatches } from "../src/lib/duplicates.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -281,4 +282,48 @@ test("a referred or transferred case is finished here", () => {
   // And it is not a lawyer's to do.
   const lawyer = { id: "lawyer-1", role: "LACON LAWYER" };
   assert.equal(casePermissions(mine, lawyer).endCase, false);
+});
+
+// T10: the same client filed twice. The warning has to show the filer the
+// earlier case, not just say one exists, and the newest filing is the one most
+// likely to be the same matter.
+test("the duplicate warning shows the five newest matches", () => {
+  const made = n => Array.from({ length: n }, (_, i) => ({
+    reference: `LACON-2026-${String(i + 1).padStart(6, "0")}`,
+    client_name: "Chidi Obi",
+    filed_at: `2026-0${(i % 9) + 1}-01T09:00:00Z`,
+    filing_office: "Lagos State Office",
+    status: "UNASSIGNED",
+    filed_by_name: "A Filer",
+    filed_by_role: "INTERNAL PARALEGAL",
+  }));
+
+  // Newest first, whatever order the API answered in.
+  const three = made(3);
+  assert.deepEqual(
+    topMatches(three).map(m => m.filed_at),
+    ["2026-03-01T09:00:00Z", "2026-02-01T09:00:00Z", "2026-01-01T09:00:00Z"],
+  );
+  // The call does not reorder what it was given.
+  assert.equal(three[0].filed_at, "2026-01-01T09:00:00Z");
+
+  // Capped: eight matches are a list, not evidence.
+  const eight = topMatches(made(8));
+  assert.equal(eight.length, MAX_SHOWN);
+  assert.equal(eight[0].filed_at, "2026-08-01T09:00:00Z");
+
+  // Nothing found is not a warning.
+  assert.equal(hasDuplicates([]), false);
+  assert.equal(hasDuplicates(undefined), false);
+  assert.equal(hasDuplicates(made(1)), true);
+  assert.deepEqual(topMatches([]), []);
+});
+
+// T10: filing anyway is allowed, but a reviewer later reads the reason, so an
+// empty or token answer is refused.
+test("continuing past the warning needs a reason in words", () => {
+  assert.match(reasonProblem("") ?? "", /why/i);
+  assert.match(reasonProblem("   ") ?? "", /why/i);
+  assert.match(reasonProblem("new one") ?? "", /detail/i);
+  assert.equal(reasonProblem("Different landlord dispute, unrelated matter"), undefined);
 });

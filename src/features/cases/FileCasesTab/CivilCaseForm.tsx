@@ -11,6 +11,8 @@ import { useRouter } from 'next/navigation';
 import { stateOptions } from '@/lib/types';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import useSubmitLock from '@/hooks/use-submit-lock';
+import useDuplicateGuard from '@/hooks/use-duplicate-guard'
+import DuplicateWarningDialog from '@/features/cases/_components/DuplicateWarningDialog'
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { toast } from 'sonner';
 import { submitPublicCaseForm } from '../../probunoLawyers/server/action';
@@ -34,6 +36,13 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
     const [open, setOpen] = useState(false);
     const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
     const acquireSubmit = useSubmitLock(state);
+    // The duplicate check stands between the form and the filing (T10): it
+    // submits straight through when the client has no earlier case, and
+    // otherwise holds this filing until the filer answers the warning.
+    const duplicates = useDuplicateGuard(data => {
+        if (!acquireSubmit()) return;
+        startTransition(() => formAction(data));
+    });
     const { selectedStateId, setIsOpen } = useAction();
     const [loading, setLoading] = useState<boolean>(false);
     const [selectedState, setSelectedState] = useState<string>("");
@@ -179,8 +188,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                         fd.append(key, String(v));
                     }
                 });
-                if (!acquireSubmit()) return;
-                startTransition(() => formAction(fd));
+                void duplicates.guard(fd, { enabled: !isPublic });
             }
         }
     };
@@ -199,6 +207,12 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
 
     return (
         <>
+            <DuplicateWarningDialog
+                open={duplicates.open}
+                matches={duplicates.matches}
+                onCancel={duplicates.cancel}
+                onContinue={duplicates.continueAnyway}
+            />
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
@@ -579,8 +593,8 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                                     Back
                                 </Button>
                             )}
-                            <Button type="submit" disabled={isPending} className="h-11 w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium" >
-                                {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
+                            <Button type="submit" disabled={isPending || duplicates.checking} className="h-11 w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium" >
+                                {duplicates.checking ? 'Checking...' : isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
                             </Button>
                         </div>
                     </div>

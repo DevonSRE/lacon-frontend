@@ -27,6 +27,9 @@ export type CaseRecord = {
   filing_actor?: Actor | null; current_holder?: Actor | null; assigned_by?: string; forwarded_by?: string;
   assignment?: { assignee_id?: string; assignor_id?: string; assignee?: string; assignor?: string; assign_date?: string } | null;
   possible_duplicate_of?: string[];
+  // Why the filer went ahead although this client already had a case (T10).
+  // Read beside the duplicate flag, which is the only place it is of use.
+  duplicate_reason?: string;
   civil_case?: Record<string, unknown>; criminal_case?: Record<string, unknown>; pdss?: Record<string, unknown>;
   decongestion_unit?: Record<string, unknown>; perogative_of_mercy?: Record<string, unknown>;
   updated_by?: Array<Actor & { time?: string; action: string }>;

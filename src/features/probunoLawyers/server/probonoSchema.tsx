@@ -160,6 +160,10 @@ export type TProbunoCaseUpdatePayload = z.infer<typeof caseUpdateSchema>;
 
 export const personalInfoSchema = z.object({
   state_id: filingState.optional(),
+  // Why this filing went ahead although the client already had a case (T10).
+  // Only set when the filer continued past the duplicate warning; absent on
+  // every other filing, which is why it is optional rather than defaulted.
+  duplicate_reason: z.string().optional(),
   case_type: z.string().min(1, { message: "Case Type is required" }).optional(),
   first_name: z
     .string()

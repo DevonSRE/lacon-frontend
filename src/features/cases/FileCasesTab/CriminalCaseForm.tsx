@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { stateOptions } from '@/lib/types'
 import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import useSubmitLock from '@/hooks/use-submit-lock'
+import useDuplicateGuard from '@/hooks/use-duplicate-guard'
+import DuplicateWarningDialog from '@/features/cases/_components/DuplicateWarningDialog'
 import { FormDataCivilCase, legalAidFormSchemaChecked, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema'
 import { CUSTODY_STATUSES, isInCustody } from '@/lib/custody'
 import { CRIMINAL_COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options'
@@ -37,6 +39,13 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
   const [open, setOpen] = useState(false);
   const [state, formAction, isPending] = useActionState(submitPublicCaseForm, undefined);
   const acquireSubmit = useSubmitLock(state);
+  // The duplicate check stands between the form and the filing (T10): it
+  // submits straight through when the client has no earlier case, and
+  // otherwise holds this filing until the filer answers the warning.
+  const duplicates = useDuplicateGuard(data => {
+      if (!acquireSubmit()) return;
+      startTransition(() => formAction(data));
+  });
   const { selectedStateId, setIsOpen } = useAction();
   const [selectedState, setSelectedState] = useState<string>("");
   // Staff filing without a fixed state must say where they are filing from.
@@ -184,8 +193,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
             fd.append(key, String(v));
           }
         });
-        if (!acquireSubmit()) return;
-        startTransition(() => formAction(fd));
+        void duplicates.guard(fd, { enabled: !isPublic });
       }
     }
   };
@@ -206,6 +214,12 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
 
   return (
     <>
+      <DuplicateWarningDialog
+          open={duplicates.open}
+          matches={duplicates.matches}
+          onCancel={duplicates.cancel}
+          onContinue={duplicates.continueAnyway}
+      />
       <CaseIntakeDialog
         open={open}
         onOpenChange={setOpen}
@@ -587,8 +601,8 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
                   Back
                 </Button>
               )}
-              <Button type="submit" disabled={isPending} className="h-11   w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
-                {isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
+              <Button type="submit" disabled={isPending || duplicates.checking} className="h-11   w-full bg-red-600 text-white hover:bg-red-700 transition-colors font-medium">
+                {duplicates.checking ? 'Checking...' : isPending ? 'Submitting...' : currentStep === 2 ? 'Submit Case' : 'Next'}
               </Button>
             </div>
           </div>
