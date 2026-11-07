@@ -11,6 +11,7 @@ import { displayStateName } from "@/lib/place-names";
 import { startOfWeek } from "@/lib/week";
 import { ROLES } from "@/types/auth";
 import { getScopeSummary, type SummaryRow } from "@/features/report/server/scope-report";
+import { summaryCards } from "@/features/report/summary-cards";
 import { AddLawyerSheet } from "../Lawyer/_components/addLawyer";
 import { Queue } from "../components/UnitCaseQueues";
 
@@ -115,14 +116,15 @@ export default function CoordinatorHome({ role }: { role: string }) {
                 <h2 className="text-lg font-semibold">
                   {report?.scope.name ? `${displayStateName(report.scope.name)} at a glance` : "At a glance"}
                 </h2>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  <Card label="Pending review" value={report?.by_status.find(r=>r.id === "SUBMITTED")?.count ?? 0} />
-                  <Card label="New this week" value={filedThisWeek ?? 0} />
-                  <Card label="Total cases" value={totals?.total ?? 0}
-                    note={filedThisWeek === undefined ? undefined : `${filedThisWeek} filed this week`} />
-                  <Card label="Waiting for a lawyer" value={Math.max(0,(totals?.pending ?? 0)-(report?.by_status.find(r=>r.id === "SUBMITTED")?.count ?? 0))} note="Accepted, not yet assigned" />
-                  <Card label="With a lawyer" value={totals?.assigned ?? 0} note="Assigned, in progress or in revision" />
-                  <Card label="Resolved" value={totals?.resolved ?? 0} note="Completed or closed" />
+                {/* One definition of these five, shared with the Reports page:
+                    the two were splitting "still needs a lawyer" differently
+                    and disagreeing by one. "New this week" is the note on the
+                    first card rather than a card of its own. */}
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                  {summaryCards(report).map((card, i) => (
+                    <Card key={card.label} label={card.label} value={card.value}
+                      note={i === 0 && filedThisWeek !== undefined ? `${filedThisWeek} filed this week` : card.note} />
+                  ))}
                 </div>
               </section>
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, MoreVertical, Pencil } from "lucide-react";
 import { ROLES } from "@/types/auth";
 import { userStatusBadge } from "@/lib/user-status";
+import { roleLabel } from "@/lib/role-labels";
 
 export const createUserColumns = (
   userRole: ROLES,
@@ -46,15 +47,7 @@ export const createUserColumns = (
     {
       accessorKey: "user_type",
       header: "Role",
-      cell: ({ row }) => {
-        const type = row.original.user_type;
-        const typeMap: Record<string, string> = {
-          ADMIN_LAWYER: "Admin Lawyer",
-          LAWYER: "Lawyer",
-          // Add more if needed
-        };
-        return <span>{typeMap[type] ?? type}</span>;
-      },
+      cell: ({ row }) => <span>{roleLabel(row.original.user_type)}</span>,
     },
     {
       accessorKey: "status",
@@ -166,7 +159,7 @@ export const createLawyerRequestColumns = (
     {
       accessorKey: "RequestedByRole",
       header: "Requester Role",
-      cell: ({ row }) => <span>{row.original.RequestedByRole ?? "-"}</span>,
+      cell: ({ row }) => <span>{roleLabel(row.original.RequestedByRole) || "-"}</span>,
     },
     {
       accessorKey: "Date",

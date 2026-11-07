@@ -8,6 +8,7 @@ import React, {
   useState,
 } from "react";
 import { DataTable } from "@/components/data-table";
+import { roleLabel } from "@/lib/role-labels";
 import {
   createLawyerRequestColumns,
   createUserColumns,
@@ -405,7 +406,7 @@ const RequestSummary = ({ request }: { request: ILawyerRequest | null }) => {
     REACTIVATE: "Reactivate",
   };
   const asked = actions[(request.Action ?? "").toUpperCase()] ?? "Change the account of";
-  const role = request.ProposedUserType || request.UserType || "";
+  const role = roleLabel(request.ProposedUserType || request.UserType || "");
   const email = request.LawyerEmail || request.Email || "";
   return (
     <Card className="bg-gray-100">
@@ -413,7 +414,7 @@ const RequestSummary = ({ request }: { request: ILawyerRequest | null }) => {
         <SummaryRow label="Request" value={`${asked} ${request.LawyerName || "this user"}`} />
         {role ? <SummaryRow label="Role" value={role} /> : null}
         {email ? <SummaryRow label="Email" value={email} /> : null}
-        <SummaryRow label="Requested by" value={[request.RequestedName, request.RequestedByRole].filter(Boolean).join(" · ") || "—"} />
+        <SummaryRow label="Requested by" value={[request.RequestedName, roleLabel(request.RequestedByRole)].filter(Boolean).join(" · ") || "—"} />
         {request.Reason?.trim() ? <SummaryRow label="Their reason" value={request.Reason} /> : null}
       </CardContent>
     </Card>

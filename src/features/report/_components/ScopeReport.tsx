@@ -10,6 +10,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { statusLabel } from "@/features/cases/domain";
 import { displayStateName } from "@/lib/place-names";
 import { exportScopeSummary, getScopeSummary, type SummaryFilters, type SummaryRow } from "../server/scope-report";
+import { summaryCards } from "../summary-cards";
 
 /**
  * The role-scoped report, for a reader the admin report is not meant for.
@@ -109,14 +110,9 @@ export default function ScopeReport() {
     staleTime: 60000,
   });
   const data = report.data?.success ? report.data.data : undefined;
-  const totals = data?.totals;
-  const cards = [
-    { label: "Total cases", value: totals?.total ?? 0 },
-    { label: "Waiting for a lawyer", value: totals?.pending ?? 0 },
-    { label: "With a lawyer", value: totals?.assigned ?? 0 },
-    { label: "Resolved", value: totals?.resolved ?? 0 },
-    { label: "Rejected", value: totals?.rejected ?? 0 },
-  ];
+  // The same five the coordinator's home shows, from one definition, plus the
+  // rejected count that only matters on a report.
+  const cards = [...summaryCards(data), { label: "Rejected", value: data?.totals.rejected ?? 0, note: undefined }];
   const lower = data?.by_centre?.length ? { title: "By centre", rows: data.by_centre, label: "Centre" }
     : data?.by_state?.length ? { title: "By state", rows: data.by_state, label: "State", translate: displayStateName }
       : data?.by_lawyer ? { title: "By lawyer", rows: data.by_lawyer, label: "Lawyer" }
@@ -162,7 +158,7 @@ export default function ScopeReport() {
           ? <div role="alert" className="space-y-3 rounded bg-red-50 p-4 text-sm"><p>{report.data.message}</p><Button variant="outline" onClick={() => report.refetch()}>Retry</Button></div>
           : (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                 {cards.map(card => (
                   <div key={card.label} className="space-y-1 rounded border bg-white p-4 shadow-sm">
                     <p className="text-sm text-gray-500">{card.label}</p>

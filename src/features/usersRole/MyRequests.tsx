@@ -15,6 +15,7 @@ import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { ILawyerRequest } from "@/types/case";
 import { AddLawyerSheet } from "../dashboard/Lawyer/_components/addLawyer";
 import { GetLawyerRequestAction } from "./userRoleAction";
+import { roleLabel } from "@/lib/role-labels";
 
 /**
  * What a field office has asked the Director General for, and what came back.
@@ -52,7 +53,7 @@ const columns: ColumnDef<ILawyerRequest>[] = [
       return (
         <div>
           <p className="font-medium">{ACTIONS[action] ?? action ?? "-"}</p>
-          <p className="text-xs text-gray-500">{row.original.ProposedUserType || "-"}</p>
+          <p className="text-xs text-gray-500">{roleLabel(row.original.ProposedUserType) || "-"}</p>
         </div>
       );
     },

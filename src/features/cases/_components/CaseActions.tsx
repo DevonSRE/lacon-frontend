@@ -13,6 +13,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { courtStageOptionsFor, CASE_UPDATE_TYPE_OPTIONS } from "@/lib/form-options";
 import { GetStates } from "@/server/actions/GetDetails";
 import { displayStateName } from "@/components/get-state";
+import { roleLabel } from "@/lib/role-labels";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
 import { getAssignees, getRouteTargets, moveCase, postCaseDocument, postCaseProgress } from "../server/lifecycle";
 
@@ -27,7 +28,7 @@ function isFull(u: Recipient) {
 // recipientLabel names who they are, where they work and what they are carrying,
 // so a head can tell a staff lawyer from a pro bono one before assigning.
 function recipientLabel(u: Recipient, action: Action) {
-  const parts = [`${u.first_name} ${u.last_name}`, u.user_type];
+  const parts = [`${u.first_name} ${u.last_name}`, roleLabel(u.user_type)];
   if (u.state) parts.push(u.state);
   if (action !== "assign") return parts.join(" · ");
   if (u.department_name) parts.push(u.department_name);

@@ -5,6 +5,7 @@ import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
+import { roleLabel } from "../src/lib/role-labels.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -180,4 +181,23 @@ test("the week a case was filed in starts on the Monday, in local time", () => {
   assert.equal(startOfWeek(new Date(2026, 10, 2, 0, 30)), "2026-11-02");
   // Across the turn of a month and a year.
   assert.equal(startOfWeek(new Date(2027, 0, 1, 12, 0)), "2026-12-28");
+});
+
+// QA 2026-11-01, item 22: LACON confirmed DIO and Prerogative of Mercy are
+// departments and Decongestion is a unit. Only the reading changes.
+test("offices read as LACON names them, departments and units apart", () => {
+  assert.equal(roleLabel("DIO UNIT HEAD"), "DIO Department Head");
+  assert.equal(roleLabel("PREROGATIVE OF MERCY UNIT HEAD"), "Prerogative of Mercy Department Head");
+  assert.equal(roleLabel("DECONGESTION UNIT HEAD"), "Decongestion Unit Head");
+  assert.equal(roleLabel("OSCAR UNIT HEAD"), "OSCAR Unit Head");
+  assert.equal(roleLabel("PDSS UNIT HEAD"), "PDSS Unit Head");
+});
+
+test("a role that is not ours is shown as it was stored", () => {
+  assert.equal(roleLabel("SOMETHING NEW"), "SOMETHING NEW");
+  assert.equal(roleLabel(""), "");
+  assert.equal(roleLabel(undefined), "");
+  assert.equal(roleLabel(null), "");
+  // The stored form is upper case; a label never replaces it on the way back.
+  assert.equal(roleLabel("state coordinator"), "State Coordinator");
 });
