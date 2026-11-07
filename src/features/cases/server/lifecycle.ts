@@ -74,6 +74,28 @@ export async function downloadCase(id: string): Promise<
   }
 }
 
+/**
+ * The stamped copy the client keeps and shows in court (T8).
+ *
+ * It is not the case record: it says an application was received and nothing
+ * about what LACON has done with it since. The API decides who may print one.
+ */
+export async function downloadAcknowledgement(id: string): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  if (!idSchema.safeParse(id).success) return { success: false, message: "Invalid case reference." };
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>(`/casefile/${id}/acknowledgement`, { responseType: "arraybuffer" });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "acknowledgement.pdf",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    return { success: false, message: failure(error).message };
+  }
+}
+
 export async function getCase(id: string): Promise<Result<CaseRecord>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   const result = await read<CaseRecord>(`/casefile/${id}`);

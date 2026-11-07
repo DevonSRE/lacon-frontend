@@ -52,8 +52,13 @@ export default function CaseWorkspace({ id, initialCase }: { id: string; initial
   const revision = revisionHistory.data?.success ? revisionHistory.data.data.data.filter(m => m.action === "REVISION").at(-1) : undefined;
   return <div className="space-y-7 py-4">
     <div className="space-y-2"><h1 className="break-words text-xl font-semibold">{caseReference(record)}</h1><p>{record.first_name} {record.middle_name} {record.last_name} · {record.case_type}</p><span className="inline-block rounded bg-gray-100 px-3 py-1 text-sm">{statusLabel(record.status)}</span><p className="text-sm text-gray-500">Filed: {dateLabel(filedAt)}</p>
-      {/* Anyone who can open the case can take a copy of the record (T7). */}
-      <div className="pt-1"><DownloadCase caseId={id} reference={caseReference(record)} /></div></div>
+      {/* Anyone who can open the case can take a copy of the record (T7); the
+          client's stamped receipt is a different document (T8), and the API
+          refuses it to anyone who should not hand one over. */}
+      <div className="flex flex-wrap gap-2 pt-1">
+        <DownloadCase caseId={id} reference={caseReference(record)} />
+        <DownloadCase caseId={id} reference={caseReference(record)} copy="acknowledgement" />
+      </div></div>
     {!!record.possible_duplicate_of?.length && <div className="rounded border border-amber-300 bg-amber-50 p-4"><h2 className="font-semibold">Possible duplicate</h2><p className="text-sm">These cases share an email or phone number within the last 30 days. Check them before proceeding.</p><div className="mt-2 flex flex-wrap gap-3">{record.possible_duplicate_of.map(ref => <Link key={ref} className="text-sm underline" href={`/cases?search=${encodeURIComponent(ref)}`}>{ref}</Link>)}</div></div>}
     {record.status === "REVISION_REQUESTED" && <div className="rounded bg-amber-50 p-4"><h2 className="font-semibold">Revision requested</h2><p>{revision?.reason || "Review the case history for the assigner’s reason. Add a progress update after making the correction."}</p></div>}
     {record.routing_warning && <div role="status" className="rounded border border-amber-300 bg-amber-50 p-4 text-sm">{record.routing_warning}</div>}

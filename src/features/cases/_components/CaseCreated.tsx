@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/icons/icons";
 import { CustomeSheet } from "@/components/CustomSheet";
 import ViewCase from "./viewCase";
+import DownloadCase from "./DownloadCase";
 import { ICase } from "./table-columns";
 
 
@@ -76,6 +77,11 @@ export default function CaseCreated({ setOpen, openFileACase, details }: Custome
                     <p className="text-green-600 font-medium">{`Today, ${today}`}</p>
                 </div>
                 <div className="flex flex-col w-full  space-y-4 mt-6">
+                    {/* The stamped copy the client takes away, offered where the
+                        paralegal is standing with them (T8). */}
+                    {filed?.id && (
+                        <DownloadCase caseId={filed.id} reference={reference} copy="acknowledgement" />
+                    )}
                     <Button
                         onClick={handleViewCase}
                         variant={"outline"}
