@@ -3,6 +3,7 @@
 import { isAxiosError } from "axios";
 import { z } from "zod";
 import { axiosInstance } from "@/lib/_api/axios-config";
+import { toDownload } from "@/features/report/server/to-download";
 import { CASE_UPDATE_TYPES, courtStageLabel } from "@/lib/form-options";
 import { normalizeCase, type CaseRecord, type CaseFiler, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
 
@@ -46,6 +47,31 @@ export async function listCases(filters: CaseFilters): Promise<Result<PageResult
 export async function getCaseFilers(keyword = ""): Promise<Result<CaseFiler[]>> {
   const result = await read<CaseFiler[]>("/casefile/filers", { keyword });
   return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
+ * The case record as a PDF (T7). Anyone who can open the case can take a copy;
+ * the API refuses it otherwise and records who took it, because the record
+ * carries the client's details.
+ *
+ * 'arraybuffer' is required: in a server action the default response type
+ * decodes the bytes as UTF-8 text and corrupts the file.
+ */
+export async function downloadCase(id: string): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  if (!idSchema.safeParse(id).success) return { success: false, message: "Invalid case reference." };
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>(`/casefile/${id}/pdf`, { responseType: "arraybuffer" });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "case.pdf",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    const failed = failure(error);
+    return { success: false, message: failed.message };
+  }
 }
 
 export async function getCase(id: string): Promise<Result<CaseRecord>> {

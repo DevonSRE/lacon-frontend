@@ -26,6 +26,10 @@ function setup(response = record, error) {
     if (name === "@/lib/_api/axios-config") return { axiosInstance };
     if (name === "@/lib/form-options") return { CASE_UPDATE_TYPES: ["MEDIATIONS", "CASE IN COURT", "LEGAL ADVICE"] };
     if (name === "../domain") return { normalizeCase };
+    // The PDF download shares the report's byte-to-base64 helper (T7).
+    if (name === "@/features/report/server/to-download") {
+      return { toDownload: () => ({ success: true, data: "", filename: "case.pdf", contentType: "application/pdf" }) };
+    }
     return require(name);
   } });
   return { api: exports, calls };
