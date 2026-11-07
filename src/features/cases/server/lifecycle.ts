@@ -4,7 +4,7 @@ import { isAxiosError } from "axios";
 import { z } from "zod";
 import { axiosInstance } from "@/lib/_api/axios-config";
 import { CASE_UPDATE_TYPES, courtStageLabel } from "@/lib/form-options";
-import { normalizeCase, type CaseRecord, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
+import { normalizeCase, type CaseRecord, type CaseFiler, type CaseFilters, type CaseMovement, type CaseDocument, type DirectoryUser, type PageResult, type MovementCommand } from "../domain";
 
 type Result<T> = { success: true; data: T } | { success: false; status: number; message: string };
 type Envelope<T> = { data: T; success?: boolean; message?: string };
@@ -37,6 +37,17 @@ export async function listCases(filters: CaseFilters): Promise<Result<PageResult
   const result = await read<PageResult<CaseRecord>>("/casefile", filters);
   return result.success ? { success: true, data: { ...result.data, data: result.data.data.map(normalizeCase) } } : result;
 }
+/**
+ * The people who have filed a case the caller can see, for the "Filed by"
+ * filter (T4). The API reads them off the cases rather than the user
+ * directory, so it names only people who have actually filed something, and
+ * only within what the caller may already see.
+ */
+export async function getCaseFilers(keyword = ""): Promise<Result<CaseFiler[]>> {
+  const result = await read<CaseFiler[]>("/casefile/filers", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
 export async function getCase(id: string): Promise<Result<CaseRecord>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   const result = await read<CaseRecord>(`/casefile/${id}`);

@@ -38,7 +38,9 @@ export type DirectoryUser = {
 };
 export type CaseDocument = { id: string; document_title: string; document_type: string; document_url?: string; document_path?: string; created_at?: string; created_by?: Actor | null };
 export type PageResult<T> = { data: T[]; total_rows: number; total_pages: number; page: number; size: number };
-export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string };
+export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string; filed_by?: string };
+/** One person who has filed a case, for the "Filed by" filter (T4). */
+export type CaseFiler = { id: string; name: string; role: string; office: string };
 export type MovementCommand = {
   action: "route" | "assign" | "escalate" | "lawyer-reject" | "accept" | "reject" | "request-revision" | "status";
   target_user_id?: string; assignee_id?: string; reason?: string; status?: string;
