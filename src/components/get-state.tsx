@@ -13,7 +13,6 @@ export { displayStateName } from "@/lib/place-names";
 
 // The FCT has no State Coordinator: its civil and criminal cases are held by the
 // HQ Civil and Criminal Justice heads, and the API refuses the role for it.
-const isFCT = (title: string) => ["FCT", "FEDERAL CAPITAL TERRITORY", "ABUJA"].includes(title.trim().toUpperCase());
 
 export const GetState = ({
     placeholder,
@@ -23,7 +22,6 @@ export const GetState = ({
     className,
     onValueChange, // 🔥 added
     onLoadingChange,
-    excludeFCT,
     onlyStateId
 }: {
     value: string;
@@ -33,7 +31,6 @@ export const GetState = ({
     className?: string;
     onValueChange?: (value: string) => void; // 🔥 added
     onLoadingChange?: (loading: boolean) => void;
-    excludeFCT?: boolean;
     // onlyStateId narrows the list to one state, for an office that may only act
     // in its own: the request sheet offered all 37 and the API then refused every
     // one but theirs (QA 2026-11-01, item 3).
@@ -95,7 +92,6 @@ export const GetState = ({
                     {data?.data?.data?.length > 0 ? (
                         [...(data?.data?.data ?? [])] // clone to avoid mutating original
                             .filter((location: LocationOption) => !onlyStateId || location.id === onlyStateId)
-                            .filter((location: LocationOption) => !excludeFCT || !isFCT(location.title))
                             .sort((a, b) => a.title.localeCompare(b.title)) // 🔥 sort by title
                             .map((location: LocationOption) => (
                                 <SelectItem key={location.id} value={location.id} className="py-2">

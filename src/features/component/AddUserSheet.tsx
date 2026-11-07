@@ -206,9 +206,8 @@ export function AddUserSheet() {
                     onValueChange={(val: string) => setFormData(prev => ({ ...prev, state_id: val, center_id: "" }))}
                     placeholder="Select state"
                     onlyStateId={ownStateOnly}
-                    // The FCT has no State Coordinator; its cases go to the HQ
-                    // justice heads. It stays available for centre roles.
-                    excludeFCT={formData.user_type === "STATE COORDINATOR"}
+                    // The FCT office works like a state office since 6 Nov 2026,
+                    // so it takes a State Coordinator like any other state (T12).
                   />
 
                   {serverErrors.state_id && (

@@ -76,13 +76,25 @@ export function routeRoles(role: string): string[] {
 }
 const FCT_NAMES = ["FCT", "FEDERAL CAPITAL TERRITORY", "ABUJA"];
 const FCT_HEADS: Record<string, string> = { "CIVIL CASE": "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL CASE": "CRIMINAL JUSTICE DEPT. HEAD" };
-/** Who accepts or rejects an online case (the backend's policy.CanAcceptReject). The FCT has no State
- * Coordinator: its civil and criminal cases are reviewed by the HQ Civil and Criminal Justice heads. */
+/**
+ * Who accepts or rejects an online case (the backend's policy.CanAcceptReject).
+ * The FCT office works like a state office since 6 Nov 2026, so its civil and
+ * criminal cases are reviewed by the FCT State Coordinator like any other
+ * state's (T12).
+ */
 export function reviewerRole(c: Pick<CaseRecord, "case_type" | "state_name">): string | undefined {
-  if (FCT_NAMES.includes((c.state_name ?? "").trim().toUpperCase()) && FCT_HEADS[c.case_type]) return FCT_HEADS[c.case_type];
   if (c.case_type === "PDSS ORGANIZATION") return "PDSS UNIT HEAD";
   if (["CIVIL CASE", "CRIMINAL CASE"].includes(c.case_type)) return "STATE COORDINATOR";
   return undefined;
+}
+/**
+ * An HQ justice head still holding an FCT case from before that change may
+ * decide it too: those cases stay where they were sent, and a case nobody can
+ * decide is a case nobody can close. Holding it is checked separately, which is
+ * what keeps this from widening to every FCT case.
+ */
+export function standsInForFCT(c: Pick<CaseRecord, "case_type" | "state_name">, role: string): boolean {
+  return FCT_NAMES.includes((c.state_name ?? "").trim().toUpperCase()) && FCT_HEADS[c.case_type] === role;
 }
 export function casePermissions(c: CaseRecord, user: { id: string; role: string } | undefined) {
   const role = user?.role ?? "";
@@ -92,7 +104,7 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
   // A referred or transferred case is finished here, like a closed one (T6).
   const open = !["CLOSED", "DENIED", "REFERRED", "TRANSFERRED"].includes(c.status);
   const waitingReview = c.status === "SUBMITTED";
-  const reviewRole = !!role && role === reviewerRole(c);
+  const reviewRole = !!role && (role === reviewerRole(c) || standsInForFCT(c, role));
   // The DG may pick up a case nobody holds (no coordinator existed for it): review it or send it on.
   const pickup = role === "DIRECTOR GENERAL" && (!c.current_holder || !!c.holder_unavailable);
   // The DG may also send any open case on, whoever holds it and whatever stage

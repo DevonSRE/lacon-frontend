@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { casePermissions, filedFrom, movementReason, recordedUpdate, statusLabel } from "../src/features/cases/domain.ts";
+import { casePermissions, filedFrom, movementReason, recordedUpdate, reviewerRole, standsInForFCT, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
@@ -390,4 +390,29 @@ test("the filer is told what is missing before the case is sent", () => {
   );
   // Whitespace is not an answer.
   assert.deepEqual(Object.keys(caseSourceProblem({ case_source: "OTHER", brought_by: "   " })), ["brought_by"]);
+});
+
+// T12: the FCT office works like a state office since 6 Nov 2026. Its public
+// civil and criminal filings used to go to the HQ Civil and Criminal Justice
+// heads, because the FCT had no coordinator of its own.
+test("an FCT case is reviewed by the FCT coordinator", () => {
+  for (const state of ["FCT", "Federal Capital Territory", "Abuja"]) {
+    assert.equal(reviewerRole({ case_type: "CIVIL CASE", state_name: state }), "STATE COORDINATOR");
+    assert.equal(reviewerRole({ case_type: "CRIMINAL CASE", state_name: state }), "STATE COORDINATOR");
+  }
+  // Nothing about other states or other case types changed.
+  assert.equal(reviewerRole({ case_type: "CIVIL CASE", state_name: "Lagos" }), "STATE COORDINATOR");
+  assert.equal(reviewerRole({ case_type: "PDSS ORGANIZATION", state_name: "FCT" }), "PDSS UNIT HEAD");
+  assert.equal(reviewerRole({ case_type: "DECONGESTION", state_name: "Lagos" }), undefined);
+});
+
+// T12, criterion 4: the cases already with the HQ heads stay there, and a case
+// nobody can decide is a case nobody can close.
+test("an HQ justice head may still decide the FCT case they hold", () => {
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "FCT" }, "CIVIL JUSTICE DEPT. HEAD"), true);
+  assert.equal(standsInForFCT({ case_type: "CRIMINAL CASE", state_name: " abuja " }, "CRIMINAL JUSTICE DEPT. HEAD"), true);
+  // Not the other head, not another state, not another case type.
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "FCT" }, "CRIMINAL JUSTICE DEPT. HEAD"), false);
+  assert.equal(standsInForFCT({ case_type: "CIVIL CASE", state_name: "Lagos" }, "CIVIL JUSTICE DEPT. HEAD"), false);
+  assert.equal(standsInForFCT({ case_type: "PDSS ORGANIZATION", state_name: "FCT" }, "CIVIL JUSTICE DEPT. HEAD"), false);
 });
