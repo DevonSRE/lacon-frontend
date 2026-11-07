@@ -53,3 +53,29 @@ export function reasonProblem(reason: string): string | undefined {
   if (given.length < MIN_REASON) return "Please give a little more detail.";
   return undefined;
 }
+
+/**
+ * Who may open the Duplicates view (T5). The flag already shows on each case;
+ * this is the one place to review them together, and it is review only, so it
+ * belongs to the platform admins and Statistics, who keep the national picture.
+ * This mirrors `CanViewDuplicates` in `src/policy/policy.go`.
+ */
+const DUPLICATE_REVIEWERS = ["PLATFORM ADMIN", "SUPER ADMIN", "STATISTICS"];
+
+export function canReviewDuplicates(role?: string | null): boolean {
+  return DUPLICATE_REVIEWERS.includes((role ?? "").toUpperCase());
+}
+
+/** One flagged pair: the case it matched, and what the two share. */
+export type DuplicateLink = { reference: string; shared_on: string[] };
+
+/**
+ * Why a pair was flagged, in the reader's words, or nothing when the API could
+ * not say. "Same email and phone number" reads as one sentence; saying nothing
+ * is better than inventing a reason.
+ */
+export function sharedLabel(sharedOn: string[]): string {
+  const given = sharedOn.filter(Boolean);
+  if (given.length === 0) return "";
+  return `same ${given.join(" and ")}`;
+}

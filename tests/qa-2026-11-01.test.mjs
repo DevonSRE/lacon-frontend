@@ -7,7 +7,8 @@ import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
 import { roleLabel } from "../src/lib/role-labels.ts";
 import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
-import { MAX_SHOWN, hasDuplicates, reasonProblem, topMatches } from "../src/lib/duplicates.ts";
+import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
+import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -326,4 +327,67 @@ test("continuing past the warning needs a reason in words", () => {
   assert.match(reasonProblem("   ") ?? "", /why/i);
   assert.match(reasonProblem("new one") ?? "", /detail/i);
   assert.equal(reasonProblem("Different landlord dispute, unrelated matter"), undefined);
+});
+
+// T5: the flag showed on a case, but there was no one place to review the
+// flagged pairs. The view is review only, and only the platform admins and
+// Statistics keep the national picture it serves.
+test("the duplicates view belongs to the admins and Statistics", () => {
+  for (const role of ["PLATFORM ADMIN", "SUPER ADMIN", "STATISTICS", "statistics"]) {
+    assert.equal(canReviewDuplicates(role), true, role);
+  }
+  for (const role of ["DIRECTOR GENERAL", "STATE COORDINATOR", "INTERNAL PARALEGAL", "LACON LAWYER", "", undefined]) {
+    assert.equal(canReviewDuplicates(role), false, String(role));
+  }
+});
+
+// T5, criterion 2: a reviewer is told why a pair was flagged, not merely that
+// it was — and never told a reason the API did not give.
+test("a flagged pair says what the two cases share", () => {
+  assert.equal(sharedLabel(["email"]), "same email");
+  assert.equal(sharedLabel(["email", "phone number"]), "same email and phone number");
+  assert.equal(sharedLabel([]), "");
+  assert.equal(sharedLabel(["", null].filter(Boolean)), "");
+});
+
+// T17: the record said only how a case was entered — online or in an office —
+// which is not where it came from.
+test("a case source is read in words, including the ones never recorded", () => {
+  assert.equal(caseSourceLabel("WALK_IN"), "Walk-in at LACON office");
+  assert.equal(caseSourceLabel("custodial_visit"), "Detention / custodial centre visit");
+  assert.equal(caseSourceLabel("ONLINE"), "Online (public website)");
+  // Filed before this was asked: say so rather than guess.
+  assert.equal(caseSourceLabel(""), "Not recorded (filed before this change)");
+  assert.equal(caseSourceLabel(undefined), "Not recorded (filed before this change)");
+  // A source we do not know is shown as it was stored, not hidden.
+  assert.equal(caseSourceLabel("FROM THE MOON"), "FROM THE MOON");
+});
+
+test("only a walk-in client brought themselves", () => {
+  assert.equal(needsBroughtBy("WALK_IN"), false);
+  assert.equal(needsBroughtBy("ONLINE"), false);
+  assert.equal(needsBroughtBy(""), false);
+  for (const source of ["CUSTODIAL_VISIT", "COURT_REFERRAL", "ORGANISATION_REFERRAL", "OTHER"]) {
+    assert.equal(needsBroughtBy(source), true, source);
+  }
+  assert.equal(needsVisitDetails("CUSTODIAL_VISIT"), true);
+  assert.equal(needsVisitDetails("COURT_REFERRAL"), false);
+});
+
+// T17, criteria 2 and 3: a visit nobody can place is not a record.
+test("the filer is told what is missing before the case is sent", () => {
+  assert.deepEqual(caseSourceProblem({}), { case_source: "Say where this case came from." });
+  assert.deepEqual(caseSourceProblem({ case_source: "WALK_IN" }), {});
+  assert.deepEqual(Object.keys(caseSourceProblem({ case_source: "COURT_REFERRAL" })), ["brought_by"]);
+  assert.deepEqual(caseSourceProblem({ case_source: "COURT_REFERRAL", brought_by: "Barr. A. Musa, LACON lawyer" }), {});
+  assert.deepEqual(
+    Object.keys(caseSourceProblem({ case_source: "CUSTODIAL_VISIT", brought_by: "welfare officer" })),
+    ["facility_name", "visit_date"],
+  );
+  assert.deepEqual(
+    caseSourceProblem({ case_source: "CUSTODIAL_VISIT", brought_by: "welfare officer", facility_name: "Kuje Custodial Centre", visit_date: "2026-10-31" }),
+    {},
+  );
+  // Whitespace is not an answer.
+  assert.deepEqual(Object.keys(caseSourceProblem({ case_source: "OTHER", brought_by: "   " })), ["brought_by"]);
 });

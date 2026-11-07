@@ -30,6 +30,12 @@ export type CaseRecord = {
   // Why the filer went ahead although this client already had a case (T10).
   // Read beside the duplicate flag, which is the only place it is of use.
   duplicate_reason?: string;
+  // What each flagged pair shares, in the Duplicates view (T5).
+  duplicate_links?: Array<{ reference: string; shared_on: string[] }>;
+  // Where the case came from and who brought it (T17). Empty on cases filed
+  // before it was asked, which read as "not recorded".
+  case_source?: string; case_source_label?: string; brought_by?: string;
+  facility_name?: string; visit_date?: string;
   civil_case?: Record<string, unknown>; criminal_case?: Record<string, unknown>; pdss?: Record<string, unknown>;
   decongestion_unit?: Record<string, unknown>; perogative_of_mercy?: Record<string, unknown>;
   updated_by?: Array<Actor & { time?: string; action: string }>;
@@ -47,7 +53,8 @@ export type DirectoryUser = {
 };
 export type CaseDocument = { id: string; document_title: string; document_type: string; document_url?: string; document_path?: string; created_at?: string; created_by?: Actor | null };
 export type PageResult<T> = { data: T[]; total_rows: number; total_pages: number; page: number; size: number };
-export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string; filed_by?: string };
+export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string; filed_by?: string; /** The Duplicates view, and the date range it is filtered by (T5). */ duplicates?: boolean; from?: string; to?: string;
+  /** Where the case came from (T17). */ case_source?: string };
 /** One person who has filed a case, for the "Filed by" filter (T4). */
 export type CaseFiler = { id: string; name: string; role: string; office: string };
 export type MovementCommand = {
