@@ -11,13 +11,14 @@ import { states } from "@/lib/types";
 import { displayStateName } from "@/components/get-state";
 import { roleLabel } from "@/lib/role-labels";
 import { CASE_STATUS_LABELS, caseReference, statusLabel, filedFrom, HEAD_ROLES, COORDINATOR_ROLES } from "../domain";
-import { getCaseFilers, listCases } from "../server/lifecycle";
+import { getCaseFilers, getOffences, getPeopleOnCases, listCases } from "../server/lifecycle";
 import FileACaseComponent from "@/features/component/FileACase";
 import BulkCaseUploadDialog from "@/features/dashboard/components/BulkUpload";
 import CaseActions, { type Action } from "./CaseActions";
 import ExportCases from "./ExportCases";
 import { canReviewDuplicates, sharedLabel } from "@/lib/duplicates";
 import { CASE_SOURCES, ONLINE_SOURCE } from "@/lib/case-source";
+import { AGE_BRACKETS, SEXES, ageBounds, offenceParam } from "@/lib/statistics-filters";
 
 // What a row may offer without opening the case. The Action column held a single
 // "Open case" link, so a coordinator had to open every case to find the one
@@ -26,13 +27,27 @@ import { CASE_SOURCES, ONLINE_SOURCE } from "@/lib/case-source";
 // nothing extra.
 const ROW_ACTIONS: Action[] = ["accept", "reject", "route", "assign"];
 
-export default function CaseList({ title = "Cases", initialSearch = "" }: { title?: string; initialSearch?: string }) {
+/** What the list opens on, when a link asked for something in particular (T3). */
+export type Opening = {
+  search?: string; state?: string; offence?: string; sex?: string;
+  ageMin?: string; ageMax?: string; status?: string; caseType?: string;
+};
+
+/** The bracket whose bounds a link carries, so the picker shows what is applied. */
+function bracketFor(min: string, max: string): string {
+  if (min === "" && max === "") return "";
+  return AGE_BRACKETS.find(b =>
+    String(b.min) === min && (b.max === undefined ? max === "" : String(b.max) === max),
+  )?.value ?? "";
+}
+
+export default function CaseList({ title = "Cases", opening = {} }: { title?: string; opening?: Opening }) {
   const { data: user } = useAppSelector(s => s.profile);
-  const [search, setSearch] = useState(initialSearch);
+  const [search, setSearch] = useState(opening.search ?? "");
   const [debouncedSearch] = useDebounce(search, 300);
-  const [status, setStatus] = useState("all");
-  const [caseType, setCaseType] = useState("all");
-  const [state, setState] = useState("all");
+  const [status, setStatus] = useState(opening.status ?? "all");
+  const [caseType, setCaseType] = useState(opening.caseType ?? "all");
+  const [state, setState] = useState(opening.state ?? "all");
   const [queue, setQueue] = useState("all");
   const [filedBy, setFiledBy] = useState("all");
   const [filerSearch, setFilerSearch] = useState("");
@@ -44,6 +59,12 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
   const [from, setFrom] = useState("");
   // Where the case came from, which is not how it was entered (T17).
   const [caseSource, setCaseSource] = useState("all");
+  // The Statistics filters (T3). They answer questions no single filter does:
+  // "rape cases, victims aged 0-6, in Q1 2026".
+  const [offences, setOffences] = useState<string[]>(opening.offence ? [opening.offence] : []);
+  const [ageBracket, setAgeBracket] = useState(bracketFor(opening.ageMin ?? "", opening.ageMax ?? ""));
+  const [sex, setSex] = useState(opening.sex ?? "");
+  const [workedOn, setWorkedOn] = useState("");
   const [to, setTo] = useState("");
   const mayReviewDuplicates = canReviewDuplicates(user?.role);
   const canQueue = user?.role === "DIRECTOR GENERAL" || HEAD_ROLES.includes(user?.role ?? "") || COORDINATOR_ROLES.includes(user?.role ?? "");
@@ -52,12 +73,29 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
   // export, so a spreadsheet can never disagree with the screen it came from.
   const filters = {
     page, size: 10, search: debouncedSearch.trim() || "all", status, case_type: caseType, state, queue, filed_by: filedBy, case_source: caseSource,
+    offence: offenceParam(offences), sex: sex || undefined, worked_on: workedOn || undefined, ...ageBounds(ageBracket),
     ...(duplicatesOnly ? { duplicates: true, from: from || undefined, to: to || undefined } : {}),
   };
   const cases = useQuery({
-    queryKey: ["case-lifecycle", user?.id, "list", page, debouncedSearch, status, caseType, state, queue, filedBy, caseSource, duplicatesOnly, from, to],
+    queryKey: ["case-lifecycle", user?.id, "list", page, debouncedSearch, status, caseType, state, queue, filedBy, caseSource, offences, ageBracket, sex, workedOn, duplicatesOnly, from, to],
     queryFn: () => listCases(filters),
     enabled: !!user?.id,
+  });
+  // The offences on the cases this reader can see (T3). Read from the data
+  // because the agreed list is not loaded yet.
+  const offenceOptions = useQuery({
+    queryKey: ["case-offences", user?.id],
+    queryFn: () => getOffences(),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+  // Everyone who has had a hand in a case the reader can see (T3), which is a
+  // wider set than the filers below.
+  const people = useQuery({
+    queryKey: ["case-people", user?.id],
+    queryFn: () => getPeopleOnCases(),
+    enabled: !!user?.id,
+    staleTime: 60000,
   });
   // Who has filed a case the reader can see (T4). The API scopes this the same
   // way it scopes the list, so the names offered are never ones they cannot act on.
@@ -82,6 +120,24 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
       <select aria-label="Case type" className="rounded border p-2" value={caseType} onChange={filter(setCaseType)}><option value="all">All case types</option>{["CIVIL CASE", "CRIMINAL CASE", "PDSS ORGANIZATION", "PDSS STATION", "DECONGESTION", "MERCY APPLICATION"].map(value => <option key={value}>{value}</option>)}</select>
       <select aria-label="Filing state" className="rounded border p-2" value={state} onChange={filter(setState)}><option value="all">All filing states</option>{states.map(value => <option key={value} value={value}>{displayStateName(value)}</option>)}</select>
       <select aria-label="Case source" className="rounded border p-2" value={caseSource} onChange={filter(setCaseSource)}><option value="all">Any case source</option>{[...CASE_SOURCES, ONLINE_SOURCE].map(source => <option key={source.value} value={source.value}>{source.label}</option>)}</select>
+      <select aria-label="Offence" className="rounded border p-2" multiple={false} value={offences[0] ?? ""} onChange={event => { setOffences(event.target.value ? [event.target.value] : []); setPage(1); }}>
+        <option value="">Any offence</option>
+        {(offenceOptions.data?.success ? offenceOptions.data.data : []).map(o => <option key={o.offence} value={o.offence}>{o.offence} ({o.count})</option>)}
+      </select>
+      <select aria-label="Age range" className="rounded border p-2" value={ageBracket} onChange={filter(setAgeBracket)}>
+        <option value="">Any age</option>
+        {AGE_BRACKETS.map(bracket => <option key={bracket.value} value={bracket.value}>{bracket.label}</option>)}
+      </select>
+      <select aria-label="Sex" className="rounded border p-2" value={sex} onChange={filter(setSex)}>
+        <option value="">Any sex</option>
+        {SEXES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
+      <select aria-label="Worked on by" className="rounded border p-2" value={workedOn} onChange={filter(setWorkedOn)}>
+        <option value="">Worked on by anyone</option>
+        {(people.data?.success ? people.data.data : []).map(person => (
+          <option key={person.id} value={person.id}>{[person.name, roleLabel(person.role)].filter(Boolean).join(" · ")}</option>
+        ))}
+      </select>
       <div className="space-y-1">
         <Input aria-label="Search who filed" placeholder="Search who filed" value={filerSearch} onChange={e => setFilerSearch(e.target.value)} />
         <select aria-label="Filed by" className="w-full rounded border p-2" value={filedBy} onChange={filter(setFiledBy)}>

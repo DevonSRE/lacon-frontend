@@ -1,16 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useAppSelector } from "@/hooks/redux";
 import { useAction } from "@/context/ActionContext";
 import { changeText, changeTone, quarterOf, recentQuarters } from "@/lib/quarters";
+import { AGE_BRACKETS, SEXES, ageBounds, filterSummary, offenceParam } from "@/lib/statistics-filters";
+import { getOffences, getPeopleOnCases } from "@/features/cases/server/lifecycle";
 import {
   downloadManagementReport,
   getManagementReport,
   type ManagementFilters,
+  type ManagementRow,
   type ManagementSection,
 } from "../server/management-report";
 
@@ -38,6 +42,13 @@ export default function ManagementReport() {
   const quarters = recentQuarters();
   const [period, setPeriod] = useState(`${current.year}-${current.quarter}`);
   const [custom, setCustom] = useState({ from: "", to: "" });
+  // The Statistics filters (T3). Every figure and section on the page answers
+  // them, and the PDF is printed from the same report, so a filtered page and
+  // its printout cannot disagree.
+  const [offences, setOffences] = useState<string[]>([]);
+  const [ageBracket, setAgeBracket] = useState("");
+  const [sex, setSex] = useState("");
+  const [workedOn, setWorkedOn] = useState("");
   const [downloading, setDownloading] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -48,9 +59,34 @@ export default function ManagementReport() {
     state: selectedStateId || undefined,
     center: selectedCentreId || undefined,
   };
+  const narrowed = {
+    ...area,
+    offence: offenceParam(offences),
+    sex: sex || undefined,
+    worked_on: workedOn || undefined,
+    ...ageBounds(ageBracket),
+  };
   const filters: ManagementFilters = usingCustomDates
-    ? { ...area, from: custom.from, to: custom.to }
-    : { ...area, quarter, year };
+    ? { ...narrowed, from: custom.from, to: custom.to }
+    : { ...narrowed, quarter, year };
+
+  // The offences on the cases this reader can see (T3), read from the data
+  // because the agreed list is not loaded yet.
+  const offenceOptions = useQuery({
+    queryKey: ["case-offences", user?.id],
+    queryFn: () => getOffences(),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
+
+  // Everyone who has had a hand in a case this reader can see (T3): the
+  // question "how many cases has this officer worked on this year?".
+  const people = useQuery({
+    queryKey: ["case-people", user?.id],
+    queryFn: () => getPeopleOnCases(),
+    enabled: !!user?.id,
+    staleTime: 60000,
+  });
 
   const report = useQuery({
     queryKey: ["management-report", user?.id, filters],
@@ -80,6 +116,7 @@ export default function ManagementReport() {
   };
 
   const data = report.data?.success ? report.data.data : undefined;
+  const workedOnName = (people.data?.success ? people.data.data : []).find(p => p.id === workedOn)?.name;
 
   return (
     <div className="space-y-6">
@@ -132,7 +169,56 @@ export default function ManagementReport() {
         {usingCustomDates && (
           <Button variant="ghost" onClick={() => setCustom({ from: "", to: "" })}>Back to quarters</Button>
         )}
+        <label className="flex flex-col text-sm">
+          Offence
+          <select aria-label="Offence" className="mt-1 rounded border p-2" value={offences[0] ?? ""}
+            onChange={event => setOffences(event.target.value ? [event.target.value] : [])}>
+            <option value="">Any offence</option>
+            {(offenceOptions.data?.success ? offenceOptions.data.data : []).map(o => (
+              <option key={o.offence} value={o.offence}>{o.offence} ({o.count})</option>
+            ))}
+          </select>
+        </label>
+        <label className="flex flex-col text-sm">
+          Age
+          <select aria-label="Age range" className="mt-1 rounded border p-2" value={ageBracket}
+            onChange={event => setAgeBracket(event.target.value)}>
+            <option value="">Any age</option>
+            {AGE_BRACKETS.map(bracket => <option key={bracket.value} value={bracket.value}>{bracket.label}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col text-sm">
+          Sex
+          <select aria-label="Sex" className="mt-1 rounded border p-2" value={sex}
+            onChange={event => setSex(event.target.value)}>
+            <option value="">Any sex</option>
+            {SEXES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+        </label>
+        <label className="flex flex-col text-sm">
+          Worked on by
+          <select aria-label="Worked on by" className="mt-1 rounded border p-2" value={workedOn}
+            onChange={event => setWorkedOn(event.target.value)}>
+            <option value="">Anyone</option>
+            {(people.data?.success ? people.data.data : []).map(person => (
+              <option key={person.id} value={person.id}>{person.name}</option>
+            ))}
+          </select>
+        </label>
+        {(offences.length > 0 || ageBracket || sex || workedOn) && (
+          <Button variant="ghost" onClick={() => { setOffences([]); setAgeBracket(""); setSex(""); setWorkedOn(""); }}>
+            Clear filters
+          </Button>
+        )}
       </div>
+
+      {/* What the figures below are narrowed to, said in words: a filtered
+          report that does not say so reads as the whole picture. */}
+      {filterSummary({ offences, ageBracket, sex, workedOnName: workedOnName }) !== "" && (
+        <p className="text-sm text-gray-600">
+          Showing {filterSummary({ offences, ageBracket, sex, workedOnName: workedOnName })} only.
+        </p>
+      )}
 
       {report.isLoading && <p role="status" className="py-10 text-center">Building the report…</p>}
       {report.data && !report.data.success && (
@@ -165,14 +251,46 @@ export default function ManagementReport() {
             ))}
           </section>
 
-          {data.sections.map(section => <Section key={section.key} section={section} />)}
+          {data.sections.map(section => <Section key={section.key} section={section} filters={filters} />)}
         </>
       )}
     </div>
   );
 }
 
-function Section({ section }: { section: ManagementSection }) {
+/**
+ * Where a row's cases are, on the case list (T3, criterion 4). A figure nobody
+ * can open is a figure nobody can check: the link carries the same filters the
+ * report was read with, so the list shows exactly what was counted.
+ */
+function drillDown(section: ManagementSection, row: ManagementRow, filters: ManagementFilters): string | undefined {
+  const params = new URLSearchParams();
+  const carry: Array<[string, string | number | undefined]> = [
+    ["state", filters.state], ["offence", filters.offence], ["sex", filters.sex],
+    ["age_min", filters.age_min], ["age_max", filters.age_max],
+    ["from", filters.from], ["to", filters.to],
+  ];
+  for (const [key, value] of carry) {
+    if (value !== undefined && value !== "") params.set(key, String(value));
+  }
+  switch (section.key) {
+    case "offences":
+      params.set("offence", row.title);
+      break;
+    case "backlog":
+      // The office column is the filing state, which is how the list reads it.
+      params.set("state", row.title);
+      break;
+    default:
+      // Outcomes, lawyers and decongestion have no filter of their own on the
+      // case list yet, so the row would open an unfiltered list and look like
+      // a link that lost the reader's place. Better to offer none.
+      return undefined;
+  }
+  return `/cases?${params.toString()}`;
+}
+
+function Section({ section, filters }: { section: ManagementSection; filters: ManagementFilters }) {
   const rows = section.rows ?? [];
   const columns = section.columns.filter(column => column.trim() !== "");
   return (
@@ -192,7 +310,9 @@ function Section({ section }: { section: ManagementSection }) {
               {rows.map((row, index) => (
                 <tr key={`${row.title}-${index}`} className="border-t">
                   <td className="p-3">
-                    {row.title}
+                    {drillDown(section, row, filters)
+                      ? <Link className="underline" href={drillDown(section, row, filters)!}>{row.title}</Link>
+                      : row.title}
                     {row.note && <span className="block text-xs text-gray-500">{row.note}</span>}
                   </td>
                   {columns.length > 1 && <td className="p-3 text-right">{row.count}</td>}

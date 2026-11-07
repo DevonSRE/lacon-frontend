@@ -97,6 +97,31 @@ export async function downloadAcknowledgement(id: string): Promise<
 }
 
 /**
+ * Everyone who has had a hand in the cases the caller can see (T3).
+ *
+ * "Filed by" names only whoever entered the case (T4), which is not the
+ * question Statistics asks: a case passes through a holder, an assigner and a
+ * lawyer, and the officer whose workload is being counted is often none of
+ * them at filing.
+ */
+export async function getPeopleOnCases(keyword = ""): Promise<Result<CaseFiler[]>> {
+  const result = await read<CaseFiler[] | null>("/casefile/people", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
+ * The offences recorded on the cases the caller can see (T3).
+ *
+ * The options come from the cases, not from a fixed list: the offence list
+ * LACON agreed is not loaded yet, and a filter whose options do not match the
+ * data finds nothing and tells the reader nothing.
+ */
+export async function getOffences(keyword = ""): Promise<Result<Array<{ offence: string; count: number }>>> {
+  const result = await read<Array<{ offence: string; count: number }> | null>("/casefile/offences", { keyword });
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
  * The case list as a spreadsheet (T17).
  *
  * The API answers the same filters the list was read with and scopes it the

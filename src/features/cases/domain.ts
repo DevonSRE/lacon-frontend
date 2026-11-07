@@ -54,7 +54,10 @@ export type DirectoryUser = {
 export type CaseDocument = { id: string; document_title: string; document_type: string; document_url?: string; document_path?: string; created_at?: string; created_by?: Actor | null };
 export type PageResult<T> = { data: T[]; total_rows: number; total_pages: number; page: number; size: number };
 export type CaseFilters = { page?: number; size?: number; search?: string; state?: string; case_type?: string; status?: string; queue?: string; filed_by?: string; /** The Duplicates view, and the date range it is filtered by (T5). */ duplicates?: boolean; from?: string; to?: string;
-  /** Where the case came from (T17). */ case_source?: string };
+  /** Where the case came from (T17). */ case_source?: string;
+  /** The Statistics filters (T3): offence, age bracket, sex, and anyone who
+   * had a hand in the case. */
+  offence?: string; age_min?: number; age_max?: number; sex?: string; worked_on?: string };
 /** One person who has filed a case, for the "Filed by" filter (T4). */
 export type CaseFiler = { id: string; name: string; role: string; office: string };
 export type MovementCommand = {

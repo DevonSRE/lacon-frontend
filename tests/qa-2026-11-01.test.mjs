@@ -10,6 +10,7 @@ import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
 import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
+import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -459,4 +460,41 @@ test("the period picker offers past quarters, newest first", () => {
   // that has not happened has nothing in it.
   assert.equal(quarters[4].label, "Q4 2025");
   assert.ok(quarters.every(q => q.year < 2026 || q.quarter <= 4));
+});
+
+// T3: Statistics asks "rape cases, victims aged 0-6, in Q1 2026". Nothing could
+// be narrowed by offence, age or sex, so none of those questions had an answer.
+test("an age bracket becomes the bounds the API filters on", () => {
+  assert.deepEqual(ageBounds("0-6"), { age_min: 0, age_max: 6 });
+  assert.deepEqual(ageBounds("13-17"), { age_min: 13, age_max: 17 });
+  // Open-ended at the top: an upper limit there would quietly drop the oldest.
+  assert.deepEqual(ageBounds("51-"), { age_min: 51 });
+  // No bracket chosen is no filter, not a bracket of zero.
+  assert.deepEqual(ageBounds(""), {});
+  assert.deepEqual(ageBounds("nonsense"), {});
+  // Every bracket the page offers can be turned into bounds.
+  for (const bracket of AGE_BRACKETS) {
+    assert.notDeepEqual(ageBounds(bracket.value), {}, bracket.value);
+  }
+});
+
+test("several offences are asked for as either", () => {
+  assert.equal(offenceParam(["Rape"]), "Rape");
+  assert.equal(offenceParam(["Rape", "Defilement"]), "Rape,Defilement");
+  // Nothing chosen is no filter at all, not an empty one.
+  assert.equal(offenceParam([]), undefined);
+  assert.equal(offenceParam(["", "  "]), undefined);
+});
+
+// A filtered report that does not say so reads as the whole picture.
+test("the page says what it has been narrowed to", () => {
+  assert.equal(
+    filterSummary({ offences: ["Rape"], ageBracket: "0-6", sex: "FEMALE" }),
+    "Rape, aged 0 to 6, female",
+  );
+  assert.equal(filterSummary({ offences: ["Rape", "Defilement"] }), "Rape or Defilement");
+  assert.equal(filterSummary({ ageBracket: "13-17" }), "aged 13 to 17");
+  assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
+  // Nothing narrowed, nothing said.
+  assert.equal(filterSummary({}), "");
 });

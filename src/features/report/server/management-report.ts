@@ -60,6 +60,12 @@ export type ManagementFilters = {
   zone?: string;
   state?: string;
   center?: string;
+  // The Statistics filters (T3). Every figure and section answers them.
+  offence?: string;
+  age_min?: number;
+  age_max?: number;
+  sex?: string;
+  worked_on?: string;
 };
 
 type Result<T> = { success: true; data: T } | { success: false; message: string };
