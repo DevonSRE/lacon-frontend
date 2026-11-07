@@ -15,6 +15,7 @@ import { getCaseFilers, listCases } from "../server/lifecycle";
 import FileACaseComponent from "@/features/component/FileACase";
 import BulkCaseUploadDialog from "@/features/dashboard/components/BulkUpload";
 import CaseActions, { type Action } from "./CaseActions";
+import ExportCases from "./ExportCases";
 import { canReviewDuplicates, sharedLabel } from "@/lib/duplicates";
 import { CASE_SOURCES, ONLINE_SOURCE } from "@/lib/case-source";
 
@@ -47,12 +48,15 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
   const mayReviewDuplicates = canReviewDuplicates(user?.role);
   const canQueue = user?.role === "DIRECTOR GENERAL" || HEAD_ROLES.includes(user?.role ?? "") || COORDINATOR_ROLES.includes(user?.role ?? "");
   const canFile = user?.role === "INTERNAL PARALEGAL";
+  // One description of what is being looked at, read by the list and by its
+  // export, so a spreadsheet can never disagree with the screen it came from.
+  const filters = {
+    page, size: 10, search: debouncedSearch.trim() || "all", status, case_type: caseType, state, queue, filed_by: filedBy, case_source: caseSource,
+    ...(duplicatesOnly ? { duplicates: true, from: from || undefined, to: to || undefined } : {}),
+  };
   const cases = useQuery({
     queryKey: ["case-lifecycle", user?.id, "list", page, debouncedSearch, status, caseType, state, queue, filedBy, caseSource, duplicatesOnly, from, to],
-    queryFn: () => listCases({
-      page, size: 10, search: debouncedSearch.trim() || "all", status, case_type: caseType, state, queue, filed_by: filedBy, case_source: caseSource,
-      ...(duplicatesOnly ? { duplicates: true, from: from || undefined, to: to || undefined } : {}),
-    }),
+    queryFn: () => listCases(filters),
     enabled: !!user?.id,
   });
   // Who has filed a case the reader can see (T4). The API scopes this the same
@@ -68,7 +72,7 @@ export default function CaseList({ title = "Cases", initialSearch = "" }: { titl
   const rows = result?.data ?? [];
   const filter = (setter: (value: string) => void) => (event: React.ChangeEvent<HTMLSelectElement>) => { setter(event.target.value); setPage(1); };
   return <div className="min-w-0 max-w-full space-y-5">
-    <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">{title}</h1>{canFile && <div className="flex flex-wrap gap-2"><BulkCaseUploadDialog onUploaded={() => cases.refetch()} /><FileACaseComponent userRole={user.role} buttonText="File a Case" showIcon onCaseSubmitted={() => cases.refetch()} buttonClassName="bg-red-600 text-white" /></div>}</div>
+    <div className="flex flex-wrap items-center justify-between gap-3"><h1 className="text-2xl font-semibold">{title}</h1><div className="flex flex-wrap gap-2"><ExportCases filters={filters} />{canFile && <><BulkCaseUploadDialog onUploaded={() => cases.refetch()} /><FileACaseComponent userRole={user.role} buttonText="File a Case" showIcon onCaseSubmitted={() => cases.refetch()} buttonClassName="bg-red-600 text-white" /></>}</div></div>
     {mayReviewDuplicates && <div className="flex flex-wrap gap-2">{[{ value: false, label: "All cases" }, { value: true, label: "Duplicates" }].map(tab => <Button key={String(tab.value)} variant={duplicatesOnly === tab.value ? "default" : "outline"} onClick={() => { setDuplicatesOnly(tab.value); setPage(1); }}>{tab.label}</Button>)}</div>}
     {duplicatesOnly && <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm"><p>Every case flagged as a possible duplicate, with the case it matched. This view is for review only \u2014 nothing here changes a case.</p><div className="mt-2 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2">Filed from <input type="date" aria-label="Filed from" className="rounded border p-1" value={from} onChange={e => { setFrom(e.target.value); setPage(1); }} /></label><label className="flex items-center gap-2">to <input type="date" aria-label="Filed to" className="rounded border p-1" value={to} onChange={e => { setTo(e.target.value); setPage(1); }} /></label></div></div>}
     {canQueue && <div className="flex flex-wrap gap-2">{[{ value: "all", label: "All cases in scope" }, { value: "mine", label: "My queue" }, { value: "unassigned", label: "Awaiting assignment" }].map(tab => <Button key={tab.value} variant={queue === tab.value ? "default" : "outline"} onClick={() => { setQueue(tab.value); setPage(1); }}>{tab.label}</Button>)}</div>}

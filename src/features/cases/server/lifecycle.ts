@@ -96,6 +96,31 @@ export async function downloadAcknowledgement(id: string): Promise<
   }
 }
 
+/**
+ * The case list as a spreadsheet (T17).
+ *
+ * The API answers the same filters the list was read with and scopes it the
+ * same way, so the export is a copy of what is on screen rather than a second,
+ * wider question.
+ */
+export async function exportCases(filters: CaseFilters): Promise<
+  { success: true; data: string; filename: string; contentType: string } | { success: false; message: string }
+> {
+  try {
+    const response = await axiosInstance.get<ArrayBuffer>("/casefile/export", {
+      params: filters,
+      responseType: "arraybuffer",
+    });
+    const result = toDownload(
+      { data: response.data, headers: response.headers as Record<string, unknown> },
+      "LACON-cases.xlsx",
+    );
+    return result.success ? result : { success: false, message: result.message };
+  } catch (error) {
+    return { success: false, message: failure(error).message };
+  }
+}
+
 export async function getCase(id: string): Promise<Result<CaseRecord>> {
   if (!idSchema.safeParse(id).success) return { success: false, status: 400, message: "Invalid case reference." };
   const result = await read<CaseRecord>(`/casefile/${id}`);

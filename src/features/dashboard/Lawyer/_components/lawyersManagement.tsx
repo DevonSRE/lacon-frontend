@@ -29,11 +29,18 @@ import { CustomDialog } from "@/components/CustomDialog";
 import SuspensionForm from "./sheet/SuspendDelete";
 
 import { getPendingAccountRequests } from "@/features/usersRole/invitation-actions";
+import { GetState } from "@/components/get-state";
+import { roleLabel } from "@/lib/role-labels";
+import { LAWYER_TYPES } from "@/lib/lawyer-types";
 
 export default function Lawyers() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const [status, setStatus] = useState("");
+    // Who the list is narrowed to (T9). Statistics answers questions by state
+    // and by kind of lawyer, and the three filters combine.
+    const [stateId, setStateId] = useState("");
+    const [lawyerType, setLawyerType] = useState("");
     const { setIsOpen } = useAction();
     const { data: user } = useAppSelector((state) => state.profile);
 
@@ -77,13 +84,15 @@ export default function Lawyers() {
     );
 
     const { data, isLoading } = useQuery({
-        queryKey: ["getLaweyersManagement", currentPage, debouncedSearchTerm, status],
+        queryKey: ["getLaweyersManagement", currentPage, debouncedSearchTerm, status, stateId, lawyerType],
         queryFn: async () => {
             const filters = {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 keyword: debouncedSearchTerm,
                 status: status,
+                ...(stateId ? { state: stateId } : {}),
+                ...(lawyerType ? { user_type: lawyerType } : {}),
             };
             return await GetLawyersManagementAction(filters);
         },
@@ -121,7 +130,27 @@ export default function Lawyers() {
                         />
                     </div>
 
-                    <section className="flex gap-3">
+                    <section className="flex flex-wrap items-center gap-3">
+                        <div className="w-56">
+                            {/* The state a lawyer practises in, which pro bono
+                                lawyers carry from the state they registered in (T9). */}
+                            <GetState
+                                value={stateId}
+                                placeholder="Any state"
+                                onValueChange={(value) => { setStateId(value); setCurrentPage(1); }}
+                            />
+                        </div>
+                        <select
+                            aria-label="Lawyer type"
+                            className="h-11 rounded border px-3 text-sm"
+                            value={lawyerType}
+                            onChange={(event) => { setLawyerType(event.target.value); setCurrentPage(1); }}
+                        >
+                            <option value="">Any type</option>
+                            {LAWYER_TYPES.map((type) => (
+                                <option key={type} value={type}>{roleLabel(type)}</option>
+                            ))}
+                        </select>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="text-sm h-11 w-24">
@@ -130,14 +159,26 @@ export default function Lawyers() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="space-y-2 space-x-2 overflow-y-auto">
-                                <DropdownMenuCheckboxItem onClick={() => setStatus("active")}>
+                                <DropdownMenuCheckboxItem onClick={() => { setStatus(""); setCurrentPage(1); }}>
+                                    Any status
+                                </DropdownMenuCheckboxItem>
+                                <DropdownMenuCheckboxItem onClick={() => { setStatus("active"); setCurrentPage(1); }}>
                                     Active
                                 </DropdownMenuCheckboxItem>
-                                <DropdownMenuCheckboxItem onClick={() => setStatus("inactive")}>
+                                <DropdownMenuCheckboxItem onClick={() => { setStatus("inactive"); setCurrentPage(1); }}>
                                     Inactive (Suspended)
                                 </DropdownMenuCheckboxItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        {(stateId || lawyerType || status) && (
+                            <Button
+                                variant="ghost"
+                                className="h-11"
+                                onClick={() => { setStateId(""); setLawyerType(""); setStatus(""); setCurrentPage(1); }}
+                            >
+                                Clear filters
+                            </Button>
+                        )}
                     </section>
                 </div>
 

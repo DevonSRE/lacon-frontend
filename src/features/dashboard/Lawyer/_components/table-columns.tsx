@@ -232,6 +232,19 @@ export const createLawyersManagementColumns = (
       },
     },
     {
+      // What the lawyer has finished, beside what they are carrying (T9).
+      // Statistics reads the two together to see who is productive and who is
+      // merely loaded.
+      accessorKey: "completed_cases",
+      header: "Cases completed",
+      cell: ({ row }) => {
+        const done = row.original.completed_cases;
+        return done === undefined
+          ? <span className="text-sm text-muted-foreground">-</span>
+          : <span className="text-sm">{done}</span>;
+      },
+    },
+    {
       accessorKey: "zone_name",
       header: "Zone",
     },
