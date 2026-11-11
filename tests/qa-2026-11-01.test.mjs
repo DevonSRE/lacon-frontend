@@ -358,9 +358,9 @@ test("a case source is read in words, including the ones never recorded", () => 
   assert.equal(caseSourceLabel("WALK_IN"), "Walk-in at LACON office");
   assert.equal(caseSourceLabel("custodial_visit"), "Detention / custodial centre visit");
   assert.equal(caseSourceLabel("ONLINE"), "Online (public website)");
-  // Filed before this was asked: say so rather than guess.
-  assert.equal(caseSourceLabel(""), "Not recorded (filed before this change)");
-  assert.equal(caseSourceLabel(undefined), "Not recorded (filed before this change)");
+  // Never given (filed before this was asked, or a blank bulk row): say so rather than guess.
+  assert.equal(caseSourceLabel(""), "Not recorded");
+  assert.equal(caseSourceLabel(undefined), "Not recorded");
   // A source we do not know is shown as it was stored, not hidden.
   assert.equal(caseSourceLabel("FROM THE MOON"), "FROM THE MOON");
 });

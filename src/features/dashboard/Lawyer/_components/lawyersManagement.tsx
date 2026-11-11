@@ -43,6 +43,7 @@ export default function Lawyers() {
     const [lawyerType, setLawyerType] = useState("");
     const { setIsOpen } = useAction();
     const { data: user } = useAppSelector((state) => state.profile);
+    const singleState = user?.role === ROLES.STATE_COORDINATOR || user?.role === ROLES.CENTRE_COORDINATOR;
 
     // Decoupled state
     const [sheetOpen, setSheetOpenMain] = useState(false);
@@ -131,15 +132,19 @@ export default function Lawyers() {
                     </div>
 
                     <section className="flex flex-wrap items-center gap-3">
+                        {/* The state a lawyer practises in, which pro bono
+                            lawyers carry from the state they registered in (T9).
+                            State and Centre Coordinators only ever see their own
+                            state (the API narrows the list), so they get no picker. */}
+                        {!singleState && (
                         <div className="w-56">
-                            {/* The state a lawyer practises in, which pro bono
-                                lawyers carry from the state they registered in (T9). */}
                             <GetState
                                 value={stateId}
                                 placeholder="Any state"
                                 onValueChange={(value) => { setStateId(value); setCurrentPage(1); }}
                             />
                         </div>
+                        )}
                         <select
                             aria-label="Lawyer type"
                             className="h-11 rounded border px-3 text-sm"

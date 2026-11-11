@@ -20,10 +20,14 @@ export const CASE_SOURCES = [
 /** Set by the system for a public filing, never chosen by a filer. */
 export const ONLINE_SOURCE = { value: "ONLINE", label: "Online (public website)" };
 
-/** The source in words, including the cases filed before it was asked. */
+/**
+ * The source in words. A blank source is a case filed before this was asked,
+ * or a bulk row that left the column empty, so it says only "Not recorded"
+ * (it read "filed before this change" on cases uploaded the same day).
+ */
 export function caseSourceLabel(source?: string | null): string {
   const given = (source ?? "").trim().toUpperCase();
-  if (given === "") return "Not recorded (filed before this change)";
+  if (given === "") return "Not recorded";
   if (given === ONLINE_SOURCE.value) return ONLINE_SOURCE.label;
   return CASE_SOURCES.find(s => s.value === given)?.label ?? given;
 }
