@@ -8,12 +8,21 @@ import { useQuery } from "@tanstack/react-query";
 import { getProbunoLawyersRequestSingleAction } from "./userRoleAction";
 import { displayStateName } from "@/lib/place-names";
 
-const DesignationLetter = () => {
+/**
+ * The Letter of Designation.
+ *
+ * `applicationId` is for a pro bono lawyer reading their own letter, where
+ * there is no id in the URL to read: only the reviewer could open the letter,
+ * and only in the moment of approving the application
+ * (QA 2026-11-01 run 4, 13 Nov, row 39). The API takes either the
+ * application's id or the lawyer's account id.
+ */
+const DesignationLetter = ({ applicationId }: { applicationId?: string }) => {
   const router = useRouter();
   const [downloading,startDownload]=useTransition();
   const download=()=>startDownload(async()=>{const r=await downloadDesignationLetter(String(id));if(!r.success){toast.error(r.message);return;}const url=URL.createObjectURL(new Blob([Uint8Array.from(atob(r.data),c=>c.charCodeAt(0))],{type:r.contentType}));const a=document.createElement("a");a.href=url;a.download=r.filename;a.click();URL.revokeObjectURL(url);});
   const params = useParams();
-  const id = params.id;
+  const id = applicationId ?? params.id;
 
   // Hooks must run on every render, so the query comes before any early return.
   const { data } = useQuery({

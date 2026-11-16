@@ -101,6 +101,14 @@ const navItems: NavItem[] = [
     roles: ROUTE_ACCESS["/reports"],
   },
   {
+    // A pro bono lawyer could not reach their own Letter of Designation at all
+    // (QA 2026-11-01 run 4, 13 Nov, row 39).
+    icon: <Icons.report />,
+    name: "My Letter",
+    path: "/designation-letter",
+    roles: ROUTE_ACCESS["/designation-letter"],
+  },
+  {
     name: "Organisation",
     icon: <Icons.settings />,
     path: "/organisation",

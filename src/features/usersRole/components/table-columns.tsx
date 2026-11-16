@@ -8,6 +8,8 @@ import { Eye, MoreVertical, Pencil } from "lucide-react";
 import { ROLES } from "@/types/auth";
 import { userStatusBadge } from "@/lib/user-status";
 import { roleLabel } from "@/lib/role-labels";
+import { applicationSourceLabel } from "@/lib/probono-source";
+import { displayStateName } from "@/lib/place-names";
 
 export const createUserColumns = (
   userRole: ROLES,
@@ -270,6 +272,33 @@ export const createProbunoRequestColumns = (userRole: ROLES,
       accessorKey: "LawyerName",
       header: "Name",
       cell: ({ row }) => <span>{row.original.FirstName} {row.original.LastName}</span>,
+    },
+    {
+      id: "Source",
+      header: "Source",
+      // Which form the application came in on. Registration and Inventory
+      // applications sat in one list with nothing to tell them apart
+      // (QA 2026-11-01 run 4, 13 Nov, row 37).
+      cell: ({ row }) => <span>{applicationSourceLabel(row.original.RegistrationSource)}</span>,
+    },
+    {
+      accessorKey: "Email",
+      header: "Email",
+      cell: ({ row }) => <span className="break-all">{row.original.Email || "-"}</span>,
+    },
+    {
+      accessorKey: "StateOfPractice",
+      header: "State",
+      cell: ({ row }) => <span>{displayStateName(row.original.StateOfPractice) || "-"}</span>,
+    },
+    {
+      id: "Submitted",
+      header: "Date Submitted",
+      cell: ({ row }) => {
+        if (!row.original.CreatedAt) return <span>-</span>;
+        const date = new Date(row.original.CreatedAt);
+        return <span>{Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("en-GB")}</span>;
+      },
     },
     {
       accessorKey: "Experience",

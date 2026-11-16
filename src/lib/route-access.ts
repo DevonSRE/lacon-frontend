@@ -68,6 +68,10 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
     ROLES.STATISTICS,
     ...UNIT_HEADS,
   ],
+  // A pro bono lawyer's own Letter of Designation. The letter lived only under
+  // /users, which they may not open, so the person it is addressed to was sent
+  // away from it (QA 2026-11-01 run 4, 13 Nov, row 39).
+  "/designation-letter": [ROLES.PRO_BONO_LAWYER],
   "/settings": [ROLES.ADMIN],
   // Zones, states and centres decide where cases are routed and who holds them,
   // so only a platform admin may change them (the API agrees).

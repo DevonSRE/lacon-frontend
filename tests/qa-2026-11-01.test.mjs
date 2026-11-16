@@ -12,6 +12,8 @@ import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails }
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
+import { applicationSourceLabel, isInventoryApplication } from "../src/lib/probono-source.ts";
+import { readApplication } from "../src/lib/probono-application.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -497,4 +499,60 @@ test("the page says what it has been narrowed to", () => {
   assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
   // Nothing narrowed, nothing said.
   assert.equal(filterSummary({}), "");
+});
+
+// QA 2026-11-01 run 4, 13 Nov, rows 36 and 37: the applications list could not
+// tell a Registration from an Inventory, and the review left out the fields
+// only the Inventory form asks for.
+test("a pro bono application says which form it came in on", () => {
+  assert.equal(applicationSourceLabel("NEW_APPLICATION"), "Registration");
+  assert.equal(applicationSourceLabel("EXISTING_CASES"), "Inventory");
+  assert.equal(applicationSourceLabel("DIRECT_ONBOARDING"), "Onboarded by LACON");
+  // Lower case and padding come back from the API too.
+  assert.equal(applicationSourceLabel(" existing_cases "), "Inventory");
+  // Nothing recorded reads as nothing, not as "undefined".
+  assert.equal(applicationSourceLabel(undefined), "-");
+  assert.equal(applicationSourceLabel(""), "-");
+  // A value nobody has taught it is shown as it is, rather than hidden.
+  assert.equal(applicationSourceLabel("SOMETHING_NEW"), "SOMETHING_NEW");
+});
+
+test("only the Inventory form carries the firm and the declared cases", () => {
+  assert.equal(isInventoryApplication("EXISTING_CASES"), true);
+  assert.equal(isInventoryApplication("existing_cases"), true);
+  assert.equal(isInventoryApplication("NEW_APPLICATION"), false);
+  assert.equal(isInventoryApplication(undefined), false);
+});
+
+test("an application is read into the names the screens use", () => {
+  const read = readApplication({
+    id: "app-1",
+    user_id: "user-1",
+    first_name: "Bisi",
+    last_name: "Adewale",
+    email: "bisi@example.com",
+    status: "pending",
+    registration_source: "EXISTING_CASES",
+    principal_name: "Bisi Adewale",
+    lawyers_count_in_firm: 4,
+    criminal_courts_preference: ["High Courts", "Magistrate Courts"],
+    declared_cases: [{ id: "case-1", client_name: "Musa Danjuma" }],
+  });
+  assert.equal(read.ApplicationID, "app-1");
+  // The row's ID is the account, because every action on it acts on the account.
+  assert.equal(read.ID, "user-1");
+  assert.equal(read.FirstName, "Bisi");
+  assert.equal(read.Status, "PENDING");
+  assert.equal(read.RegistrationSource, "EXISTING_CASES");
+  assert.equal(read.PrincipalName, "Bisi Adewale");
+  assert.equal(read.LawyersCountInFirm, 4);
+  assert.equal(read.PreferredCourt, "High Courts, Magistrate Courts");
+  assert.equal(read.DeclaredCases.length, 1);
+  assert.equal(read.DeclaredCases[0].client_name, "Musa Danjuma");
+});
+
+test("a single court preference still reads as text", () => {
+  assert.equal(readApplication({ criminal_courts_preference: "High Courts" }).PreferredCourt, "High Courts");
+  assert.equal(readApplication({}).PreferredCourt, undefined);
+  assert.deepEqual(readApplication({}).DeclaredCases, undefined);
 });

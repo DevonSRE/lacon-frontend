@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SubmitButton } from '@/components/submit-button';
 import { ILawyerManagement } from '@/types/case';
 import { Dispatch, SetStateAction, startTransition, useActionState, useEffect, useState, useTransition } from "react";
@@ -217,6 +218,22 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                                         <div className="font-medium text-gray-500">Max. Case Load:</div>
                                         <div className="text-gray-900 font-medium">{lawyer?.max_load || lawyer?.max_case_load || "-"}</div>
                                     </div>
+
+                                    {/* The letter opened once, at the moment of
+                                        approval, and then nobody could reach it
+                                        again (QA 2026-11-01 run 4, 13 Nov,
+                                        row 39). */}
+                                    {isProBono && lawyer?.id && (
+                                        <div className='flex justify-between'>
+                                            <div className="font-medium text-gray-500">Letter of Designation:</div>
+                                            <Link
+                                                href={`/users/designation-letter/${lawyer.id}`}
+                                                className="font-medium text-red-600 underline"
+                                            >
+                                                Open the letter
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
