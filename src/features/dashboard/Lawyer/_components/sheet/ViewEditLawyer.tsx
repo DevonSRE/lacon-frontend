@@ -23,6 +23,7 @@ import { GetState } from '@/components/get-state';
 import { GetZone } from '@/components/get-zone';
 import { GetInvitationCenter } from '@/components/get-invitation-center';
 import { ROLES } from '@/types/auth';
+import { userStatusBadge } from '@/lib/user-status';
 import { invitationScope } from '@/lib/user-invitation-options';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
@@ -45,6 +46,10 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
   // A pro bono lawyer practises privately; their address is their own, not a
   // LACON one, and calling it "LACON Email Address" was wrong (row 40).
   const isProBono = (lawyer?.user_type ?? "").toUpperCase() === "PRO BONO LAWYER";
+  // What the account's standing actually is, read the same way the lists read
+  // it (row 61).
+  const statusBadge = userStatusBadge(lawyer?.status, lawyer?.probono_decision);
+  const pendingApplication = isProBono && (lawyer?.status ?? "").toUpperCase() === "PENDING";
     const queryClient = useQueryClient();
 
     // Add missing state and hooks for the edit form
@@ -395,25 +400,31 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                         </div>
                     )}
 
+                    {/* The status, read-only.
+                        This was a Select offering only Active and Inactive, so an
+                        applicant still waiting on a decision was shown as one of
+                        the two — Edit Lawyer read "Active" for a Pending
+                        application (QA 2026-11-16, row 61). It could not have
+                        changed anything either way: createLawyerSchema does not
+                        carry `status`, so whatever was chosen here was dropped
+                        before the request was sent.
+
+                        Status is changed where the decision belongs: Activate or
+                        Suspend in the row's own menu, or the pro bono review for
+                        an application. */}
                     <div className="space-y-1">
-                        <Label>Status <span className="text-red-500">*</span></Label>
-                        <Select
-                            key={formData.status + state?.status}
-                            name="status"
-                            value={formData.status}
-                            onValueChange={(val) => handleChange("status", val)}
-                        >
-                            <SelectTrigger className={`w-full h-11 ${serverErrors.status ? 'border-red-500' : ''}`}>
-                                <SelectValue placeholder="Select Status" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Active">Active</SelectItem>
-                                <SelectItem value="Inactive">Inactive</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        {serverErrors.status && (
-                            <p className="text-red-500 text-sm">{serverErrors.status[0]}</p>
-                        )}
+                        <Label>Status</Label>
+                        <div className="flex h-11 items-center">
+                            <span className={`inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium ${statusBadge.color}`}>
+                                <span className="h-2 w-2 rounded-full bg-current" />
+                                {statusBadge.label}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            {pendingApplication
+                                ? "This application has not been decided yet. Accept or decline it under Request."
+                                : "Change this with Activate or Suspend on the lawyer's row."}
+                        </p>
                     </div>
 
                    
