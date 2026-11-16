@@ -45,6 +45,15 @@ export const ROUTE_ACCESS: Record<string, string[]> = {
   ],
   "/users/lawyers": [ROLES.DECONGESTION_UNIT_HEAD],
   "/users/probuno-request": [ROLES.DECONGESTION_UNIT_HEAD],
+  // The periodic case reviews designated pro bono lawyers send in. The
+  // Decongestion head reads them; the DG and the admins can look
+  // (QA 2026-11-01 run 4, 13 Nov, row 32).
+  "/users/probono-reviews": [
+    ROLES.DECONGESTION_UNIT_HEAD,
+    ROLES.DIRECTOR_GENERAL,
+    ROLES.PLATFORM_ADMIN,
+    ROLES.ADMIN,
+  ],
   "/lawyers": [
     ROLES.ZONAL_DIRECTOR,
     ROLES.STATE_COORDINATOR,

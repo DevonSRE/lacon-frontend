@@ -10,6 +10,7 @@ import { userStatusBadge } from "@/lib/user-status";
 import { roleLabel } from "@/lib/role-labels";
 import { applicationSourceLabel } from "@/lib/probono-source";
 import { displayStateName } from "@/lib/place-names";
+import type { ProbonoReview } from "../probono-reviews";
 
 export const createUserColumns = (
   userRole: ROLES,
@@ -357,3 +358,78 @@ export const createProbunoRequestColumns = (userRole: ROLES,
     },
   ];
 };
+
+/**
+ * The pro bono case reviews queue (QA 2026-11-01 run 4, 13 Nov, row 32).
+ *
+ * The reference first, because that is what the lawyer quotes and what the
+ * confirmation email carries.
+ */
+export const createProbonoReviewColumns = (
+  onOpen: (id: string) => void
+): ColumnDef<ProbonoReview>[] => [
+  {
+    accessorKey: "reference",
+    header: "Reference",
+    cell: ({ row }) => <span className="font-medium">{row.original.reference}</span>,
+  },
+  {
+    accessorKey: "lawyer_name",
+    header: "Lawyer",
+    cell: ({ row }) => (
+      <div className="flex flex-col">
+        <span>{row.original.lawyer_name || "-"}</span>
+        {row.original.lawyer_email && (
+          <span className="text-xs text-gray-500">{row.original.lawyer_email}</span>
+        )}
+      </div>
+    ),
+  },
+  {
+    accessorKey: "case_count",
+    header: "Cases",
+    cell: ({ row }) => <span>{row.original.case_count ?? 0}</span>,
+  },
+  {
+    accessorKey: "submitted_at",
+    header: "Submitted",
+    cell: ({ row }) => {
+      if (!row.original.submitted_at) return <span>-</span>;
+      const date = new Date(row.original.submitted_at);
+      return <span>{Number.isNaN(date.getTime()) ? "-" : date.toLocaleDateString("en-GB")}</span>;
+    },
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = (row.original.status ?? "").toUpperCase();
+      const look: Record<string, { label: string; colour: string }> = {
+        PENDING: { label: "Waiting", colour: "bg-yellow-100 text-yellow-700" },
+        ACCEPTED: { label: "Accepted", colour: "bg-green-100 text-teal-700" },
+        REJECTED: { label: "Rejected", colour: "bg-red-100 text-red-600" },
+      };
+      const current = look[status] ?? { label: status || "-", colour: "bg-gray-100 text-gray-800" };
+      return (
+        <span className={`rounded px-2 py-1 text-xs font-medium ${current.colour}`}>
+          {current.label}
+        </span>
+      );
+    },
+  },
+  {
+    id: "actions",
+    header: "Action",
+    cell: ({ row }) => {
+      const waiting = (row.original.status ?? "").toUpperCase() === "PENDING";
+      return (
+        <Button
+          className={waiting ? "bg-red-500 text-white" : "bg-gray-500 text-white"}
+          onClick={() => onOpen(row.original.id)}
+        >
+          {waiting ? "Review" : "View"}
+        </Button>
+      );
+    },
+  },
+];
