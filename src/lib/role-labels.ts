@@ -37,3 +37,21 @@ export function roleLabel(role?: string | null): string {
   const stored = (role ?? "").trim();
   return ROLE_LABELS[stored.toUpperCase()] ?? stored;
 }
+
+/**
+ * The office rather than the person holding it: "Civil Justice Department"
+ * where roleLabel gives "Civil Justice Department Head".
+ *
+ * A case is routed to an office and belongs to an office, so the route picker
+ * and the case's Department read as offices; they showed the role constant
+ * instead (QA 2026-11-01 run 4, 13 Nov, row 49). Mirrors OfficeLabel in
+ * `src/custom_types/role.go`.
+ *
+ * Whether each one is a Unit or a Department follows LACON's own answer (QA
+ * 2026-11-01, item 22): DIO and Prerogative of Mercy are departments,
+ * Decongestion and OSCAR are units.
+ */
+export function officeLabel(role?: string | null): string {
+  const label = roleLabel(role);
+  return label.endsWith(" Head") ? label.slice(0, -" Head".length) : label;
+}

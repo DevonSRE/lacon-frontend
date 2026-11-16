@@ -6,7 +6,7 @@ import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
-import { roleLabel } from "../src/lib/role-labels.ts";
+import { officeLabel, roleLabel } from "../src/lib/role-labels.ts";
 import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
 import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
@@ -552,4 +552,22 @@ test("the filing form carries the case source through to the API", () => {
   }
   // A filing that records no source is still a filing.
   assert.deepEqual(shape.parse({}), {});
+});
+
+// QA run 4 (13 Nov), row 49: the DG's route picker and the case's Department
+// showed the role constant — 'PREROGATIVE OF MERCY UNIT HEAD' — instead of the
+// office the case is going to.
+test("a case is routed to an office, not to a role constant", () => {
+  assert.equal(officeLabel("CIVIL JUSTICE DEPT. HEAD"), "Civil Justice Department");
+  assert.equal(officeLabel("DIO UNIT HEAD"), "DIO Department");
+  assert.equal(officeLabel("DECONGESTION UNIT HEAD"), "Decongestion Unit");
+  assert.equal(officeLabel("OSCAR UNIT HEAD"), "OSCAR Unit");
+  // Whether each is a Unit or a Department follows LACON's answer to item 22.
+  assert.equal(officeLabel("PREROGATIVE OF MERCY UNIT HEAD"), "Prerogative of Mercy Department");
+  // A role that is not an office keeps its own name.
+  assert.equal(officeLabel("STATE COORDINATOR"), "State Coordinator");
+  assert.equal(officeLabel("DIRECTOR GENERAL"), "Director General");
+  // Unknown and empty are left as they came.
+  assert.equal(officeLabel("SOMETHING ELSE"), "SOMETHING ELSE");
+  assert.equal(officeLabel(undefined), "");
 });

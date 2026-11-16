@@ -13,7 +13,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { courtStageOptionsFor, CASE_UPDATE_TYPE_OPTIONS } from "@/lib/form-options";
 import { GetStates } from "@/server/actions/GetDetails";
 import { displayStateName } from "@/components/get-state";
-import { roleLabel } from "@/lib/role-labels";
+import { officeLabel, roleLabel } from "@/lib/role-labels";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
 import { getAssignees, getRouteTargets, moveCase, postCaseDocument, postCaseProgress } from "../server/lifecycle";
 
@@ -158,7 +158,9 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
     {picker && <>
       {action !== "assign" && <div className="space-y-1"><Label htmlFor="target-role">Recipient role{action === "escalate" ? " (optional)" : ""}</Label>
         <select id="target-role" className="w-full rounded border p-2" value={role} required={action === "route"} disabled={pending} onChange={e => { setRole(e.target.value); setTarget(""); setKeyword(""); setPage(1); }}>
-          <option value="">{action === "escalate" ? "Return to previous holder" : "Select role"}</option>{roles.map(r => <option key={r}>{r}</option>)}
+          <option value="">{action === "escalate" ? "Return to previous holder" : "Select role"}</option>{/* The office, not the role constant that names its head (row 49). The
+              value is unchanged: the API matches on it. */}
+            {roles.map(r => <option key={r} value={r}>{officeLabel(r)}</option>)}
         </select></div>}
       {(action === "assign" || role) && <>
         {action === "assign" && <div className="space-y-1">
