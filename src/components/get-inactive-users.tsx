@@ -19,6 +19,7 @@ export const GetInActiveUser = ({
   className,
   onValueChange,
   onLoadingChange,
+  only,
 }: {
   value: string;
   placeholder: string;
@@ -27,6 +28,10 @@ export const GetInActiveUser = ({
   className?: string;
   onValueChange?: (value: string) => void;
   onLoadingChange?: (loading: boolean) => void;
+  // The roles this reader may pick, or undefined for all of them. A field
+  // office was offered every role and the server then refused most of them
+  // (QA 2026-11-01 run 4, 13 Nov, row 31).
+  only?: string[] | null;
 }) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["InActiveUsers"],
@@ -65,9 +70,12 @@ export const GetInActiveUser = ({
   const handleDivisionChange = (newValue: string) => {
     onValueChange?.(newValue);
   };
-  const users = uniqueRoleOptions(data?.data);
+  // Only the roles this reader may actually ask for, where that is narrower.
+  const allowed = only ? new Set(only.map(r => r.toUpperCase())) : null;
+  const permitted = (role: string) => !allowed || allowed.has(role.toUpperCase());
+  const users = uniqueRoleOptions(data?.data).filter(permitted);
   const filledSeats: RoleSeat[] = seatData?.success
-    ? (seatData.data as RoleSeat[]).filter(seat => seat.holder && !users.includes(seat.role))
+    ? (seatData.data as RoleSeat[]).filter(seat => seat.holder && !users.includes(seat.role) && permitted(seat.role))
     : [];
   return (
     <Select

@@ -152,7 +152,22 @@ export const createLawyerRequestColumns = (
     {
       accessorKey: "LawyerName",
       header: "User Name",
-      cell: ({ row }) => <span>{row.original.LawyerName}</span>,
+      // The email and the role under the name: two requests for the same new
+      // account looked identical in this list, so the DG could not tell them
+      // apart before approving (QA 2026-11-01 run 4, 13 Nov, row 56).
+      cell: ({ row }) => (
+        <div className="flex flex-col">
+          <span>{row.original.LawyerName}</span>
+          {row.original.LawyerEmail && (
+            <span className="text-xs text-gray-500">{row.original.LawyerEmail}</span>
+          )}
+          {(row.original.ProposedUserType || row.original.UserType) && (
+            <span className="text-xs text-gray-500">
+              {roleLabel(row.original.ProposedUserType || row.original.UserType)}
+            </span>
+          )}
+        </div>
+      ),
     },
     {
       accessorKey: "RequestedName",
@@ -168,8 +183,10 @@ export const createLawyerRequestColumns = (
       accessorKey: "Date",
       header: "Date",
       cell: ({ row }) => {
+        // toISOString is UTC, so a request raised late in the Lagos evening
+        // showed the day before.
         const date = new Date(row.original.CreatedAt);
-        return <span>{date.toISOString().split("T")[0]}</span>;
+        return <span>{date.toLocaleDateString("en-GB")}</span>;
       },
     },
     {

@@ -29,6 +29,10 @@ export interface IUser {
   center_name?: string | null;
   center_id?: string;
   max_case_load?: string;
+  // What the API actually sends. The page read max_case_load, which no
+  // response carries, so every lawyer's limit showed as "-"
+  // (QA 2026-11-01 run 4, 13 Nov, row 40).
+  max_load?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -117,6 +121,7 @@ export interface ILawyerManagement {
   email: string;
   phone_number: string;
   max_case_load: string;
+  max_load?: string;
   gender?: string;
   date_of_birth?: string;
   user_type: string;
