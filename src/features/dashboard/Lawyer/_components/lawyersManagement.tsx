@@ -107,7 +107,12 @@ export default function Lawyers() {
     return (
         <>
             <AddLawyerSheet />
-            <div>
+            {/* min-w-0 lets the table scroll instead of pushing the page wide:
+                a flex or grid child refuses to shrink below its content, so
+                overflow-x-auto on the table never gets the chance to act and
+                the last columns and the actions ran off screen
+                (QA 2026-11-01 run 4, 13 Nov, row 54). */}
+            <div className="min-w-0 max-w-full">
                 <div className="flex justify-between items-center mb-4">
                     <h1 className="text-2xl font-semibold">Lawyer Management</h1>
                     {/* Statistics reads the list and adds nobody (T1). */}

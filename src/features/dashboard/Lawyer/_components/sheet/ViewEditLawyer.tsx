@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { SubmitButton } from '@/components/submit-button';
 import { ILawyerManagement } from '@/types/case';
 import { Dispatch, SetStateAction, startTransition, useActionState, useEffect, useState, useTransition } from "react";
@@ -41,6 +42,9 @@ interface LawyerDetailsProps {
 }
 
 export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases, sheetType, allUserRoles = false }: LawyerDetailsProps) {
+  // A pro bono lawyer practises privately; their address is their own, not a
+  // LACON one, and calling it "LACON Email Address" was wrong (row 40).
+  const isProBono = (lawyer?.user_type ?? "").toUpperCase() === "PRO BONO LAWYER";
     const queryClient = useQueryClient();
 
     // Add missing state and hooks for the edit form
@@ -179,7 +183,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
                                     </div>
 
                                     <div className='flex justify-between'>
-                                        <div className="font-medium text-gray-500">LACON Email Address:</div>
+                                        <div className="font-medium text-gray-500">{isProBono ? "Email Address" : "LACON Email Address"}:</div>
                                         <div className="text-gray-900">{lawyer?.email ?? "-"}</div>
                                     </div>
 
@@ -212,8 +216,24 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
 
                                     <div className='flex justify-between'>
                                         <div className="font-medium text-gray-500">Max. Case Load:</div>
-                                        <div className="text-gray-900 font-medium">{lawyer?.max_case_load ?? "-"}</div>
+                                        <div className="text-gray-900 font-medium">{lawyer?.max_load || lawyer?.max_case_load || "-"}</div>
                                     </div>
+
+                                    {/* The letter opened once, at the moment of
+                                        approval, and then nobody could reach it
+                                        again (QA 2026-11-01 run 4, 13 Nov,
+                                        row 39). */}
+                                    {isProBono && lawyer?.id && (
+                                        <div className='flex justify-between'>
+                                            <div className="font-medium text-gray-500">Letter of Designation:</div>
+                                            <Link
+                                                href={`/users/designation-letter/${lawyer.id}`}
+                                                className="font-medium text-red-600 underline"
+                                            >
+                                                Open the letter
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -297,7 +317,7 @@ export default function ViewEditLawyer({ lawyer, setOpen: OpenSheet, recentCases
 
                     {/* Email */}
                     <InputField
-                        label="LACON Email Address"
+                        label={isProBono ? "Email Address" : "LACON Email Address"}
                         type="email"
                         required
                         name="email"

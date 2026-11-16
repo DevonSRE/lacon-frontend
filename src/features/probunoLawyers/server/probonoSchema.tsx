@@ -592,7 +592,9 @@ export const probunoUpdateForm = z.object({
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),
-
+  // The form always asked for it; it was dropped on the way to the API, which
+  // had no field for it (QA 2026-11-01 run 4, 13 Nov, row 32).
+  contact_address: z.string().trim().optional(),
   phone_number: z.string(),
   cases: z.array(caseSchema),
 });

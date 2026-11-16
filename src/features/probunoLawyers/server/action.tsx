@@ -89,7 +89,10 @@ export async function submitLawyersForm(
       code: result.data.code,
       first_name: result.data.first_name,
       last_name: result.data.last_name,
-      // contact_address: result.data.contact_address,
+      // Kept on the review, so the reviewer has it without opening the
+      // lawyer's account (QA 2026-11-01 run 4, 13 Nov, row 32). The API had
+      // no field for it until then.
+      contact_address: result.data.contact_address,
       email: result.data.email,
       phone_number: result.data.phone_number,
       cases: result.data.cases,

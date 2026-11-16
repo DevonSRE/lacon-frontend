@@ -4,18 +4,20 @@ import SelectField from '@/components/SelectField';
 import { ReviewProbuno } from '@/features/probunoLawyers/server/probonoSchema';
 import TextAreaField from '@/components/TextAreaField';
 import { Button } from '@/components/ui/button';
-import { ILawyerRequest } from '@/types/case';
+import { ILawyerRequest, IProbonoDeclaredCase } from '@/types/case';
 import LoadingDialog from '@/components/LoadingDialog';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { toast } from "sonner";
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
 import { AcceptRejectProbunoRequest } from '../server/action';
-import { useQueryClient } from '@tanstack/react-query';
+import { getProbonoApplicationAction } from '../userRoleAction';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import { displayStateName } from "@/lib/place-names";
+import { applicationSourceLabel, isInventoryApplication } from "@/lib/probono-source";
 interface DecisionData {
     decision: string;
     reason: string;
@@ -50,8 +52,31 @@ const readableDate = (raw?: string | null) => {
 
 const decisionLabels: Record<string, string> = { ACTIVE: "Approved", INACTIVE: "Declined", SUSPEND: "Suspended" };
 
-export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProps) {
+const readableDay = (raw?: string | null) => {
+    if (!raw) return "-";
+    const date = new Date(raw);
+    return Number.isNaN(date.getTime()) ? raw : date.toLocaleDateString("en-GB");
+};
+
+export default function ReviewProbunoDialog({ user: row, setOpen }: CustomeDialigProps) {
+    // The list leaves out the cases the lawyer declared, so the dialog reads
+    // the application itself and falls back to the row until it arrives
+    // (QA 2026-11-01 run 4, 13 Nov, row 36).
+    const applicationId = row?.ApplicationID ?? row?.ID;
+    const { data: fetched } = useQuery({
+        queryKey: ["probonoApplication", applicationId],
+        queryFn: async () => await getProbonoApplicationAction(String(applicationId)),
+        enabled: !!applicationId,
+        staleTime: 60000,
+    });
+    // The fetched application is mapped by the same reader as the row, so it
+    // simply replaces it once it is here.
+    const full = fetched?.success ? (fetched.data as ILawyerRequest | undefined) : undefined;
+    const user: ILawyerRequest | null = full ?? row;
+
     const decided = !!user && user.Status !== "PENDING";
+    const inventory = isInventoryApplication(user?.RegistrationSource);
+    const declared = user?.DeclaredCases ?? [];
     const [state, dispatch, isPending] = useActionState(AcceptRejectProbunoRequest, undefined);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const router = useRouter();
@@ -148,9 +173,18 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                         <InfoRow label="Alt Number" value={user?.AltNumber || "-"} />
                         <InfoRow label="Most Contactable Number" value={user?.MostContactableNumber || "-"} />
                         <InfoRow label="State Bar Membership" value={user?.StateBarMembership || "-"} />
+                        <InfoRow label="Year of Call" value={user?.YearOfCall || "-"} />
+                        <InfoRow label="NBA Branch" value={user?.NBANumber || "-"} />
                         <InfoRow label="Law Firm/Organization" value={user?.LawFirmName || "-"} />
+                        {/* The Inventory form asks for the principal and the size of
+                            the firm; the review left both out, so the reviewer could
+                            not see what had been submitted
+                            (QA 2026-11-01 run 4, 13 Nov, row 36). */}
+                        {inventory && <InfoRow label="Principal Partner" value={user?.PrincipalName || "-"} />}
+                        {inventory && <InfoRow label="Lawyers in Firm" value={user?.LawyersCountInFirm ?? "-"} />}
                         <InfoRow label="Firm Address" value={user?.LawFirmAddress || "-"} />
                         <InfoRow label="State of Practice" value={displayStateName(user?.StateOfPractice) || "-"} />
+                        <InfoRow label="Applied Through" value={applicationSourceLabel(user?.RegistrationSource)} />
                     </div>
                 </div>
 
@@ -184,10 +218,61 @@ export default function ReviewProbunoDialog({ user, setOpen }: CustomeDialigProp
                         </h2>
                         <div className="space-y-1 bg-gray-50 p-4">
                             <InfoRow label="Preferred Courts" value={user?.PreferredCourt || "-"} />
+                            <InfoRow label="Areas Covered" value={user?.AreasCovered || "-"} />
+                            <InfoRow label="Client Base" value={user?.ClientBase || "-"} />
+                            <InfoRow label="Where Clients Come From" value={user?.SourceOfClients || "-"} />
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* The cases the lawyer declared. The reviewer was accepting or
+                declining an Inventory application without being shown a single
+                one of them (row 36). */}
+            {declared.length > 0 && (
+                <div className="mt-8 rounded-lg border-[1px] border-gray-200 p-2">
+                    <h2 className="text-sm font-semibold mb-4 text-gray-700">
+                        Cases declared by this lawyer ({declared.length})
+                    </h2>
+                    <div className="min-w-0 max-w-full overflow-x-auto">
+                        <table className="w-full text-xs">
+                            <thead className="bg-gray-100 text-left text-gray-600">
+                                <tr>
+                                    <th className="p-2 font-medium">Client</th>
+                                    <th className="p-2 font-medium">Sex</th>
+                                    <th className="p-2 font-medium">Offence / charge</th>
+                                    <th className="p-2 font-medium">Nature of service</th>
+                                    <th className="p-2 font-medium">Suit no.</th>
+                                    <th className="p-2 font-medium">Status</th>
+                                    <th className="p-2 font-medium">Date taken</th>
+                                    <th className="p-2 font-medium">Last appearance</th>
+                                    <th className="p-2 font-medium">In custody</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {declared.map((item: IProbonoDeclaredCase) => (
+                                    <tr key={item.id} className="border-b border-gray-100 last:border-b-0">
+                                        <td className="p-2">{item.client_name || "-"}</td>
+                                        <td className="p-2">{item.sex || "-"}</td>
+                                        <td className="p-2">{item.offering_charge || "-"}</td>
+                                        <td className="p-2">{item.nature_of_service || "-"}</td>
+                                        <td className="p-2">{item.suit_number || "-"}</td>
+                                        <td className="p-2">{item.status_of_case || "-"}</td>
+                                        <td className="p-2">{readableDay(item.date_case_taken)}</td>
+                                        <td className="p-2">{readableDay(item.last_date_of_appearance)}</td>
+                                        <td className="p-2">{item.is_client_in_custody ? "Yes" : "No"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
+            {inventory && declared.length === 0 && (
+                <p className="mt-8 text-xs text-gray-500">
+                    This lawyer declared no cases on the Inventory form.
+                </p>
+            )}
 
             {/* Section 5: Submission Data */}
             <div className="grid grid-cols-2 lg:grid-cols-2 mt-8 mr-3">

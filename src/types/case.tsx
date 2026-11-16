@@ -29,6 +29,11 @@ export interface IUser {
   center_name?: string | null;
   center_id?: string;
   max_case_load?: string;
+  // What the API actually sends, as a number on the lawyer endpoints and a
+  // string on the ones that echo a form back. The page read max_case_load,
+  // which no response carries, so every lawyer's limit showed as "-"
+  // (QA 2026-11-01 run 4, 13 Nov, row 40).
+  max_load?: string | number;
   created_at?: string;
   updated_at?: string;
 }
@@ -91,8 +96,33 @@ export interface ILawyerRequest {
   StateBarMembership?: string;
   MostContactableNumber?: string;
   StateOfPractice?: string;
+  // Which form the application came in on: NEW_APPLICATION, EXISTING_CASES
+  // (the Inventory form) or DIRECT_ONBOARDING.
+  RegistrationSource?: string;
+  PrincipalName?: string;
+  LawyersCountInFirm?: number;
+  AreasCovered?: string;
+  ClientBase?: string;
+  SourceOfClients?: string;
+  // The cases the lawyer declared on the application. The reviewer was
+  // deciding without them (QA 2026-11-01 run 4, 13 Nov, row 36).
+  DeclaredCases?: IProbonoDeclaredCase[];
   DecidedBy?: { name: string; role: string } | null;
   DecidedAt?: string | null;
+}
+
+export interface IProbonoDeclaredCase {
+  id: string;
+  client_name?: string;
+  sex?: string;
+  date_case_taken?: string | null;
+  nature_of_service?: string;
+  offering_charge?: string;
+  suit_number?: string;
+  status_of_case?: string;
+  last_date_of_appearance?: string;
+  is_client_in_custody?: boolean;
+  submitted_at?: string | null;
 }
 
 
@@ -117,6 +147,7 @@ export interface ILawyerManagement {
   email: string;
   phone_number: string;
   max_case_load: string;
+  max_load?: string | number;
   gender?: string;
   date_of_birth?: string;
   user_type: string;
