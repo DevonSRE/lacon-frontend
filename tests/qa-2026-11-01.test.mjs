@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { z } from "zod";
 import { casePermissions, filedFrom, movementReason, recordedUpdate, reviewerRole, standsInForFCT, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
@@ -12,6 +13,7 @@ import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails }
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
 import { APPLICATION_FILTERS, DEFAULT_APPLICATION_FILTER, applicationFilterLabel, applicationStatusParam } from "../src/lib/application-filters.ts";
+import { CASE_SOURCE_KEYS, caseSourceFields } from "../src/lib/case-source-fields.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -528,4 +530,26 @@ test("there is a way back to the whole list, and the button says which filter is
   // A declined application is stored as INACTIVE; the label says what it means.
   assert.equal(applicationFilterLabel("inactive"), "Declined");
   assert.equal(applicationFilterLabel(undefined), "All applications");
+});
+
+// QA run 4 (13 Nov), row 50: "Case source, Brought by, Facility and Visit date
+// entered on the internal criminal form are not saved; the case shows 'Not
+// recorded'." The form collected all four and the submit threw them away: the
+// filing schema parses the whole form and zod drops any key it does not know.
+// The API test passed because it called the service directly, past this.
+test("the filing form carries the case source through to the API", () => {
+  assert.deepEqual(CASE_SOURCE_KEYS, ["case_source", "brought_by", "facility_name", "visit_date"]);
+  const shape = z.object(caseSourceFields);
+  const filled = {
+    case_source: "CUSTODIAL_VISIT",
+    brought_by: "Kuje welfare officer",
+    facility_name: "Kuje Custodial Centre",
+    visit_date: "2026-10-31",
+  };
+  const parsed = shape.parse(filled);
+  for (const key of CASE_SOURCE_KEYS) {
+    assert.equal(parsed[key], filled[key], `${key} was dropped on the way to the API`);
+  }
+  // A filing that records no source is still a filing.
+  assert.deepEqual(shape.parse({}), {});
 });

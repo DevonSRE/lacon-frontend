@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { caseSourceFields } from "@/lib/case-source-fields";
 import { custodyDateMissing } from "@/lib/custody";
 import {
   CAPACITY_OPTIONS,
@@ -164,6 +165,11 @@ export const personalInfoSchema = z.object({
   // Only set when the filer continued past the duplicate warning; absent on
   // every other filing, which is why it is optional rather than defaulted.
   duplicate_reason: z.string().optional(),
+  // Where the case came from and who brought it (T17). Named here or they
+  // never leave the browser: this schema parses the whole form and zod drops
+  // any key it does not know, so the form collected all four and the submit
+  // threw them away (QA 2026-11-01 run 4, 13 Nov, row 50).
+  ...caseSourceFields,
   case_type: z.string().min(1, { message: "Case Type is required" }).optional(),
   first_name: z
     .string()
