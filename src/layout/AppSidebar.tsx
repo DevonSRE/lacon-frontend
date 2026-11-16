@@ -80,6 +80,12 @@ const navItems: NavItem[] = [
         path: "/users/probuno-request",
         roles: ROUTE_ACCESS["/users/probuno-request"],
       },
+      {
+        // The periodic reports designated pro bono lawyers send in (row 32).
+        name: "Case Reviews",
+        path: "/users/probono-reviews",
+        roles: ROUTE_ACCESS["/users/probono-reviews"],
+      },
     ]
   },
   {

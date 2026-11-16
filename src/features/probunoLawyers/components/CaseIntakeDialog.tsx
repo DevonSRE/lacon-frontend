@@ -20,6 +20,13 @@ interface CaseIntakeDialogProps {
     reviewer?: string
     // The role now holding the case, when the API routed it (FCT cases go to the HQ heads).
     holderRole?: string
+    /**
+     * What was submitted. A periodic case review is not a case intake: the
+     * pop-up read "Case Intake Submitted" with no reference, so the lawyer had
+     * nothing to quote and no sign it had reached anyone
+     * (QA 2026-11-01 run 4, 13 Nov, row 32).
+     */
+    variant?: "case" | "review"
 }
 
 const REVIEWERS: Record<string, string> = {
@@ -38,21 +45,36 @@ export default function CaseIntakeDialog({
     email,
     reviewer,
     holderRole,
+    variant = "case",
 }: CaseIntakeDialogProps) {
     // Only name a reviewer the API actually gave us. The default used to be "the
     // State Coordinator for your state", so a case filed where that office is
     // empty told the client someone would review it who does not exist
     // (QA 2026-11-01, item 27).
     const reviewedBy = (holderRole && REVIEWERS[holderRole]) || reviewer || "";
+    const review = variant === "review";
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md p-6">
                 <Card className="border-none shadow-none">
                     <CardContent className="flex flex-col items-center space-y-6 p-0">
                         <CheckCircle className="text-green-600 w-12 h-12" />
-                        <DialogTitle className="text-xl font-semibold">Case Intake Submitted</DialogTitle>
+                        <DialogTitle className="text-xl font-semibold">
+                            {review ? "Annual review received" : "Case Intake Submitted"}
+                        </DialogTitle>
 
-                        {isHome ? (
+                        {review ? (
+                            <div className="space-y-3 text-center text-sm text-gray-600">
+                                {caseReference && (
+                                    <p className="rounded bg-green-50 px-4 py-2 font-semibold text-green-800">
+                                        Your reference is {caseReference}
+                                    </p>
+                                )}
+                                <p>Quote this reference whenever you contact LACON about this review.</p>
+                                {email && <p>We have sent a confirmation to <span className="font-medium text-gray-900">{email}</span>.</p>}
+                                <p>The Custodial Centre Decongestion Unit will read it and confirm.</p>
+                            </div>
+                        ) : isHome ? (
                             <div className="space-y-3 text-center text-sm text-gray-600">
                                 {caseReference && (
                                     <p className="rounded bg-green-50 px-4 py-2 font-semibold text-green-800">
