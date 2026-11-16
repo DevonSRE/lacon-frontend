@@ -87,10 +87,19 @@ export default function ProBonoInventoryForm() {
         }));
     };
 
-    // "All Categories" stands for every option, so it clears and disables the rest.
+    // "All Categories" ticks every category rather than standing in for them.
+    // It used to replace the list with itself and grey the rest out, so a
+    // lawyer who ticked it saw nothing selected and the submission named no
+    // category at all (QA 2026-11-01 run 4, 13 Nov, row 35).
+    //
+    // "Other" is left alone: it means nothing without the text beside it, and
+    // ticking it for the lawyer would ask them to explain a choice they did
+    // not make.
     const handleCategoryChange = (name: 'client_types' | 'referral_sources', value: string, checked: boolean) => {
         if (value === ALL_CATEGORIES) {
-            setFormData(prev => ({ ...prev, [name]: checked ? [ALL_CATEGORIES] : [] }));
+            const every = (name === 'client_types' ? CLIENT_TYPE_OPTIONS : REFERRAL_SOURCE_OPTIONS)
+                .filter(option => option !== OTHER_OPTION);
+            setFormData(prev => ({ ...prev, [name]: checked ? [...every] : [] }));
             return;
         }
         handleCheckboxChange(name, value, checked);
@@ -369,8 +378,9 @@ export default function ProBonoInventoryForm() {
 
                             <div className="space-y-3">
                                 {CLIENT_TYPE_OPTIONS.map((option) => {
-                                    const allSelected = formData.client_types.includes(ALL_CATEGORIES);
-                                    const disabled = allSelected && option !== ALL_CATEGORIES;
+                                    // Nothing is greyed out any more: "All" ticks the
+                                    // boxes, so a lawyer can untick one afterwards.
+                                    const disabled = false;
                                     return (
                                         <label key={option} className={`flex items-center ${disabled ? 'opacity-50' : ''}`}>
                                             <input
@@ -405,8 +415,8 @@ export default function ProBonoInventoryForm() {
 
                             <div className="space-y-3">
                                 {REFERRAL_SOURCE_OPTIONS.map((option) => {
-                                    const allSelected = formData.referral_sources.includes(ALL_CATEGORIES);
-                                    const disabled = allSelected && option !== ALL_CATEGORIES;
+                                    // As above: "All" ticks them, so none is greyed out.
+                                    const disabled = false;
                                     return (
                                         <label key={option} className={`flex items-center ${disabled ? 'opacity-50' : ''}`}>
                                             <input

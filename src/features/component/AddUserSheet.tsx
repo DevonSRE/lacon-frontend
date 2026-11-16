@@ -3,6 +3,7 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
+import { requestableRolesFor } from "@/lib/requestable-roles";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -127,6 +128,10 @@ export function AddUserSheet() {
           <div className="space-y-1">
             <Label>User Role</Label>
             <GetInActiveUser
+              // A field office raises a request, and may only ask for some
+              // roles; offering the rest only to have the server refuse them
+              // was the complaint (row 31).
+              only={requestableRolesFor(actor?.role)}
               value={formData.user_type}
               onValueChange={(val: string) => {
                 setFormData(prev => ({ ...prev, user_type: val, designation: "", state_id: "", zone_id: "", center_id: "" }));

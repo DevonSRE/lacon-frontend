@@ -14,7 +14,12 @@ import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/qu
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
 import { APPLICATION_FILTERS, DEFAULT_APPLICATION_FILTER, applicationFilterLabel, applicationStatusParam } from "../src/lib/application-filters.ts";
 import { CASE_SOURCE_KEYS, caseSourceFields } from "../src/lib/case-source-fields.ts";
+import { readableValue, sentence } from "../src/lib/readable.ts";
+import { phoneInput } from "../src/lib/phone-input.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
+import { applicationSourceLabel, isInventoryApplication } from "../src/lib/probono-source.ts";
+import { readApplication } from "../src/lib/probono-application.ts";
+import { timeAgo } from "../src/features/notifications/when.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -570,4 +575,126 @@ test("a case is routed to an office, not to a role constant", () => {
   // Unknown and empty are left as they came.
   assert.equal(officeLabel("SOMETHING ELSE"), "SOMETHING ELSE");
   assert.equal(officeLabel(undefined), "");
+});
+
+// QA run 4 (13 Nov), row 53: case pages printed the constants the database
+// holds — below_18000, arraignment, UNBAILED.
+test("a case page reads its stored values in words", () => {
+  assert.equal(readableValue("UNBAILED"), "Not on bail");
+  assert.equal(readableValue("BAILED"), "On bail");
+  assert.equal(readableValue("below_18000"), "Below \u20a618,000");
+  assert.equal(readableValue("above_200000"), "Above \u20a6200,000");
+  // An option the caller knows about is matched whatever its case: a stage
+  // stored lower-case used to fall through and print raw.
+  const stages = [{ value: "ARRAIGNMENT_AND_PLEA", label: "Arraignment and plea" }];
+  assert.equal(readableValue("arraignment_and_plea", stages), "Arraignment and plea");
+  assert.equal(readableValue("ARRAIGNMENT_AND_PLEA", stages), "Arraignment and plea");
+  // With no list to match against it is still tidied, never left as a constant.
+  assert.equal(readableValue("ARRAIGNMENT_AND_PLEA"), "Arraignment and plea");
+  // Free text is never rewritten.
+  assert.equal(readableValue("Armed robbery"), "Armed robbery");
+  assert.equal(readableValue("AB/1234/26"), "AB/1234/26");
+  assert.equal(readableValue(""), "");
+  // A code nobody mapped is tidied, not dropped.
+  assert.equal(sentence("SOME_NEW_CODE"), "Some new code");
+  assert.equal(sentence("plain"), "plain");
+});
+
+// Row 38: the pro bono forms stripped every non-digit and cut to eleven, so a
+// +234 number could not be typed at all.
+test("a phone field keeps a +234 number", () => {
+  assert.equal(phoneInput("+2348031234567"), "+2348031234567");
+  assert.equal(phoneInput("08031234567"), "08031234567");
+  // Spaces and dashes are tidied away, the leading + is kept.
+  assert.equal(phoneInput("+234 803 123 4567"), "+2348031234567");
+  assert.equal(phoneInput("0803-123-4567"), "08031234567");
+  // Each format is capped at its own length, not at eleven for both.
+  assert.equal(phoneInput("080312345678999"), "08031234567");
+  assert.equal(phoneInput("+23480312345679999"), "+2348031234567");
+  // A "+" anywhere but the front is a typo, not a prefix.
+  assert.equal(phoneInput("0803+1234567"), "08031234567");
+  assert.equal(phoneInput(""), "");
+});
+
+// QA 2026-11-01 run 4, 13 Nov, rows 36 and 37: the applications list could not
+// tell a Registration from an Inventory, and the review left out the fields
+// only the Inventory form asks for.
+test("a pro bono application says which form it came in on", () => {
+  assert.equal(applicationSourceLabel("NEW_APPLICATION"), "Registration");
+  assert.equal(applicationSourceLabel("EXISTING_CASES"), "Inventory");
+  assert.equal(applicationSourceLabel("DIRECT_ONBOARDING"), "Onboarded by LACON");
+  // Lower case and padding come back from the API too.
+  assert.equal(applicationSourceLabel(" existing_cases "), "Inventory");
+  // Nothing recorded reads as nothing, not as "undefined".
+  assert.equal(applicationSourceLabel(undefined), "-");
+  assert.equal(applicationSourceLabel(""), "-");
+  // A value nobody has taught it is shown as it is, rather than hidden.
+  assert.equal(applicationSourceLabel("SOMETHING_NEW"), "SOMETHING_NEW");
+});
+
+test("only the Inventory form carries the firm and the declared cases", () => {
+  assert.equal(isInventoryApplication("EXISTING_CASES"), true);
+  assert.equal(isInventoryApplication("existing_cases"), true);
+  assert.equal(isInventoryApplication("NEW_APPLICATION"), false);
+  assert.equal(isInventoryApplication(undefined), false);
+});
+
+test("an application is read into the names the screens use", () => {
+  const read = readApplication({
+    id: "app-1",
+    user_id: "user-1",
+    first_name: "Bisi",
+    last_name: "Adewale",
+    email: "bisi@example.com",
+    status: "pending",
+    registration_source: "EXISTING_CASES",
+    principal_name: "Bisi Adewale",
+    lawyers_count_in_firm: 4,
+    criminal_courts_preference: ["High Courts", "Magistrate Courts"],
+    declared_cases: [{ id: "case-1", client_name: "Musa Danjuma" }],
+  });
+  assert.equal(read.ApplicationID, "app-1");
+  // The row's ID is the account, because every action on it acts on the account.
+  assert.equal(read.ID, "user-1");
+  assert.equal(read.FirstName, "Bisi");
+  assert.equal(read.Status, "PENDING");
+  assert.equal(read.RegistrationSource, "EXISTING_CASES");
+  assert.equal(read.PrincipalName, "Bisi Adewale");
+  assert.equal(read.LawyersCountInFirm, 4);
+  assert.equal(read.PreferredCourt, "High Courts, Magistrate Courts");
+  assert.equal(read.DeclaredCases.length, 1);
+  assert.equal(read.DeclaredCases[0].client_name, "Musa Danjuma");
+});
+
+test("a single court preference still reads as text", () => {
+  assert.equal(readApplication({ criminal_courts_preference: "High Courts" }).PreferredCourt, "High Courts");
+  assert.equal(readApplication({}).PreferredCourt, undefined);
+  assert.deepEqual(readApplication({}).DeclaredCases, undefined);
+});
+
+// QA 2026-11-01 run 4, 13 Nov, row 51: the notification panel is read at a
+// glance, so each line says how long ago rather than when.
+test("a notification says how long ago it happened", () => {
+  const now = new Date("2026-11-16T12:00:00Z");
+  const ago = (iso) => timeAgo(iso, now);
+
+  assert.equal(ago("2026-11-16T11:59:30Z"), "just now");
+  assert.equal(ago("2026-11-16T11:59:00Z"), "1 minute ago");
+  assert.equal(ago("2026-11-16T11:30:00Z"), "30 minutes ago");
+  assert.equal(ago("2026-11-16T11:00:00Z"), "1 hour ago");
+  assert.equal(ago("2026-11-16T07:00:00Z"), "5 hours ago");
+  assert.equal(ago("2026-11-15T12:00:00Z"), "1 day ago");
+  assert.equal(ago("2026-11-13T12:00:00Z"), "3 days ago");
+  assert.equal(ago("2026-11-08T12:00:00Z"), "1 week ago");
+
+  // Past about a month the date itself says more than the count.
+  assert.equal(ago("2026-09-01T12:00:00Z"), "01/09/2026");
+
+  // A clock a little ahead of the server's must not read "in 3 seconds".
+  assert.equal(ago("2026-11-16T12:00:10Z"), "just now");
+
+  // Nothing to show is shown as nothing, not as "Invalid Date".
+  assert.equal(ago(undefined), "");
+  assert.equal(ago(""), "");
+  assert.equal(ago("not a date"), "");
 });

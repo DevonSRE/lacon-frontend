@@ -73,7 +73,8 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="rounded-md">
+    // The table scrolls inside its own box rather than widening the page.
+    <div className="w-full max-w-full overflow-x-auto rounded-md">
       {loading ? (
         <TableContentLoader columns={columns} />
       ) : (

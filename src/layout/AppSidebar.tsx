@@ -80,6 +80,12 @@ const navItems: NavItem[] = [
         path: "/users/probuno-request",
         roles: ROUTE_ACCESS["/users/probuno-request"],
       },
+      {
+        // The periodic reports designated pro bono lawyers send in (row 32).
+        name: "Case Reviews",
+        path: "/users/probono-reviews",
+        roles: ROUTE_ACCESS["/users/probono-reviews"],
+      },
     ]
   },
   {
@@ -99,6 +105,14 @@ const navItems: NavItem[] = [
     name: "Reports",
     path: "/reports",
     roles: ROUTE_ACCESS["/reports"],
+  },
+  {
+    // A pro bono lawyer could not reach their own Letter of Designation at all
+    // (QA 2026-11-01 run 4, 13 Nov, row 39).
+    icon: <Icons.report />,
+    name: "My Letter",
+    path: "/designation-letter",
+    roles: ROUTE_ACCESS["/designation-letter"],
   },
   {
     name: "Organisation",

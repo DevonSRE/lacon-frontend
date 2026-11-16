@@ -98,6 +98,14 @@ export const proBonoSchema = z.object({
 
 export type TProbunoFormPayload = z.infer<typeof proBonoSchema>;
 
+// yearOfCall is a four-digit year no later than this one.
+const yearOfCall = z
+  .string()
+  .trim()
+  .regex(/^\d{4}$/, { message: "Year of call is a four-digit year" })
+  .refine((v) => Number(v) <= new Date().getFullYear(), { message: "Year of call cannot be in the future" })
+  .refine((v) => Number(v) >= 1900, { message: "Year of call looks too early" });
+
 const proBonoCaseSchema = z.object({
   client_name: z.string().min(1, { message: "Client name is required" }),
   sex: z.enum(["male", "female"], { error: "Gender is required" }),
@@ -121,18 +129,31 @@ const proBonoCaseSchema = z.object({
   is_client_in_custody: z
     .enum(["true", "false"], { error: "Say whether the client is in custody" })
     .transform((v) => v === "true"),
-});
+})
+  // A case cannot have been last heard before the lawyer took it on. Each date
+  // was checked only against today, so the pair could contradict each other
+  // (QA 2026-11-01 run 4, 13 Nov, row 33). Both the Inventory and the Annual
+  // Review collect this pair, so both carry the rule.
+  .refine(
+    (c) => !c.last_date_of_appearance || !c.date_case_taken || c.last_date_of_appearance >= c.date_case_taken,
+    { path: ["last_date_of_appearance"], message: "Last appearance can't be before the date you took the case" },
+  );
 
 export const probunoInventoryCaseformSchema = z.object({
   first_name: z.string().min(1),
   last_name: z.string().min(1),
-  lawyers_count_in_firm: z.coerce.number(),
+  // A firm has whole lawyers, and at least one (row 34).
+  lawyers_count_in_firm: z.coerce
+    .number({ error: "Number of lawyers is required" })
+    .int({ message: "Number of lawyers must be a whole number" })
+    .min(1, { message: "A firm has at least one lawyer" }),
   law_firm_address: z.string().min(1),
   email: z.string().email(),
   phone_number: z.string(),
   alternate_number: z.string().optional(),
   state_id: z.string(),
-  year_of_call: z.string().min(4).max(4),
+  // Nobody has been called to the bar in a year that has not happened (row 34).
+  year_of_call: yearOfCall,
   experience_in_criminal_law: z.enum(EXPERIENCE_OPTIONS, { error: "Select your experience" }),
   pro_bono_capacity: z.enum(CAPACITY_OPTIONS, { error: "Select your capacity" }),
   areas_covered: z.string().min(1, { message: "Select at least one state" }),
@@ -556,14 +577,24 @@ export const caseSchema = z.object({
   is_client_in_custody: z
     .enum(["true", "false"], { error: "Say whether the client is in custody" })
     .transform((v) => v === "true"),
-});
+})
+  // A case cannot have been last heard before the lawyer took it on. Each date
+  // was checked only against today, so the pair could contradict each other
+  // (QA 2026-11-01 run 4, 13 Nov, row 33). Both the Inventory and the Annual
+  // Review collect this pair, so both carry the rule.
+  .refine(
+    (c) => !c.last_date_of_appearance || !c.date_case_taken || c.last_date_of_appearance >= c.date_case_taken,
+    { path: ["last_date_of_appearance"], message: "Last appearance can't be before the date you took the case" },
+  );
 
 export const probunoUpdateForm = z.object({
   code: z.string().trim().regex(/^\d{6}$/, { message: "Enter the 6-digit confirmation code" }),
   first_name: z.string(),
   last_name: z.string(),
   email: z.string().email(),
-
+  // The form always asked for it; it was dropped on the way to the API, which
+  // had no field for it (QA 2026-11-01 run 4, 13 Nov, row 32).
+  contact_address: z.string().trim().optional(),
   phone_number: z.string(),
   cases: z.array(caseSchema),
 });

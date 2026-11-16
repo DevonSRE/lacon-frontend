@@ -14,12 +14,39 @@ import CaseIntakeDialog from './CaseIntakeDialog';
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
 import { COURT_STAGE_OPTIONS, todayISO } from '@/lib/form-options';
+// A blank review. Defined outside the component so it is also the value the
+// form is cleared to once a review has been sent (row 32).
+const emptyReview = (): FormDataProbunoUpdate => ({
+    code: '',
+    first_name: '',
+    last_name: '',
+    contact_address: '',
+    email: '',
+    phone_number: '',
+    cases: [{
+        id: '1',
+        client_name: '',
+        sex: '',
+        date_case_taken: '',
+        nature_of_service: '',
+        offering_charge: '',
+        suit_number: '',
+        status_of_case: '',
+        last_date_of_appearance: '',
+        is_client_in_custody: ''
+    }]
+});
+
 export default function LawyersAnnualCasesReviewForm() {
     const [state, formAction, isPending] = useActionState(submitLawyersForm, undefined);
     const errors: Record<string, string[] | undefined> = state?.errors && typeof state.errors === 'object'
         ? state.errors as Record<string, string[]>
         : {};
     const [open, setOpen] = useState(false)
+    // What the API answered with, kept because the form is cleared on success
+    // and the reference must stay on screen (row 32).
+    const [reference, setReference] = useState('');
+    const [submittedTo, setSubmittedTo] = useState('');
     const [isRequestingCode, startCodeRequest] = useTransition();
     const [codeMessage, setCodeMessage] = useState('');
 
@@ -33,31 +60,18 @@ export default function LawyersAnnualCasesReviewForm() {
                         : undefined,
             });
         } else if (state && state.status === 200) {
-            // toast.success("Case Intake  Submitted successful");
+            const answered = state.data as { reference?: string } | undefined;
+            setReference(answered?.reference ?? '');
+            setSubmittedTo(formData.email);
             setOpen(true)
+            // The form kept every value, so the same review could be sent
+            // twice (QA 2026-11-01 run 4, 13 Nov, row 32).
+            setFormData(emptyReview());
+            setCodeMessage('');
         }
     }, [state]);
 
-    const [formData, setFormData] = useState<FormDataProbunoUpdate>({
-        code: '',
-        first_name: '',
-        last_name: '',
-        contact_address: '',
-        email: '',
-        phone_number: '',
-        cases: [{
-            id: '1',
-            client_name: '',
-            sex: '',
-            date_case_taken: '',
-            nature_of_service: '',
-            offering_charge: '',
-            suit_number: '',
-            status_of_case: '',
-            last_date_of_appearance: '',
-            is_client_in_custody: ''
-        }]
-    });
+    const [formData, setFormData] = useState<FormDataProbunoUpdate>(emptyReview);
 
     const handleCaseSelectChange = (caseId: string, field: keyof ProBonoCase, value: string) => {
         updateProBonoCase(caseId, field, value);
@@ -122,6 +136,9 @@ export default function LawyersAnnualCasesReviewForm() {
             <CaseIntakeDialog
                 open={open}
                 onOpenChange={setOpen}
+                variant="review"
+                caseReference={reference}
+                email={submittedTo}
             />
             <div className="mx-auto p-6 pb-20 bg-white">
                 <div className="mb-6">
