@@ -9,10 +9,11 @@ import DownloadCase from "./DownloadCase";
 import { caseReference, filedFrom, movementReason, normalizeCase, recordedUpdate, statusLabel, type CaseRecord } from "../domain";
 import { displayStateName } from "@/lib/place-names";
 import { roleLabel } from "@/lib/role-labels";
+import { CIVIL_COURT_STAGE_OPTIONS, CRIMINAL_COURT_STAGE_OPTIONS } from "@/lib/form-options";
+import { readableValue } from "@/lib/readable";
 import { caseSourceLabel } from "@/lib/case-source";
 import { getCase, getCaseHistory, getCaseDocuments } from "../server/lifecycle";
 import CaseActions from "./CaseActions";
-import { CIVIL_COURT_STAGE_OPTIONS, CRIMINAL_COURT_STAGE_OPTIONS } from "@/lib/form-options";
 
 function dateLabel(raw?: string) {
   if (!raw || raw.startsWith("0001-")) return "Not recorded";
@@ -27,10 +28,12 @@ function Details({ values }: { values: Record<string, unknown> }) {
     if (key.endsWith("_on") || key.endsWith("_at") || key.endsWith("_date")) {
       return dateLabel(String(value));
     }
-    if (key === "court_stage" || key === "case_status") {
-      return stageOptions.find(option => option.value === value)?.label ?? String(value);
-    }
-    return String(value);
+    if (typeof value === "number") return String(value);
+    // Every stored value, not only the court stage: the page showed
+    // below_18000, arraignment and UNBAILED as they were stored, and matched
+    // stages case-sensitively so a lower-case one fell through
+    // (QA 2026-11-01 run 4, 13 Nov, row 53).
+    return readableValue(String(value), stageOptions);
   };
   return <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">{Object.entries(values).filter(([key, value]) => !key.endsWith("_id") && value !== undefined && value !== null && value !== "").map(([key, value]) => <div key={key} className="min-w-0"><dt className="text-sm capitalize text-gray-500">{key.replaceAll("_", " ")}</dt><dd className="whitespace-pre-wrap break-words text-sm">{displayValue(key, value)}</dd></div>)}</dl>;
 }

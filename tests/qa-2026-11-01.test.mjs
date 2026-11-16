@@ -11,6 +11,8 @@ import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLab
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
+import { readableValue, sentence } from "../src/lib/readable.ts";
+import { phoneInput } from "../src/lib/phone-input.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -497,4 +499,43 @@ test("the page says what it has been narrowed to", () => {
   assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
   // Nothing narrowed, nothing said.
   assert.equal(filterSummary({}), "");
+});
+
+// QA run 4 (13 Nov), row 53: case pages printed the constants the database
+// holds — below_18000, arraignment, UNBAILED.
+test("a case page reads its stored values in words", () => {
+  assert.equal(readableValue("UNBAILED"), "Not on bail");
+  assert.equal(readableValue("BAILED"), "On bail");
+  assert.equal(readableValue("below_18000"), "Below \u20a618,000");
+  assert.equal(readableValue("above_200000"), "Above \u20a6200,000");
+  // An option the caller knows about is matched whatever its case: a stage
+  // stored lower-case used to fall through and print raw.
+  const stages = [{ value: "ARRAIGNMENT_AND_PLEA", label: "Arraignment and plea" }];
+  assert.equal(readableValue("arraignment_and_plea", stages), "Arraignment and plea");
+  assert.equal(readableValue("ARRAIGNMENT_AND_PLEA", stages), "Arraignment and plea");
+  // With no list to match against it is still tidied, never left as a constant.
+  assert.equal(readableValue("ARRAIGNMENT_AND_PLEA"), "Arraignment and plea");
+  // Free text is never rewritten.
+  assert.equal(readableValue("Armed robbery"), "Armed robbery");
+  assert.equal(readableValue("AB/1234/26"), "AB/1234/26");
+  assert.equal(readableValue(""), "");
+  // A code nobody mapped is tidied, not dropped.
+  assert.equal(sentence("SOME_NEW_CODE"), "Some new code");
+  assert.equal(sentence("plain"), "plain");
+});
+
+// Row 38: the pro bono forms stripped every non-digit and cut to eleven, so a
+// +234 number could not be typed at all.
+test("a phone field keeps a +234 number", () => {
+  assert.equal(phoneInput("+2348031234567"), "+2348031234567");
+  assert.equal(phoneInput("08031234567"), "08031234567");
+  // Spaces and dashes are tidied away, the leading + is kept.
+  assert.equal(phoneInput("+234 803 123 4567"), "+2348031234567");
+  assert.equal(phoneInput("0803-123-4567"), "08031234567");
+  // Each format is capped at its own length, not at eleven for both.
+  assert.equal(phoneInput("080312345678999"), "08031234567");
+  assert.equal(phoneInput("+23480312345679999"), "+2348031234567");
+  // A "+" anywhere but the front is a typo, not a prefix.
+  assert.equal(phoneInput("0803+1234567"), "08031234567");
+  assert.equal(phoneInput(""), "");
 });
