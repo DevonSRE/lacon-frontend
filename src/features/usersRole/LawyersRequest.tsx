@@ -408,12 +408,18 @@ const RequestSummary = ({ request }: { request: ILawyerRequest | null }) => {
   const asked = actions[(request.Action ?? "").toUpperCase()] ?? "Change the account of";
   const role = roleLabel(request.ProposedUserType || request.UserType || "");
   const email = request.LawyerEmail || request.Email || "";
+  // Where the account would sit: the centre if there is one, else the state,
+  // else the zone (row 56).
+  const place = [request.CenterName, request.StateName, request.ZoneName]
+    .map(part => part?.trim())
+    .find(Boolean) || "";
   return (
     <Card className="bg-gray-100">
       <CardContent className="space-y-2 py-4 text-left text-sm">
         <SummaryRow label="Request" value={`${asked} ${request.LawyerName || "this user"}`} />
         {role ? <SummaryRow label="Role" value={role} /> : null}
         {email ? <SummaryRow label="Email" value={email} /> : null}
+        {place ? <SummaryRow label="State / Centre" value={place} /> : null}
         <SummaryRow label="Requested by" value={[request.RequestedName, roleLabel(request.RequestedByRole)].filter(Boolean).join(" · ") || "—"} />
         {request.Reason?.trim() ? <SummaryRow label="Their reason" value={request.Reason} /> : null}
       </CardContent>

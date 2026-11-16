@@ -170,6 +170,19 @@ export const createLawyerRequestColumns = (
       ),
     },
     {
+      id: "Place",
+      header: "State / Centre",
+      // Where the account would sit, so two requests for the same role in
+      // different places are not read as one (row 56).
+      cell: ({ row }) => (
+        <span>
+          {[row.original.CenterName, row.original.StateName, row.original.ZoneName]
+            .map(part => part?.trim())
+            .find(Boolean) || "-"}
+        </span>
+      ),
+    },
+    {
       accessorKey: "RequestedName",
       header: "Requested By",
       cell: ({ row }) => <span>{row.original.RequestedName}</span>,
