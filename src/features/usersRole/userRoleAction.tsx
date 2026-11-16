@@ -1,5 +1,6 @@
 'use server'
 
+import { readApplication } from "@/lib/probono-application";
 import { ErrorResponse } from "@/lib/auth";
 import { Ipage } from "@/lib/constants";
 import { handleApiError } from "@/lib/utils";
@@ -39,33 +40,7 @@ export async function GetProbunoLawyerRequestAction(params: Ipage) {
     try {
         const response = await usersServices.getProbunoLawyersRequest(params);
         const page = response.data?.data;
-        const data = page?.data?.map((application: Record<string, unknown>) => ({
-            ...application,
-            ID: application.user_id,
-            ApplicationID: application.id,
-            FirstName: application.first_name,
-            LastName: application.last_name,
-            Email: application.email,
-            PhoneNumber: application.phone_number,
-            AltNumber: application.alternate_number,
-            YearOfCall: application.year_of_call,
-            NBANumber: application.nba_branch,
-            Experience: application.experience_in_criminal_law,
-            MaxLoad: application.pro_bono_capacity,
-            PreferredCourt: Array.isArray(application.criminal_courts_preference)
-                ? application.criminal_courts_preference.join(", ")
-                : application.criminal_courts_preference,
-            Status: String(application.status ?? "").toUpperCase(),
-            CreatedAt: application.created_at,
-            LawFirmName: application.law_firm_name,
-            LawFirmAddress: application.law_firm_address,
-            StateBarMembership: application.state_bar_membership,
-            MostContactableNumber: application.most_contactable_number,
-            StateOfPractice: application.state_of_practice,
-            DecisionReason: application.decision_reason,
-            DecidedBy: application.decided_by,
-            DecidedAt: application.decided_at,
-        }));
+        const data = page?.data?.map(readApplication);
         return { data: { ...page, data }, success: true };
 
     } catch (err: unknown) {
@@ -78,6 +53,23 @@ export async function getProbunoLawyersRequestSingleAction(id: string) {
         const response = await usersServices.getProbunoLawyersRequestSingle(id);
         return { data: response.data?.data, success: true };
 
+    } catch (err: unknown) {
+        const error = err as ErrorResponse;
+        return handleApiError(error);
+    }
+}
+
+/**
+ * One application as the review dialog reads it. The list leaves out the cases
+ * the lawyer declared, so the dialog fetches the application itself
+ * (QA 2026-11-01 run 4, 13 Nov, row 36).
+ */
+export async function getProbonoApplicationAction(id: string) {
+    try {
+        const response = await usersServices.getProbunoLawyersRequestSingle(id);
+        const raw = response.data?.data;
+        if (!raw) return { data: undefined, success: false as const };
+        return { data: readApplication(raw as Record<string, unknown>), success: true as const };
     } catch (err: unknown) {
         const error = err as ErrorResponse;
         return handleApiError(error);
