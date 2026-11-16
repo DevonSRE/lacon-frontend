@@ -1,44 +1,55 @@
 "use client";
-import Link from "next/link";
-import React, { useState } from "react";
-import { Dropdown } from "../ui/dropdown/Dropdown";
-import { DropdownItem } from "../ui/dropdown/DropdownItem";
 
+import Link from "next/link";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+
+import { Dropdown } from "../ui/dropdown/Dropdown";
+import { getNotifications } from "@/features/notifications/notifications";
+import { timeAgo } from "@/features/notifications/when";
+
+/**
+ * The bell.
+ *
+ * This was a template stub: the dot was hard-coded on, the list held nothing
+ * but commented-out example rows, and nothing was ever fetched, so the panel
+ * opened empty with no message while the bell claimed there was something to
+ * read (QA 2026-11-01 run 4, 13 Nov, row 51).
+ *
+ * The dot now means what the API calls `waiting`: there is something here that
+ * is still yours to act on. Items that merely happened are listed without
+ * lighting it.
+ */
 export default function NotificationDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const [notifying, setNotifying] = useState(true);
 
-  function toggleDropdown() {
-    setIsOpen(!isOpen);
-  }
+  const { data, isLoading } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => await getNotifications(),
+    // The bell is read at a glance and the feed is derived, not stored, so a
+    // minute-old answer is fine and costs the API nothing.
+    staleTime: 60_000,
+    refetchOnWindowFocus: true,
+  });
 
-  function closeDropdown() {
-    setIsOpen(false);
-  }
+  const feed = data?.success ? data.data : undefined;
+  const items = feed?.items ?? [];
+  const waiting = feed?.waiting ?? 0;
 
-  const handleClick = () => {
-    toggleDropdown();
-    setNotifying(false);
-  };
   return (
     <div className="relative">
       <button
+        type="button"
+        aria-label={waiting > 0 ? `Notifications, ${waiting} waiting for you` : "Notifications"}
         className="relative dropdown-toggle flex items-center justify-center text-gray-500 transition-colors bg-white border border-gray-200 rounded-full hover:text-gray-700 h-11 w-11 hover:bg-gray-100 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-        onClick={handleClick}
+        onClick={() => setIsOpen(open => !open)}
       >
-        <span
-          className={`absolute right-0 top-0.5 z-10 h-2 w-2 rounded-full bg-orange-400 ${!notifying ? "hidden" : "flex"
-            }`}
-        >
-          <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
-        </span>
-        <svg
-          className="fill-current"
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
+        {waiting > 0 && (
+          <span className="absolute right-0 top-0.5 z-10 flex h-2 w-2 rounded-full bg-orange-400">
+            <span className="absolute inline-flex w-full h-full bg-orange-400 rounded-full opacity-75 animate-ping"></span>
+          </span>
+        )}
+        <svg className="fill-current" width="20" height="20" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
           <path
             fillRule="evenodd"
             clipRule="evenodd"
@@ -47,26 +58,21 @@ export default function NotificationDropdown() {
           />
         </svg>
       </button>
+
       <Dropdown
         isOpen={isOpen}
-        onClose={closeDropdown}
-        className="absolute -right-[240px] mt-[17px] flex h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:w-[361px] lg:right-0"
+        onClose={() => setIsOpen(false)}
+        className="absolute -right-[240px] mt-[17px] flex max-h-[480px] w-[350px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark sm:w-[361px] lg:right-0"
       >
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-gray-700">
-          <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-            Notification
-          </h5>
+          <h5 className="text-lg font-semibold text-gray-800 dark:text-gray-200">Notifications</h5>
           <button
-            onClick={toggleDropdown}
+            type="button"
+            aria-label="Close notifications"
+            onClick={() => setIsOpen(false)}
             className="text-gray-500 transition dropdown-toggle dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
-            <svg
-              className="fill-current"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
+            <svg className="fill-current" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
               <path
                 fillRule="evenodd"
                 clipRule="evenodd"
@@ -76,47 +82,54 @@ export default function NotificationDropdown() {
             </svg>
           </button>
         </div>
-        <ul className="flex flex-col h-auto overflow-y-auto custom-scrollbar">
-          {/* Example notification items */}
-          {/* <li>
-            <DropdownItem
-              onItemClick={closeDropdown}
-              className="flex gap-3 rounded-lg border-b border-gray-100 p-3 px-4.5 py-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
-            >
-              <span className="relative block w-full h-10 rounded-full z-1 max-w-10">
-                <Image
-                  width={40}
-                  height={40}
-                  src="/images/user/user-02.jpg"
-                  alt="User"
-                  className="w-full overflow-hidden rounded-full"
-                />
-                <span className="absolute bottom-0 right-0 z-10 h-2.5 w-full max-w-2.5 rounded-full border-[1.5px] border-white bg-success-500 dark:border-gray-900"></span>
-              </span>
 
-              <span className="block">
-                <span className="mb-1.5 space-x-1 block text-theme-sm text-gray-500 dark:text-gray-400">
-                  <span className="font-medium text-gray-800 dark:text-white/90">
-                    Terry Franci
+        {/* Whatever the answer is, the panel says something. It used to say
+            nothing at all. */}
+        {isLoading ? (
+          <p className="px-2 py-6 text-center text-sm text-gray-500">Loading…</p>
+        ) : data && !data.success ? (
+          <p className="px-2 py-6 text-center text-sm text-red-600">{data.message}</p>
+        ) : items.length === 0 ? (
+          <p className="px-2 py-6 text-center text-sm text-gray-500 dark:text-gray-400">
+            No notifications yet.
+          </p>
+        ) : (
+          <ul className="flex flex-col overflow-y-auto custom-scrollbar">
+            {items.map(item => (
+              <li key={item.id}>
+                <Link
+                  href={item.link}
+                  onClick={() => setIsOpen(false)}
+                  className="flex flex-col gap-1 rounded-lg border-b border-gray-100 p-3 hover:bg-gray-100 dark:border-gray-800 dark:hover:bg-white/5"
+                >
+                  <span className="flex items-start gap-2">
+                    {item.needs_you && (
+                      <span
+                        aria-hidden
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-orange-400"
+                      />
+                    )}
+                    <span className="text-sm font-medium text-gray-800 dark:text-white/90">
+                      {item.title}
+                    </span>
                   </span>
-                  <span>requests permission to change</span>
-                  <span className="font-medium text-gray-800 dark:text-white/90">
-                    Project - Nganter App
+                  {item.detail && (
+                    <span className="text-xs text-gray-500 dark:text-gray-400">{item.detail}</span>
+                  )}
+                  <span className="flex items-center gap-2 text-xs text-gray-400">
+                    {item.reference && (
+                      <>
+                        <span>{item.reference}</span>
+                        <span className="h-1 w-1 rounded-full bg-gray-400" />
+                      </>
+                    )}
+                    <span>{timeAgo(item.at)}</span>
                   </span>
-                </span>
-
-                <span className="flex items-center gap-2 text-gray-500 text-theme-xs dark:text-gray-400">
-                  <span>Project</span>
-                  <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
-                  <span>5 min ago</span>
-                </span>
-              </span>
-            </DropdownItem>
-          </li> */}
-        </ul>
-        {/* <Link href="/" className="block px-4 py-2 mt-3 text-sm font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700">
-          View All Notifications
-        </Link> */}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </Dropdown>
     </div>
   );

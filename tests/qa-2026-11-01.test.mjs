@@ -19,6 +19,7 @@ import { phoneInput } from "../src/lib/phone-input.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 import { applicationSourceLabel, isInventoryApplication } from "../src/lib/probono-source.ts";
 import { readApplication } from "../src/lib/probono-application.ts";
+import { timeAgo } from "../src/features/notifications/when.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -669,4 +670,31 @@ test("a single court preference still reads as text", () => {
   assert.equal(readApplication({ criminal_courts_preference: "High Courts" }).PreferredCourt, "High Courts");
   assert.equal(readApplication({}).PreferredCourt, undefined);
   assert.deepEqual(readApplication({}).DeclaredCases, undefined);
+});
+
+// QA 2026-11-01 run 4, 13 Nov, row 51: the notification panel is read at a
+// glance, so each line says how long ago rather than when.
+test("a notification says how long ago it happened", () => {
+  const now = new Date("2026-11-16T12:00:00Z");
+  const ago = (iso) => timeAgo(iso, now);
+
+  assert.equal(ago("2026-11-16T11:59:30Z"), "just now");
+  assert.equal(ago("2026-11-16T11:59:00Z"), "1 minute ago");
+  assert.equal(ago("2026-11-16T11:30:00Z"), "30 minutes ago");
+  assert.equal(ago("2026-11-16T11:00:00Z"), "1 hour ago");
+  assert.equal(ago("2026-11-16T07:00:00Z"), "5 hours ago");
+  assert.equal(ago("2026-11-15T12:00:00Z"), "1 day ago");
+  assert.equal(ago("2026-11-13T12:00:00Z"), "3 days ago");
+  assert.equal(ago("2026-11-08T12:00:00Z"), "1 week ago");
+
+  // Past about a month the date itself says more than the count.
+  assert.equal(ago("2026-09-01T12:00:00Z"), "01/09/2026");
+
+  // A clock a little ahead of the server's must not read "in 3 seconds".
+  assert.equal(ago("2026-11-16T12:00:10Z"), "just now");
+
+  // Nothing to show is shown as nothing, not as "Invalid Date".
+  assert.equal(ago(undefined), "");
+  assert.equal(ago(""), "");
+  assert.equal(ago("not a date"), "");
 });
