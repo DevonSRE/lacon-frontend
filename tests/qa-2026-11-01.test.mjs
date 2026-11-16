@@ -1,16 +1,19 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { z } from "zod";
 import { casePermissions, filedFrom, movementReason, recordedUpdate, reviewerRole, standsInForFCT, statusLabel } from "../src/features/cases/domain.ts";
 import { displayStateName } from "../src/lib/place-names.ts";
 import { courtStageOptionsFor, courtStageLabel } from "../src/lib/form-options.ts";
 import { pendingChangeNote, userStatusBadge } from "../src/lib/user-status.ts";
 import { startOfWeek } from "../src/lib/week.ts";
-import { roleLabel } from "../src/lib/role-labels.ts";
+import { officeLabel, roleLabel } from "../src/lib/role-labels.ts";
 import { custodyDateMissing, isInCustody } from "../src/lib/custody.ts";
 import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLabel, topMatches } from "../src/lib/duplicates.ts";
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
+import { APPLICATION_FILTERS, DEFAULT_APPLICATION_FILTER, applicationFilterLabel, applicationStatusParam } from "../src/lib/application-filters.ts";
+import { CASE_SOURCE_KEYS, caseSourceFields } from "../src/lib/case-source-fields.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -497,4 +500,74 @@ test("the page says what it has been narrowed to", () => {
   assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
   // Nothing narrowed, nothing said.
   assert.equal(filterSummary({}), "");
+});
+
+// QA 2026-11-01 item 6, still failing in run 4 (13 Nov): "Filter does nothing,
+// and accepted or declined applications disappear and cannot be opened". The
+// list opened filtered to Pending, said so nowhere, and offered no way back to
+// the whole list.
+test("the applications list opens on everything, not on Pending", () => {
+  assert.equal(DEFAULT_APPLICATION_FILTER, "all");
+  // "all" is how the API is told not to filter; any other value is a filter,
+  // so an empty one would match nothing.
+  assert.equal(applicationStatusParam("all"), "all");
+  assert.equal(applicationStatusParam(""), "all");
+  assert.equal(applicationStatusParam(undefined), "all");
+  assert.equal(applicationStatusParam("  "), "all");
+  assert.equal(applicationStatusParam("inactive"), "inactive");
+});
+
+test("there is a way back to the whole list, and the button says which filter is on", () => {
+  const values = APPLICATION_FILTERS.map(f => f.value);
+  assert.ok(values.includes("all"), "no way back to every application");
+  for (const state of ["pending", "active", "inactive"]) {
+    assert.ok(values.includes(state), state);
+  }
+  // The button names the filter rather than reading "Filter", so an empty list
+  // reads as narrowed rather than broken.
+  assert.equal(applicationFilterLabel("all"), "All applications");
+  assert.equal(applicationFilterLabel("pending"), "Pending");
+  // A declined application is stored as INACTIVE; the label says what it means.
+  assert.equal(applicationFilterLabel("inactive"), "Declined");
+  assert.equal(applicationFilterLabel(undefined), "All applications");
+});
+
+// QA run 4 (13 Nov), row 50: "Case source, Brought by, Facility and Visit date
+// entered on the internal criminal form are not saved; the case shows 'Not
+// recorded'." The form collected all four and the submit threw them away: the
+// filing schema parses the whole form and zod drops any key it does not know.
+// The API test passed because it called the service directly, past this.
+test("the filing form carries the case source through to the API", () => {
+  assert.deepEqual(CASE_SOURCE_KEYS, ["case_source", "brought_by", "facility_name", "visit_date"]);
+  const shape = z.object(caseSourceFields);
+  const filled = {
+    case_source: "CUSTODIAL_VISIT",
+    brought_by: "Kuje welfare officer",
+    facility_name: "Kuje Custodial Centre",
+    visit_date: "2026-10-31",
+  };
+  const parsed = shape.parse(filled);
+  for (const key of CASE_SOURCE_KEYS) {
+    assert.equal(parsed[key], filled[key], `${key} was dropped on the way to the API`);
+  }
+  // A filing that records no source is still a filing.
+  assert.deepEqual(shape.parse({}), {});
+});
+
+// QA run 4 (13 Nov), row 49: the DG's route picker and the case's Department
+// showed the role constant — 'PREROGATIVE OF MERCY UNIT HEAD' — instead of the
+// office the case is going to.
+test("a case is routed to an office, not to a role constant", () => {
+  assert.equal(officeLabel("CIVIL JUSTICE DEPT. HEAD"), "Civil Justice Department");
+  assert.equal(officeLabel("DIO UNIT HEAD"), "DIO Department");
+  assert.equal(officeLabel("DECONGESTION UNIT HEAD"), "Decongestion Unit");
+  assert.equal(officeLabel("OSCAR UNIT HEAD"), "OSCAR Unit");
+  // Whether each is a Unit or a Department follows LACON's answer to item 22.
+  assert.equal(officeLabel("PREROGATIVE OF MERCY UNIT HEAD"), "Prerogative of Mercy Department");
+  // A role that is not an office keeps its own name.
+  assert.equal(officeLabel("STATE COORDINATOR"), "State Coordinator");
+  assert.equal(officeLabel("DIRECTOR GENERAL"), "Director General");
+  // Unknown and empty are left as they came.
+  assert.equal(officeLabel("SOMETHING ELSE"), "SOMETHING ELSE");
+  assert.equal(officeLabel(undefined), "");
 });

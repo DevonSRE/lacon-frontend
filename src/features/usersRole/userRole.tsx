@@ -65,22 +65,28 @@ export default function UserRoles() {
   const [detailsType, setDetailsType] = useState<"view" | "edit">("view");
   const [state, dispatch, isPending] = useActionState(DeleteUser, undefined);
   const queryClient = useQueryClient();
+  // The server's reason, shown inside the dialog that caused it. A toast alone
+  // was not enough: the dialog sits above the toaster, so a refusal looked like
+  // the button doing nothing at all (QA 2026-11-01 run 4, 13 Nov, row 55).
+  const [refusal, setRefusal] = useState("");
 
   useEffectAfterMount(() => {
     if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
-      toast.error(state?.message, {
-        description:
-          typeof state?.errors === "string"
-            ? state.errors
-            : state?.errors
-            ? Object.values(state.errors).flat().join(", ")
-            : undefined,
-      });
+      const detail =
+        typeof state?.errors === "string"
+          ? state.errors
+          : state?.errors
+          ? Object.values(state.errors).flat().join(", ")
+          : undefined;
+      setRefusal([state?.message, detail].filter(Boolean).join(" ") || "That could not be done.");
+      toast.error(state?.message, { description: detail });
     } else if (state?.status === 200 || state?.status === 201) {
+      setRefusal("");
       queryClient.invalidateQueries({ queryKey: ["getUsers"] });
       if (state.type === "suspend")
         toast.success("User Suspended successfully!");
       if (state.type === "delete") toast.success("User Deleted successfully!");
+      if (state.type === "activate") toast.success("Account activated.");
       setTimeout(() => {
         setdailogOpen(false);
         setSheetOpen(false);
@@ -89,6 +95,7 @@ export default function UserRoles() {
   }, [state]);
 
   const handleOpenSheet = (user: IUser, type: "view" | "edit" | "suspend" | "delete" | "activate") => {
+    setRefusal("");
     setSelectedUser(user);
     if (type === "view" || type === "edit") {
       setDetailsType(type);
@@ -259,6 +266,11 @@ export default function UserRoles() {
             <div className="justify-center text-center">
               Are You Sure You Want To Delete This User
             </div>
+            {refusal && (
+              <p role="alert" className="rounded bg-red-50 p-3 text-center text-sm text-red-700">
+                {refusal}
+              </p>
+            )}
             <Button
               onClick={() => dispatchAction("delete")}
               className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden"
@@ -371,6 +383,11 @@ export default function UserRoles() {
             <div className="justify-center text-center">
               Are You Sure You Want To Activate This User
             </div>
+            {refusal && (
+              <p role="alert" className="rounded bg-red-50 p-3 text-center text-sm text-red-700">
+                {refusal}
+              </p>
+            )}
             <Button
               onClick={() => dispatchAction("activate")}
               className="w-full h-11 bg-black text-white hover:bg-gray-900 group relative overflow-hidden"

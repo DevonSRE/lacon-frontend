@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Filter, ListFilter, Plus, Search } from "lucide-react";
 import { AddUserSheet } from "../component/AddUserSheet";
 import { useAction } from "@/context/ActionContext";
+import { APPLICATION_FILTERS, DEFAULT_APPLICATION_FILTER, applicationFilterLabel, applicationStatusParam } from "@/lib/application-filters";
 import { GetLawyerRequestAction, GetProbunoLawyerRequestAction } from "./userRoleAction";
 import { DEFAULT_PAGE_SIZE } from "@/lib/constants";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,12 @@ export default function ProbunoRequest() {
     const [currentPage, setCurrentPage] = useState(1);
     const [searchTerm, setSearchTerm] = useState("");
     const { setIsOpen } = useAction();
-    const [selectedStatus, setSelectedStatus] = useState<string | undefined>("pending");
+    // "all", not "pending": the list opened filtered to Pending and said so
+    // nowhere, so an accepted or declined application looked deleted rather
+    // than filtered out, and the Filter button looked inert because it could
+    // only ever narrow what was already on screen (QA 2026-11-01, item 6;
+    // still failing in run 4, 13 Nov).
+    const [selectedStatus, setSelectedStatus] = useState<string>(DEFAULT_APPLICATION_FILTER);
     const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
     const { data: user } = useAppSelector((state) => state.profile);
     const [selectedUser, setSelectedUser] = useState<ILawyerRequest | null>(null);
@@ -53,20 +59,21 @@ export default function ProbunoRequest() {
                 page: currentPage,
                 size: DEFAULT_PAGE_SIZE,
                 keyword: debouncedSearchTerm ?? "",
-                status: selectedStatus ?? "all",
+                status: applicationStatusParam(selectedStatus),
             };
             return await GetProbunoLawyerRequestAction(filters);
         },
         staleTime: 100000,
     });
 
-    // A declined application is stored as INACTIVE.
-    const actionType: { value: string; label: string }[] = [
-        { value: "pending", label: "Pending" }, { value: "active", label: "Active" }, { value: "inactive", label: "Declined" },
-    ];
+    const actionType = APPLICATION_FILTERS;
+    const showing = applicationFilterLabel(selectedStatus);
 
     const handleActionType = (role: string) => {
         setSelectedStatus(role);
+        // Back to the first page: page 3 of Pending is usually past the end of
+        // Declined, which would answer a filter with an empty list.
+        setCurrentPage(1);
     };
 
     return (
@@ -90,9 +97,9 @@ export default function ProbunoRequest() {
                 <section className="flex gap-3">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="text-sm h-11 w-32">
+                            <Button variant="outline" className="text-sm h-11 min-w-32">
                                 <ListFilter size={20} className="mr-2" />
-                                Filter
+                                {showing}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="h-auto space-y-2 space-x-2 overflow-y-auto">
