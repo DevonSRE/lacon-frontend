@@ -116,6 +116,15 @@ export default function CoordinatorHome({ role }: { role: string }) {
                 <h2 className="text-lg font-semibold">
                   {report?.scope.name ? `${displayStateName(report.scope.name)} at a glance` : "At a glance"}
                 </h2>
+                {/* What these count, said once. They used to count every case
+                    filed in the coordinator's state, and the line here said so.
+                    T13 narrowed them to the cases that actually reached this
+                    office, but the line stayed — so the screen went on claiming
+                    a bug that had been fixed, and QA read it and reported it
+                    still open (QA 2026-11-01, item 2; run 4, 13 Nov). */}
+                <p className="text-sm text-gray-500">
+                  The cases that reached you: the ones you hold, routed or assigned, or that went to an office or lawyer under you.
+                </p>
                 {/* One definition of these five, shared with the Reports page:
                     the two were splitting "still needs a lawyer" differently
                     and disagreeing by one. "New this week" is the note on the
@@ -128,7 +137,7 @@ export default function CoordinatorHome({ role }: { role: string }) {
                 </div>
               </section>
 
-              <Queue title="Waiting for your review" description="Cases filed online that came to you. Accept one to make it ready for a lawyer, or reject it with a reason. The cards above count every case in your area, including the ones someone else holds."
+              <Queue title="Waiting for your review" description="Cases filed online that came to you. Accept one to make it ready for a lawyer, or reject it with a reason."
                 empty="No online case is waiting for your review." filters={{ queue: "mine", status: "SUBMITTED" }} actions={["accept", "reject"]} />
 
               <Queue title="Waiting for a lawyer" description="Accepted and staff-filed cases you hold. Assign a lawyer, or send the case on to a centre."

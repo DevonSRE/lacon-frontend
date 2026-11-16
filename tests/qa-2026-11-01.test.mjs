@@ -11,6 +11,7 @@ import { MAX_SHOWN, canReviewDuplicates, hasDuplicates, reasonProblem, sharedLab
 import { caseSourceLabel, caseSourceProblem, needsBroughtBy, needsVisitDetails } from "../src/lib/case-source.ts";
 import { changeText, changeTone, quarterOf, recentQuarters } from "../src/lib/quarters.ts";
 import { AGE_BRACKETS, ageBounds, filterSummary, offenceParam } from "../src/lib/statistics-filters.ts";
+import { APPLICATION_FILTERS, DEFAULT_APPLICATION_FILTER, applicationFilterLabel, applicationStatusParam } from "../src/lib/application-filters.ts";
 import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/features/cases/bulk-template.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
@@ -497,4 +498,34 @@ test("the page says what it has been narrowed to", () => {
   assert.equal(filterSummary({ workedOnName: "Barr. A. Musa" }), "worked on by Barr. A. Musa");
   // Nothing narrowed, nothing said.
   assert.equal(filterSummary({}), "");
+});
+
+// QA 2026-11-01 item 6, still failing in run 4 (13 Nov): "Filter does nothing,
+// and accepted or declined applications disappear and cannot be opened". The
+// list opened filtered to Pending, said so nowhere, and offered no way back to
+// the whole list.
+test("the applications list opens on everything, not on Pending", () => {
+  assert.equal(DEFAULT_APPLICATION_FILTER, "all");
+  // "all" is how the API is told not to filter; any other value is a filter,
+  // so an empty one would match nothing.
+  assert.equal(applicationStatusParam("all"), "all");
+  assert.equal(applicationStatusParam(""), "all");
+  assert.equal(applicationStatusParam(undefined), "all");
+  assert.equal(applicationStatusParam("  "), "all");
+  assert.equal(applicationStatusParam("inactive"), "inactive");
+});
+
+test("there is a way back to the whole list, and the button says which filter is on", () => {
+  const values = APPLICATION_FILTERS.map(f => f.value);
+  assert.ok(values.includes("all"), "no way back to every application");
+  for (const state of ["pending", "active", "inactive"]) {
+    assert.ok(values.includes(state), state);
+  }
+  // The button names the filter rather than reading "Filter", so an empty list
+  // reads as narrowed rather than broken.
+  assert.equal(applicationFilterLabel("all"), "All applications");
+  assert.equal(applicationFilterLabel("pending"), "Pending");
+  // A declined application is stored as INACTIVE; the label says what it means.
+  assert.equal(applicationFilterLabel("inactive"), "Declined");
+  assert.equal(applicationFilterLabel(undefined), "All applications");
 });
