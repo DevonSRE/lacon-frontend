@@ -119,7 +119,10 @@ export function casePermissions(c: CaseRecord, user: { id: string; role: string 
     assign: open && holder && !waitingReview && assigner,
     escalate: open && holder && !waitingReview && assigner,
     acceptReject: waitingReview && holder && (reviewRole || pickup),
-    lawyerReject: open && assigned,
+    // A lawyer returns work they are still doing. "open" includes Completed —
+    // the head has yet to close it — so Return assignment stayed on offer
+    // after the lawyer had finished (QA 2026-11-01 run 4, 13 Nov, row 42).
+    lawyerReject: assigned && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
     start: assigned && ["ASSIGNED", "REVISION_REQUESTED"].includes(c.status),
     complete: assigned && ["ASSIGNED", "INPROGRESS", "REVISION_REQUESTED"].includes(c.status),
     close: holder && assigner && ["COMPLETED", "RESOLVED"].includes(c.status),

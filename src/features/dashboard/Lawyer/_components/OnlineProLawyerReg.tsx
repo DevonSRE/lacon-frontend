@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useActionState, useEffect, SetStateAction, Dispatch } from 'react';
+import { phoneInput } from "@/lib/phone-input";
 import { Label } from '@/components/ui/label';
 import { submitProBonoForm } from '@/features/probunoLawyers/server/action';
 import { proBonoSchema } from '@/features/probunoLawyers/server/probonoSchema';
@@ -196,7 +197,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
                       onChange={(e) => handleInputChange(
                         field.name,
                         (PHONE_FIELDS as readonly string[]).includes(field.name)
-                          ? e.target.value.replace(/\D/g, '').slice(0, 11)
+                          ? phoneInput(e.target.value)
                           : e.target.value
                       )}
                     />
