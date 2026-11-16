@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useFileDownload } from "@/lib/save-file";
 import { useAppSelector } from "@/hooks/redux";
 import { useAction } from "@/context/ActionContext";
 import { changeText, changeTone, quarterOf, recentQuarters } from "@/lib/quarters";
@@ -49,8 +50,10 @@ export default function ManagementReport() {
   const [ageBracket, setAgeBracket] = useState("");
   const [sex, setSex] = useState("");
   const [workedOn, setWorkedOn] = useState("");
-  const [downloading, setDownloading] = useState(false);
-  const [pending, startTransition] = useTransition();
+  // One click, one PDF. The download used to run inside startTransition, which
+  // React may run again, and a second run saved a second copy
+  // (QA 2026-11-16, row 59).
+  const { busy: downloading, download } = useFileDownload();
 
   const usingCustomDates = custom.from !== "" && custom.to !== "";
   const [year, quarter] = period.split("-").map(Number);
@@ -94,26 +97,12 @@ export default function ManagementReport() {
     enabled: !!user?.id,
   });
 
-  const take = () => {
-    setDownloading(true);
-    startTransition(async () => {
-      const result = await downloadManagementReport(filters);
-      setDownloading(false);
-      if (!result.success) {
-        toast.error("The report could not be printed.", { description: result.message });
-        return;
-      }
-      const bytes = Uint8Array.from(atob(result.data), char => char.charCodeAt(0));
-      const url = URL.createObjectURL(new Blob([bytes], { type: result.contentType }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = result.filename || "LACON-management-report.pdf";
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    });
-  };
+  const take = () =>
+    download(
+      () => downloadManagementReport(filters),
+      "LACON-management-report.pdf",
+      message => toast.error("The report could not be printed.", { description: message })
+    );
 
   const data = report.data?.success ? report.data.data : undefined;
   const workedOnName = (people.data?.success ? people.data.data : []).find(p => p.id === workedOn)?.name;
@@ -136,7 +125,7 @@ export default function ManagementReport() {
             </p>
           )}
         </div>
-        <Button type="button" variant="outline" disabled={downloading || pending || !data} onClick={take}>
+        <Button type="button" variant="outline" disabled={downloading || !data} onClick={take}>
           {downloading ? "Preparing…" : "Download management report (PDF)"}
         </Button>
       </div>

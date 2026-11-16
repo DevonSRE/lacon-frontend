@@ -20,6 +20,7 @@ import { BULK_COLUMNS, BULK_COLUMN_COUNT, bulkTemplateCsv } from "../src/feature
 import { applicationSourceLabel, isInventoryApplication } from "../src/lib/probono-source.ts";
 import { readApplication } from "../src/lib/probono-application.ts";
 import { timeAgo } from "../src/features/notifications/when.ts";
+import { makeDownloadGuard } from "../src/lib/download-guard.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -697,4 +698,36 @@ test("a notification says how long ago it happened", () => {
   assert.equal(ago(undefined), "");
   assert.equal(ago(""), "");
   assert.equal(ago("not a date"), "");
+});
+
+// QA 2026-11-16, row 59: the management report downloaded twice for one click.
+// The saving ran inside startTransition, which React may run again, and nothing
+// stopped a second run from saving a second copy.
+test("a download runs once however many times it is asked for", async () => {
+  let fetched = 0;
+  const saved = [];
+  const guard = makeDownloadGuard(file => saved.push(file.filename));
+
+  // Three calls before the first finishes: one fetch, one file.
+  const slow = () => new Promise(resolve => setTimeout(() => {
+    fetched += 1;
+    resolve({ success: true, data: "", contentType: "application/pdf", filename: "report.pdf" });
+  }, 10));
+  await Promise.all([guard(slow), guard(slow), guard(slow)]);
+  assert.equal(fetched, 1, "the report was fetched more than once");
+  assert.deepEqual(saved, ["report.pdf"]);
+
+  // Once it has finished, the next click works again.
+  await guard(slow);
+  assert.equal(fetched, 2);
+  assert.deepEqual(saved, ["report.pdf", "report.pdf"]);
+});
+
+test("a refused download saves nothing and reports why", async () => {
+  const saved = [];
+  const errors = [];
+  const guard = makeDownloadGuard(file => saved.push(file), message => errors.push(message));
+  await guard(async () => ({ success: false, message: "The unit has no data." }));
+  assert.deepEqual(saved, []);
+  assert.deepEqual(errors, ["The unit has no data."]);
 });
