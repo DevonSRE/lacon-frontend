@@ -41,6 +41,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { set } from "zod";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { toast } from "sonner";
+import { apiMessage } from "@/lib/api-message";
 
 export default function LawyersRequest() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,7 +81,8 @@ export default function LawyersRequest() {
         }
       );
     } else if (state && state.status === 200) {
-      toast.success("successfully");
+      // Say what happened, in the API's words.
+      toast.success(apiMessage(state?.message, "Done"));
       setApproveDailog(false);
       setRejectDailog(false);
       setDetailsDailog(false);
