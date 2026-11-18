@@ -6,6 +6,7 @@ import { isRequesterOffice, requestableRolesFor } from "../src/lib/requestable-r
 import { serverToast } from "../src/lib/server-toast.ts";
 import { canPrintAcknowledgement } from "../src/lib/acknowledgement.ts";
 import { emptyPoolMessage, pickerEmptyMessage } from "../src/lib/recipient-picker.ts";
+import { casesDirectRoles, casesSubMenuRoles } from "../src/lib/navigation.ts";
 
 // QA 2026-11-16, row 19: "Rejecting a request shows only 'successfully'
 // instead of 'Request rejected.'" The API had been saying it all along; the
@@ -138,4 +139,33 @@ test("row 68: the picker says why it has nobody to offer", () => {
     /No active state coordinator is available/
   );
   assert.equal(pickerEmptyMessage("escalate", "", ""), "No eligible recipients found.");
+});
+
+// QA 2026-11-16, row 71: Case Reviews sat under Users Role, beside Lawyers and
+// Request. They are case updates, so they belong under Cases - and only for the
+// offices that read them; everyone else keeps the direct link.
+test("row 71: Case Reviews belongs to the offices that read them", () => {
+  const caseRoles = [
+    "DIRECTOR GENERAL", "PLATFORM ADMIN", "DECONGESTION UNIT HEAD",
+    "STATE COORDINATOR", "LACON LAWYER", "INTERNAL PARALEGAL",
+  ];
+  const reviewRoles = ["DECONGESTION UNIT HEAD", "DIRECTOR GENERAL", "PLATFORM ADMIN", "ADMIN"];
+
+  // The offices with reviews reach Cases through the sub-menu.
+  assert.deepEqual(
+    casesSubMenuRoles(caseRoles, reviewRoles),
+    ["DECONGESTION UNIT HEAD", "DIRECTOR GENERAL", "PLATFORM ADMIN"]
+  );
+  // An office that may read reviews but has no Cases entry gets neither.
+  assert.ok(!casesSubMenuRoles(caseRoles, reviewRoles).includes("ADMIN"));
+
+  // Everyone else keeps the direct link, and a paralegal keeps "Filed Cases".
+  const direct = casesDirectRoles(caseRoles, reviewRoles);
+  assert.deepEqual(direct, ["STATE COORDINATOR", "LACON LAWYER"]);
+  assert.ok(!direct.includes("INTERNAL PARALEGAL"));
+
+  // Nobody is offered Cases twice.
+  for (const role of casesSubMenuRoles(caseRoles, reviewRoles)) {
+    assert.ok(!direct.includes(role), role);
+  }
 });

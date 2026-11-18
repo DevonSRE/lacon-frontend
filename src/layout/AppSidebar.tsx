@@ -10,6 +10,7 @@ import { ROLES } from "@/types/auth";
 import { ROUTE_ACCESS } from "@/lib/route-access";
 import { Dot } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, useSidebar } from "@/components/ui/sidebar";
+import { casesDirectRoles, casesSubMenuRoles } from "@/lib/navigation";
 
 type NavItem = {
   name: string;
@@ -33,11 +34,34 @@ const navItems: NavItem[] = [
     path: "/dashboard",
     roles: ["PLATFORM ADMIN", "ADMIN", "DECONGESTION UNIT HEAD", "LACON LAWYER", "PRO BONO LAWYER", "PDSS UNIT HEAD", "PRO_BONO_LAWYER", "EXTERNAL PARALEGAL", "LAWYER", "DIRECTOR GENERAL", "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR", "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "OSCAR UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD", "DIO UNIT HEAD", "INTERNAL PARALEGAL", "STATISTICS"],
   },
+  // Case reviews are the periodic reports pro bono lawyers send on their
+  // cases, so they belong with Cases. They sat under Users Role, beside
+  // Lawyers and Request, where nobody looking for case updates would think to
+  // look (QA 2026-11-16, row 71). The offices that have them get Cases as a
+  // sub-menu; everyone else keeps the direct link they had.
   {
     icon: <Icons.casesIcon />,
     name: "Cases",
     path: "/cases",
-    roles: ROUTE_ACCESS["/cases"].filter(role => role !== "INTERNAL PARALEGAL"),
+    roles: casesDirectRoles(ROUTE_ACCESS["/cases"], ROUTE_ACCESS["/users/probono-reviews"]),
+  },
+  {
+    icon: <Icons.casesIcon />,
+    name: "Cases",
+    roles: casesSubMenuRoles(ROUTE_ACCESS["/cases"], ROUTE_ACCESS["/users/probono-reviews"]),
+    subItems: [
+      {
+        name: "All cases",
+        path: "/cases",
+        roles: ROUTE_ACCESS["/cases"],
+      },
+      {
+        // The same page at the same address; only where it is reached changes.
+        name: "Case Reviews",
+        path: "/users/probono-reviews",
+        roles: ROUTE_ACCESS["/users/probono-reviews"],
+      },
+    ],
   },
   {
     icon: <Icons.casesIcon />,
@@ -79,12 +103,6 @@ const navItems: NavItem[] = [
         name: "Request",
         path: "/users/probuno-request",
         roles: ROUTE_ACCESS["/users/probuno-request"],
-      },
-      {
-        // The periodic reports designated pro bono lawyers send in (row 32).
-        name: "Case Reviews",
-        path: "/users/probono-reviews",
-        roles: ROUTE_ACCESS["/users/probono-reviews"],
       },
     ]
   },
