@@ -115,7 +115,12 @@ export default function ManagementReport() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">
-            {data ? `${data.title} · ${data.period} · ${data.area}` : "Management report"}
+            {/* The heading says what the figures are: filtered to one person,
+                it read "National", which is where they came from and not what
+                they show (QA 2026-11-16, row 66). */}
+            {data
+              ? [data.title, data.period, data.area, data.narrowed].filter(Boolean).join(" · ")
+              : "Management report"}
           </h1>
           {data && (
             <p className="text-sm text-gray-500">
