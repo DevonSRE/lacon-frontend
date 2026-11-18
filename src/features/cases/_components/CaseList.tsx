@@ -19,6 +19,7 @@ import ExportCases from "./ExportCases";
 import { canReviewDuplicates, sharedLabel } from "@/lib/duplicates";
 import { CASE_SOURCES, ONLINE_SOURCE } from "@/lib/case-source";
 import { AGE_BRACKETS, SEXES, ageBounds, offenceParam } from "@/lib/statistics-filters";
+import { activeCaseFilters, hasAdvancedCaseFilters } from "@/lib/case-filters";
 
 // What a row may offer without opening the case. The Action column held a single
 // "Open case" link, so a coordinator had to open every case to find the one
@@ -66,6 +67,19 @@ export default function CaseList({ title = "Cases", opening = {} }: { title?: st
   const [sex, setSex] = useState(opening.sex ?? "");
   const [workedOn, setWorkedOn] = useState("");
   const [to, setTo] = useState("");
+  // The filter row held ten controls of equal weight, and nothing said whether
+  // any were applied (QA 2026-11-16, row 64). Search and the three filters
+  // people reach for stay in the first row; the rest fold away, and open
+  // themselves when one of them is already narrowing the list.
+  const applied = { search, status, caseType, state, caseSource, offences, ageBracket, sex, workedOn, filedBy };
+  const activeFilters = activeCaseFilters(applied);
+  const [showMore, setShowMore] = useState(hasAdvancedCaseFilters(applied));
+  const clearFilters = () => {
+    setSearch(""); setStatus("all"); setCaseType("all"); setState("all");
+    setCaseSource("all"); setOffences([]); setAgeBracket(""); setSex("");
+    setWorkedOn(""); setFiledBy("all"); setFilerSearch("");
+    setPage(1);
+  };
   const mayReviewDuplicates = canReviewDuplicates(user?.role);
   const canQueue = user?.role === "DIRECTOR GENERAL" || HEAD_ROLES.includes(user?.role ?? "") || COORDINATOR_ROLES.includes(user?.role ?? "");
   const canFile = user?.role === "INTERNAL PARALEGAL";
@@ -114,38 +128,69 @@ export default function CaseList({ title = "Cases", opening = {} }: { title?: st
     {mayReviewDuplicates && <div className="flex flex-wrap gap-2">{[{ value: false, label: "All cases" }, { value: true, label: "Duplicates" }].map(tab => <Button key={String(tab.value)} variant={duplicatesOnly === tab.value ? "default" : "outline"} onClick={() => { setDuplicatesOnly(tab.value); setPage(1); }}>{tab.label}</Button>)}</div>}
     {duplicatesOnly && <div className="rounded border border-amber-300 bg-amber-50 p-3 text-sm"><p>Every case flagged as a possible duplicate, with the case it matched. This view is for review only \u2014 nothing here changes a case.</p><div className="mt-2 flex flex-wrap items-center gap-3"><label className="flex items-center gap-2">Filed from <input type="date" aria-label="Filed from" className="rounded border p-1" value={from} onChange={e => { setFrom(e.target.value); setPage(1); }} /></label><label className="flex items-center gap-2">to <input type="date" aria-label="Filed to" className="rounded border p-1" value={to} onChange={e => { setTo(e.target.value); setPage(1); }} /></label></div></div>}
     {canQueue && <div className="flex flex-wrap gap-2">{[{ value: "all", label: "All cases in scope" }, { value: "mine", label: "My queue" }, { value: "unassigned", label: "Awaiting assignment" }].map(tab => <Button key={tab.value} variant={queue === tab.value ? "default" : "outline"} onClick={() => { setQueue(tab.value); setPage(1); }}>{tab.label}</Button>)}</div>}
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-      <Input aria-label="Search cases" placeholder="Client name or LACON reference" value={search} onChange={e => { setSearch(e.target.value); setPage(1); }} />
-      <select aria-label="Case status" className="rounded border p-2" value={status} onChange={filter(setStatus)}><option value="all">All statuses</option>{Object.entries(CASE_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}{value === "RESOLVED" ? " (legacy)" : ""}</option>)}</select>
-      <select aria-label="Case type" className="rounded border p-2" value={caseType} onChange={filter(setCaseType)}><option value="all">All case types</option>{["CIVIL CASE", "CRIMINAL CASE", "PDSS ORGANIZATION", "PDSS STATION", "DECONGESTION", "MERCY APPLICATION"].map(value => <option key={value}>{value}</option>)}</select>
-      <select aria-label="Filing state" className="rounded border p-2" value={state} onChange={filter(setState)}><option value="all">All filing states</option>{states.map(value => <option key={value} value={value}>{displayStateName(value)}</option>)}</select>
-      <select aria-label="Case source" className="rounded border p-2" value={caseSource} onChange={filter(setCaseSource)}><option value="all">Any case source</option>{[...CASE_SOURCES, ONLINE_SOURCE].map(source => <option key={source.value} value={source.value}>{source.label}</option>)}</select>
-      <select aria-label="Offence" className="rounded border p-2" multiple={false} value={offences[0] ?? ""} onChange={event => { setOffences(event.target.value ? [event.target.value] : []); setPage(1); }}>
-        <option value="">Any offence</option>
-        {(offenceOptions.data?.success ? offenceOptions.data.data : []).map(o => <option key={o.offence} value={o.offence}>{o.offence} ({o.count})</option>)}
-      </select>
-      <select aria-label="Age range" className="rounded border p-2" value={ageBracket} onChange={filter(setAgeBracket)}>
-        <option value="">Any age</option>
-        {AGE_BRACKETS.map(bracket => <option key={bracket.value} value={bracket.value}>{bracket.label}</option>)}
-      </select>
-      <select aria-label="Sex" className="rounded border p-2" value={sex} onChange={filter(setSex)}>
-        <option value="">Any sex</option>
-        {SEXES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
-      <select aria-label="Worked on by" className="rounded border p-2" value={workedOn} onChange={filter(setWorkedOn)}>
-        <option value="">Worked on by anyone</option>
-        {(people.data?.success ? people.data.data : []).map(person => (
-          <option key={person.id} value={person.id}>{[person.name, roleLabel(person.role)].filter(Boolean).join(" · ")}</option>
-        ))}
-      </select>
-      <div className="space-y-1">
-        <Input aria-label="Search who filed" placeholder="Search who filed" value={filerSearch} onChange={e => setFilerSearch(e.target.value)} />
-        <select aria-label="Filed by" className="w-full rounded border p-2" value={filedBy} onChange={filter(setFiledBy)}>
-          <option value="all">Filed by anyone</option>
-          <option value="online">Online (public)</option>
-          {filerOptions.map(f => <option key={f.id} value={f.id}>{[f.name, roleLabel(f.role), f.office].filter(Boolean).join(" · ")}</option>)}
-        </select>
+    {/* Search and the three filters people reach for, then everything else
+        behind one button that says how much is applied (row 64). */}
+    <div className="space-y-3 rounded border p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <Input
+          aria-label="Search cases"
+          placeholder="Client name or LACON reference"
+          className="min-w-[14rem] flex-1"
+          value={search}
+          onChange={e => { setSearch(e.target.value); setPage(1); }}
+        />
+        <select aria-label="Case status" className="rounded border p-2" value={status} onChange={filter(setStatus)}><option value="all">All statuses</option>{Object.entries(CASE_STATUS_LABELS).map(([value, label]) => <option key={value} value={value}>{label}{value === "RESOLVED" ? " (legacy)" : ""}</option>)}</select>
+        <select aria-label="Case type" className="rounded border p-2" value={caseType} onChange={filter(setCaseType)}><option value="all">All case types</option>{["CIVIL CASE", "CRIMINAL CASE", "PDSS ORGANIZATION", "PDSS STATION", "DECONGESTION", "MERCY APPLICATION"].map(value => <option key={value}>{value}</option>)}</select>
+        <select aria-label="Filing state" className="rounded border p-2" value={state} onChange={filter(setState)}><option value="all">All filing states</option>{states.map(value => <option key={value} value={value}>{displayStateName(value)}</option>)}</select>
+        <Button
+          type="button"
+          variant="outline"
+          aria-expanded={showMore}
+          onClick={() => setShowMore(open => !open)}
+        >
+          {showMore ? "Fewer filters" : "More filters"}
+        </Button>
+        {activeFilters.length > 0 && (
+          <>
+            <span className="rounded bg-gray-100 px-2 py-1 text-sm" title={activeFilters.join(", ")}>
+              {activeFilters.length} filter{activeFilters.length === 1 ? "" : "s"} applied
+            </span>
+            <Button type="button" variant="outline" onClick={clearFilters}>Clear filters</Button>
+          </>
+        )}
       </div>
+
+      {showMore && (
+        <div className="grid gap-3 border-t pt-3 sm:grid-cols-2 lg:grid-cols-3">
+          <select aria-label="Case source" className="rounded border p-2" value={caseSource} onChange={filter(setCaseSource)}><option value="all">Any case source</option>{[...CASE_SOURCES, ONLINE_SOURCE].map(source => <option key={source.value} value={source.value}>{source.label}</option>)}</select>
+          <select aria-label="Offence" className="rounded border p-2" multiple={false} value={offences[0] ?? ""} onChange={event => { setOffences(event.target.value ? [event.target.value] : []); setPage(1); }}>
+            <option value="">Any offence</option>
+            {(offenceOptions.data?.success ? offenceOptions.data.data : []).map(o => <option key={o.offence} value={o.offence}>{o.offence} ({o.count})</option>)}
+          </select>
+          <select aria-label="Age range" className="rounded border p-2" value={ageBracket} onChange={filter(setAgeBracket)}>
+            <option value="">Any age</option>
+            {AGE_BRACKETS.map(bracket => <option key={bracket.value} value={bracket.value}>{bracket.label}</option>)}
+          </select>
+          <select aria-label="Sex" className="rounded border p-2" value={sex} onChange={filter(setSex)}>
+            <option value="">Any sex</option>
+            {SEXES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
+          </select>
+          <select aria-label="Worked on by" className="rounded border p-2" value={workedOn} onChange={filter(setWorkedOn)}>
+            <option value="">Worked on by anyone</option>
+            {(people.data?.success ? people.data.data : []).map(person => (
+              <option key={person.id} value={person.id}>{[person.name, roleLabel(person.role)].filter(Boolean).join(" \u00b7 ")}</option>
+            ))}
+          </select>
+          <div className="space-y-1">
+            <Input aria-label="Search who filed" placeholder="Search who filed" value={filerSearch} onChange={e => setFilerSearch(e.target.value)} />
+            <select aria-label="Filed by" className="w-full rounded border p-2" value={filedBy} onChange={filter(setFiledBy)}>
+              <option value="all">Filed by anyone</option>
+              <option value="online">Online (public)</option>
+              {filerOptions.map(f => <option key={f.id} value={f.id}>{[f.name, roleLabel(f.role), f.office].filter(Boolean).join(" \u00b7 ")}</option>)}
+            </select>
+          </div>
+        </div>
+      )}
     </div>
     {!user || cases.isLoading ? <p role="status" className="py-10 text-center">Loading cases…</p> : cases.isError || (cases.data && !cases.data.success) ? <div role="alert" className="space-y-3 rounded bg-red-50 p-4"><p>{cases.data && !cases.data.success ? cases.data.message : "Cases could not be loaded."}</p><Button variant="outline" onClick={() => cases.refetch()}>Retry</Button></div> : <>
       <div className="overflow-x-auto rounded border"><table className="w-full text-left text-sm"><thead className="bg-gray-50"><tr>{(duplicatesOnly ? ["Reference / Client", "Case type", "Status", "Filed from", "Matches", "Filed on"] : ["Reference / Client", "Case type", "Status", "Filed from", "Current holder", "Assigned by", "Action"]).map(label => <th className="whitespace-nowrap p-3 font-medium" key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={row.id} className="border-t"><td className="p-3"><Link className="inline-block whitespace-nowrap font-medium underline" href={`/cases/${row.id}`}>{caseReference(row)}</Link><p>{row.first_name} {row.last_name}</p>{!!row.possible_duplicate_of?.length && <span className="text-xs text-amber-700">Possible duplicate</span>}</td><td className="p-3">{row.case_type}</td><td className="p-3"><span className="inline-block whitespace-nowrap rounded bg-gray-100 px-2 py-1">{statusLabel(row.status)}</span></td><td className="p-3"><p>{filedFrom(row)}</p><p className="text-xs text-gray-500">{row.state_name ? displayStateName(row.state_name) : "State not recorded"}</p>{row.filing_actor?.name && <p className="text-xs text-gray-500">{row.filing_actor.name}</p>}</td>{duplicatesOnly

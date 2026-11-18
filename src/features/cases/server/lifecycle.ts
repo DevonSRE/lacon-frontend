@@ -122,6 +122,18 @@ export async function getOffences(keyword = ""): Promise<Result<Array<{ offence:
 }
 
 /**
+ * The offences a filing form chooses from, plus Other (QA 2026-11-16, row 47).
+ *
+ * A different question from getOffences, which answers the offences actually
+ * recorded on the cases a reader can see and feeds the filter. The two live on
+ * different paths for that reason.
+ */
+export async function getOffenceOptions(): Promise<Result<Array<{ code: string; label: string }>>> {
+  const result = await read<Array<{ code: string; label: string }> | null>("/casefile/offence-options", {});
+  return result.success ? { success: true, data: result.data ?? [] } : result;
+}
+
+/**
  * The case list as a spreadsheet (T17).
  *
  * The API answers the same filters the list was read with and scopes it the
