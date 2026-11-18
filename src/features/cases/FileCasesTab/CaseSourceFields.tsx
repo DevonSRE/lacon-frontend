@@ -20,10 +20,18 @@ export default function CaseSourceFields({
   values,
   errors,
   onChange,
+  hideVisitDetails = false,
 }: {
   values: { case_source?: string; brought_by?: string; facility_name?: string; visit_date?: string };
   errors: Record<string, string | undefined>;
   onChange: (field: string, value: string) => void;
+  /**
+   * The Decongestion form already asks which facility was visited and when, so
+   * it answers those from its own fields rather than asking twice
+   * (QA 2026-11-16, rows 69: "the bulk template has the Decongestion facility
+   * and visit date columns twice; keep one pair").
+   */
+  hideVisitDetails?: boolean;
 }) {
   const source = values.case_source ?? "";
   return (
@@ -59,7 +67,7 @@ export default function CaseSourceFields({
         </div>
       )}
 
-      {needsVisitDetails(source) && (
+      {needsVisitDetails(source) && !hideVisitDetails && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <InputField

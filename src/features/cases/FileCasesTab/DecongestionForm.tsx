@@ -15,6 +15,8 @@ import CaseIntakeDialog from '../../probunoLawyers/components/CaseIntakeDialog';
 import { Label } from '@/components/ui/label';
 import { GetState } from '@/components/get-state';
 import CaseCreated from '../_components/CaseCreated';
+import CaseSourceFields from './CaseSourceFields';
+import { caseSourceProblem } from '@/lib/case-source';
 import { ZodError } from 'zod';
 
 type CustomeSheetProps = {
@@ -61,6 +63,14 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         need_legal_aid: '',
         custodial_visit: '',
         date_of_visit: '',
+        // Where the case came from (T17). The form never asked, so every case
+        // filed on it read "Not recorded", which is meant for cases filed
+        // before the question existed (QA 2026-11-16, row 69). A Decongestion
+        // filing starts as what it almost always is - a custodial visit - and
+        // takes the facility and the date from the two answers above, which are
+        // the same question asked once.
+        case_source: 'CUSTODIAL_VISIT',
+        brought_by: '',
 
         // Step 2 - Case Details
         case_name: '',
@@ -109,10 +119,29 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
         }
     };
 
+    // The source as the shared field group reads it: the facility and the visit
+    // date are the form's own answers, not a second pair.
+    const caseSource = {
+        case_source: formData.case_source,
+        brought_by: formData.brought_by,
+        facility_name: formData.custodial_visit,
+        visit_date: formData.date_of_visit,
+    };
+    const updateCaseSource = (field: string, value: string) => {
+        const target = field === "facility_name" ? "custodial_visit"
+            : field === "visit_date" ? "date_of_visit" : field;
+        updateField(target as keyof typeof formData, value);
+    };
+
     const validateStep = (step: number) => {
         try {
             if (step === 1) {
                 personalDecongestionInfoSchema.parse(formData);
+                const sourceErrors = caseSourceProblem(caseSource);
+                if (Object.keys(sourceErrors).length > 0) {
+                    setErrors(sourceErrors as Record<string, string>);
+                    return false;
+                }
             } else if (step === 2) {
                 decongestionCaseDetails.parse(formData);
             }
@@ -381,6 +410,11 @@ export default function DecongestionForm({ currentStep = 1, openFileACase, setOp
                                                 />
                                             </div>
                                         </div>
+
+                                        {/* Where the case came from (row 69), asked as the other
+                                            forms ask it. The facility and the date above are its
+                                            own answers, so they are not asked twice. */}
+                                        <CaseSourceFields values={caseSource} errors={errors} onChange={updateCaseSource} hideVisitDetails />
 
                                     </div>
                                 )}
