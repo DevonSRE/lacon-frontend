@@ -5,6 +5,7 @@ import { rejectReasonProblem } from "../src/lib/decision-reason.ts";
 import { isRequesterOffice, requestableRolesFor } from "../src/lib/requestable-roles.ts";
 import { serverToast } from "../src/lib/server-toast.ts";
 import { canPrintAcknowledgement } from "../src/lib/acknowledgement.ts";
+import { emptyPoolMessage, pickerEmptyMessage } from "../src/lib/recipient-picker.ts";
 
 // QA 2026-11-16, row 19: "Rejecting a request shows only 'successfully'
 // instead of 'Request rejected.'" The API had been saying it all along; the
@@ -111,4 +112,30 @@ test("row 43: only the paralegal who filed the case is offered the receipt", () 
   ]) {
     assert.equal(canPrintAcknowledgement(filer, viewer), false, `${filer} / ${viewer}`);
   }
+});
+
+// QA 2026-11-16, row 68: "Type 'zzz': the dropdown is empty with no message."
+// An empty list because nobody is eligible and an empty list because the search
+// matched nothing are different things and now say different things.
+test("row 68: the picker says why it has nobody to offer", () => {
+  assert.equal(
+    pickerEmptyMessage("assign", "", "zzz"),
+    "No lawyer matches that search."
+  );
+  assert.equal(
+    pickerEmptyMessage("route", "STATE COORDINATOR", "zzz"),
+    "No recipient matches that search."
+  );
+  // Whitespace is not a search.
+  assert.equal(
+    pickerEmptyMessage("assign", "", "   "),
+    emptyPoolMessage("assign", "")
+  );
+  // With no search, it says what to do about an empty pool.
+  assert.match(pickerEmptyMessage("assign", "", ""), /Add one under Lawyers/);
+  assert.match(
+    pickerEmptyMessage("route", "STATE COORDINATOR", ""),
+    /No active state coordinator is available/
+  );
+  assert.equal(pickerEmptyMessage("escalate", "", ""), "No eligible recipients found.");
 });
