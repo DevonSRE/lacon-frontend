@@ -2,6 +2,7 @@
 import { ErrorResponse } from "@/lib/auth";
 import UserService from "./service";
 import { createLawyerSchema, createUserSchema } from "./type";
+import { apiMessage } from "@/lib/api-message";
 
 export async function InviteUser(_prevState: unknown, formData: FormData) {
   const data = Object.fromEntries(formData);
@@ -260,7 +261,10 @@ export async function ApproveRejectLawyerRequest(
     }
     return {
       status: 200,
-      message: "Success",
+      // The API says what happened: "Request approved", "Request rejected".
+      // Answering "Success" here is what reached the DG as the word
+      // "successfully" (QA 2026-11-16, row 19).
+      message: apiMessage(response.data?.message, "Done"),
       success: true,
       type: data?.type,
       data: response.data,

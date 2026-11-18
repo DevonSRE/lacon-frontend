@@ -16,6 +16,10 @@ import { displayStateName } from "@/components/get-state";
 import { officeLabel, roleLabel } from "@/lib/role-labels";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
 import { getAssignees, getRouteTargets, moveCase, postCaseDocument, postCaseProgress } from "../server/lifecycle";
+import { MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import SearchableSelect from "@/components/form/SearchableSelect";
+import { pickerEmptyMessage } from "@/lib/recipient-picker";
 
 export type Action = MovementCommand["action"] | "progress" | "document";
 type Recipient = DirectoryUser;
@@ -36,17 +40,26 @@ function recipientLabel(u: Recipient, action: Action) {
   if (isFull(u)) parts.push("full");
   return parts.join(" · ");
 }
-// emptyPoolMessage says why the list is empty and what to do about it, instead of
-// leaving the user at "No eligible recipients found".
-function emptyPoolMessage(action: Action, role: string) {
-  if (action === "assign") return "No lawyer is available for this case. Add one under Lawyers > Add New Lawyer, linking them to your department or unit, or widen the state filter.";
-  if (role) return `No active ${role.toLowerCase()} is available for this case. Assign a lawyer instead, or ask the Director General to create one.`;
-  return "No eligible recipients found.";
+// recipientDetail is what recipientLabel says about someone, without their name:
+// the name is the line of the option, this sits under it.
+function recipientDetail(u: Recipient, action: Action) {
+  const label = recipientLabel(u, action);
+  const name = `${u.first_name} ${u.last_name}`;
+  return label.startsWith(name + " · ") ? label.slice(name.length + 3) : label;
 }
 const titles: Record<Action, string> = { route: "Route case", assign: "Assign lawyer", escalate: "Send back up the chain", "lawyer-reject": "Return assignment", accept: "Accept case", reject: "Reject case", "request-revision": "Request revision", status: "Update status", progress: "Add progress update", document: "Upload document", refer: "Refer out of Legal Aid", transfer: "Transfer to another LACON office" };
 
-// `only` narrows the buttons to some actions (the dashboard queues offer review or assignment only).
-export default function CaseActions({ caseRecord, onChanged, only }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[] }) {
+/**
+ * `only` narrows the actions on offer (the dashboard queues offer review or
+ * assignment only).
+ *
+ * `layout` decides how they are offered. On the case page they are buttons,
+ * where there is room for them. In a table they belong in a "More actions"
+ * menu: a stack of full-width buttons made a row with four actions twice the
+ * height of its neighbours, which is what the tables looked like
+ * (QA 2026-11-16, rows 25 and 67).
+ */
+export default function CaseActions({ caseRecord, onChanged, only, layout = "buttons" }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[]; layout?: "buttons" | "menu" }) {
   const { data: user } = useAppSelector(state => state.profile);
   const permissions = casePermissions(caseRecord, user);
   const [selected, setSelected] = useState<{ action: Action; status?: string } | null>(null);
@@ -68,10 +81,23 @@ export default function CaseActions({ caseRecord, onChanged, only }: { caseRecor
     { action: "transfer", label: "Transfer", allowed: permissions.endCase },
     { action: "lawyer-reject", label: "Return assignment", allowed: permissions.lawyerReject },
   ];
+  const offered = actions.filter(a => a.allowed && (!only || only.includes(a.action)));
+  const key = (a: { action: Action; status?: string }) => `${a.action}-${a.status ?? ""}`;
   return <>
-    <div className="flex flex-wrap gap-2">
-      {actions.filter(a => a.allowed && (!only || only.includes(a.action))).map(a => <Button key={`${a.action}-${a.status ?? ""}`} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
-    </div>
+    {layout === "menu"
+      ? offered.length > 0 && <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="More actions" title="More actions">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {offered.map(a => <DropdownMenuItem key={key(a)} onSelect={() => setSelected(a)}>{a.label}</DropdownMenuItem>)}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      : <div className="flex flex-wrap gap-2">
+        {offered.map(a => <Button key={key(a)} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
+      </div>}
     <Dialog open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle>{selected && titles[selected.action]}</DialogTitle><DialogDescription>{caseReference(caseRecord)}</DialogDescription></DialogHeader>
@@ -171,14 +197,29 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
           </select>
           <p className="text-sm text-gray-500">Narrow the list to lawyers in one state.</p>
         </div>}
-        <Label htmlFor="target-search">Search recipient</Label><Input id="target-search" value={keyword} placeholder="Search by name" onChange={e => { setKeyword(e.target.value); setPage(1); setTarget(""); }} />
-        {targets.isLoading ? <p role="status">Loading recipients…</p> : targets.data && !targets.data.success ? <p role="alert" className="text-red-700">{targets.data.message}</p> : <div className="space-y-2">
-          <Label htmlFor="case-target">{action === "assign" ? "Lawyer" : "Recipient"}</Label>
-          <select id="case-target" required className="w-full rounded border p-2" value={target} disabled={pending} onChange={e => setTarget(e.target.value)}>
-            <option value="">Choose recipient</option>
-            {candidates?.data.filter(u => u.id !== user?.id).map(u => <option key={u.id} value={u.id} disabled={action === "assign" && isFull(u)}>{recipientLabel(u, action)}</option>)}
-          </select>
-          {candidates?.data.length === 0 && <p className="text-sm text-gray-500">{emptyPoolMessage(action, role)}</p>}
+        {/* One control, with its own search: the separate "Search recipient"
+            box above a plain dropdown made choosing a lawyer two steps, and a
+            search matching nothing left an empty dropdown saying nothing
+            (QA 2026-11-16, row 68). */}
+        {targets.data && !targets.data.success ? <p role="alert" className="text-red-700">{targets.data.message}</p> : <div className="space-y-2">
+          <SearchableSelect
+            label={action === "assign" ? "Lawyer" : "Recipient"}
+            placeholder="Choose recipient"
+            searchPlaceholder={action === "assign" ? "Search lawyers by name" : "Search by name"}
+            value={target}
+            onChange={setTarget}
+            query={keyword}
+            onQueryChange={value => { setKeyword(value); setPage(1); setTarget(""); }}
+            loading={targets.isLoading}
+            disabled={pending}
+            emptyMessage={pickerEmptyMessage(action, role, keyword)}
+            options={(candidates?.data ?? []).filter(u => u.id !== user?.id).map(u => ({
+              value: u.id,
+              label: `${u.first_name} ${u.last_name}`,
+              detail: recipientDetail(u, action),
+              disabled: action === "assign" && isFull(u),
+            }))}
+          />
           {candidates && candidates.total_pages > 1 && <div className="flex items-center gap-3"><Button type="button" variant="outline" disabled={page === 1} onClick={() => { setPage(page - 1); setTarget(""); }}>Previous</Button><span>Page {page} of {candidates.total_pages}</span><Button type="button" variant="outline" disabled={page >= candidates.total_pages} onClick={() => { setPage(page + 1); setTarget(""); }}>Next</Button></div>}
         </div>}
       </>}

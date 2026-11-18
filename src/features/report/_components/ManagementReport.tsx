@@ -11,6 +11,9 @@ import { useAction } from "@/context/ActionContext";
 import { changeText, changeTone, quarterOf, recentQuarters } from "@/lib/quarters";
 import { AGE_BRACKETS, SEXES, ageBounds, filterSummary, offenceParam } from "@/lib/statistics-filters";
 import { getOffences, getPeopleOnCases } from "@/features/cases/server/lifecycle";
+import SearchableSelect from "@/components/form/SearchableSelect";
+import { byLabel, caseCount } from "@/lib/filter-options";
+import { roleLabel } from "@/lib/role-labels";
 import {
   downloadManagementReport,
   getManagementReport,
@@ -112,7 +115,12 @@ export default function ManagementReport() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">
-            {data ? `${data.title} · ${data.period} · ${data.area}` : "Management report"}
+            {/* The heading says what the figures are: filtered to one person,
+                it read "National", which is where they came from and not what
+                they show (QA 2026-11-16, row 66). */}
+            {data
+              ? [data.title, data.period, data.area, data.narrowed].filter(Boolean).join(" · ")
+              : "Management report"}
           </h1>
           {data && (
             <p className="text-sm text-gray-500">
@@ -131,20 +139,9 @@ export default function ManagementReport() {
       </div>
 
       <div className="flex flex-wrap items-end gap-3 rounded border p-3">
-        <label className="flex flex-col text-sm">
-          Period
-          <select
-            aria-label="Period"
-            className="mt-1 rounded border p-2"
-            value={period}
-            disabled={usingCustomDates}
-            onChange={event => setPeriod(event.target.value)}
-          >
-            {quarters.map(q => (
-              <option key={`${q.year}-${q.quarter}`} value={`${q.year}-${q.quarter}`}>{q.label}</option>
-            ))}
-          </select>
-        </label>
+        <SearchableSelect label="Period" searchable={false} value={period} onChange={setPeriod}
+          disabled={usingCustomDates} placeholder="Choose a period"
+          options={quarters.map(q => ({ value: `${q.year}-${q.quarter}`, label: q.label }))} />
         <label className="flex flex-col text-sm">
           Or from
           <input type="date" aria-label="From" className="mt-1 rounded border p-2" value={custom.from}
@@ -158,42 +155,27 @@ export default function ManagementReport() {
         {usingCustomDates && (
           <Button variant="ghost" onClick={() => setCustom({ from: "", to: "" })}>Back to quarters</Button>
         )}
-        <label className="flex flex-col text-sm">
-          Offence
-          <select aria-label="Offence" className="mt-1 rounded border p-2" value={offences[0] ?? ""}
-            onChange={event => setOffences(event.target.value ? [event.target.value] : [])}>
-            <option value="">Any offence</option>
-            {(offenceOptions.data?.success ? offenceOptions.data.data : []).map(o => (
-              <option key={o.offence} value={o.offence}>{o.offence} ({o.count})</option>
-            ))}
-          </select>
-        </label>
-        <label className="flex flex-col text-sm">
-          Age
-          <select aria-label="Age range" className="mt-1 rounded border p-2" value={ageBracket}
-            onChange={event => setAgeBracket(event.target.value)}>
-            <option value="">Any age</option>
-            {AGE_BRACKETS.map(bracket => <option key={bracket.value} value={bracket.value}>{bracket.label}</option>)}
-          </select>
-        </label>
-        <label className="flex flex-col text-sm">
-          Sex
-          <select aria-label="Sex" className="mt-1 rounded border p-2" value={sex}
-            onChange={event => setSex(event.target.value)}>
-            <option value="">Any sex</option>
-            {SEXES.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-          </select>
-        </label>
-        <label className="flex flex-col text-sm">
-          Worked on by
-          <select aria-label="Worked on by" className="mt-1 rounded border p-2" value={workedOn}
-            onChange={event => setWorkedOn(event.target.value)}>
-            <option value="">Anyone</option>
-            {(people.data?.success ? people.data.data : []).map(person => (
-              <option key={person.id} value={person.id}>{person.name}</option>
-            ))}
-          </select>
-        </label>
+        {/* The app's own dropdowns, with a search on the long lists: these
+            opened the browser's list, in another font, with no search and no
+            order (QA 2026-11-16, row 65). */}
+        <SearchableSelect label="Offence" placeholder="Any offence" searchPlaceholder="Search offences"
+          value={offences[0] ?? ""} onChange={value => setOffences(value ? [value] : [])}
+          emptyMessage="No offence matches that search."
+          options={[{ value: "", label: "Any offence" }, ...(offenceOptions.data?.success ? offenceOptions.data.data : [])
+            .map(o => ({ value: o.offence, label: o.offence, detail: caseCount(o.count) }))
+            .sort(byLabel)]} />
+        <SearchableSelect label="Age" placeholder="Any age" searchable={false} value={ageBracket} onChange={setAgeBracket}
+          options={[{ value: "", label: "Any age" }, ...AGE_BRACKETS.map(bracket => ({ value: bracket.value, label: bracket.label }))]} />
+        <SearchableSelect label="Sex" placeholder="Any sex" searchable={false} value={sex} onChange={setSex}
+          options={[{ value: "", label: "Any sex" }, ...SEXES.map(option => ({ value: option.value, label: option.label }))]} />
+        {/* Names only, and 27 of them today: the role and office tell one
+            QA Decon from another, and the order makes them findable. */}
+        <SearchableSelect label="Worked on by" placeholder="Anyone" searchPlaceholder="Search people"
+          value={workedOn} onChange={setWorkedOn} loading={people.isLoading}
+          emptyMessage="Nobody matches that search."
+          options={[{ value: "", label: "Anyone" }, ...(people.data?.success ? people.data.data : [])
+            .map(person => ({ value: person.id, label: person.name, detail: roleLabel(person.role) }))
+            .sort(byLabel)]} />
         {(offences.length > 0 || ageBracket || sex || workedOn) && (
           <Button variant="ghost" onClick={() => { setOffences([]); setAgeBracket(""); setSex(""); setWorkedOn(""); }}>
             Clear filters

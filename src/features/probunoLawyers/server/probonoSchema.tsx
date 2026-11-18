@@ -400,6 +400,12 @@ export type FormDataPDSSCase = {
 };
 
 export interface FormDataDEcongestionCase {
+    // Where the case came from and who brought it (T17). The Decongestion form
+    // never asked, so its cases read "Not recorded" (QA 2026-11-16, row 69).
+    // The facility and the visit date are custodial_visit and date_of_visit,
+    // which the form already asks.
+    case_source: string;
+    brought_by: string;
   first_name: string;
   middle_name: string;
   last_name: string;

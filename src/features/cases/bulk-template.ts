@@ -44,6 +44,20 @@ export const BULK_COLUMNS: BulkColumn[] = [
   { header: "Bail status", example: "", note: "BAILED or UNBAILED" },
   { header: "Court of trial", example: "" },
   { header: "Prosecuting agency", example: "" },
+  // Where the case came from (T17). These four sit after the 34 positional
+  // columns and are read by their heading, not their position, so adding them
+  // leaves the contract above untouched. Case source is required: a case filed
+  // today records where it came from, and "Not recorded" is only for cases
+  // filed before the field existed (QA 2026-11-16, row 11).
+  {
+    header: "Case source",
+    required: true,
+    example: "Walk-in at LACON office",
+    note: "Walk-in at LACON office, Detention / custodial centre visit, Referred by court or magistrate, Referred by another organisation, or Other",
+  },
+  { header: "Brought by", example: "", note: "Required for every source but a walk-in" },
+  { header: "Facility name", example: "", note: "Required for a custodial visit" },
+  { header: "Visit date", example: "", note: "Required for a custodial visit. YYYY-MM-DD" },
 ];
 
 /** How many columns every row must have; the API refuses a short row. */

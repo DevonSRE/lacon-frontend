@@ -259,6 +259,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
         caseReference={state?.data?.case_id ?? state?.data?.id}
+        caseId={state?.data?.id}
         email={formData.email}
         holderRole={state?.data?.current_holder?.role}
       />

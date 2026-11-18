@@ -41,6 +41,10 @@ export type TUser = {
   zone_name: string;
   // The unit a paralegal or lawyer belongs to (e.g. "PDSS UNIT HEAD"); empty for an office that is a place.
   department_name?: string;
+  // A lawyer's own maximum case load. Nought, or absent, means no set limit.
+  // The API has always sent it; a lawyer can now change their own
+  // (QA 2026-11-16, row 72).
+  max_load?: number;
   role: ROLES;
 };
 

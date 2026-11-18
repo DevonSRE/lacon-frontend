@@ -47,7 +47,7 @@ export function Queue({ title, empty, filters, actions, description }: { title: 
                         <td className="p-3">{row.first_name} {row.last_name}</td>
                         <td className="p-3">{row.state_name ? displayStateName(row.state_name) : "Not recorded"}</td>
                         <td className="whitespace-nowrap p-3">{filedOn(row.created_at)}</td>
-                        <td className="p-3 text-sm">{row.routing_warning || "Waiting for the current office to act."}</td><td className="p-3"><CaseActions caseRecord={row} onChanged={refresh} only={actions} /></td>
+                        <td className="p-3 text-sm">{row.routing_warning || "Waiting for the current office to act."}</td><td className="p-3"><div className="flex justify-end"><CaseActions caseRecord={row} onChanged={refresh} only={actions} layout="menu" /></div></td>
                       </tr>
                     ))}
                   </tbody>
