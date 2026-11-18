@@ -117,7 +117,10 @@ test("a declined applicant is told apart from a suspended lawyer", () => {
 // working. That handler reads the CSV by column POSITION (row[0]..row[33]), so
 // the template's order is the contract.
 test("the bulk template matches the column contract the API reads", () => {
-  assert.equal(BULK_COLUMN_COUNT, 34, "the Go handler's expectedCols is 34");
+  // The handler refuses a row with FEWER than 34 columns and reads those by
+  // position; anything after them is read by its heading, so the template may
+  // carry more (QA 2026-11-16, row 11 added the case-source columns).
+  assert.ok(BULK_COLUMN_COUNT >= 34, "the Go handler's expectedCols is 34");
   assert.equal(BULK_COLUMNS.length, BULK_COLUMN_COUNT);
   // The positions the handler maps by name, spot-checked at both ends and at
   // the boundary between client details and court details.
@@ -127,8 +130,11 @@ test("the bulk template matches the column contract the API reads", () => {
   assert.equal(BULK_COLUMNS[19].header, "Number of dependants");
   assert.equal(BULK_COLUMNS[33].header, "Prosecuting agency");
   // Every column the API requires is marked, so the template can say so.
+  // Case source joined them on 16 Nov (row 11): the template had called it
+  // optional while T17 requires it.
   const required = BULK_COLUMNS.filter(c => c.required).map(c => c.header);
-  assert.deepEqual(required, ["Case type", "First name", "State", "Last name", "Gender"]);
+  assert.deepEqual(required,
+    ["Case type", "First name", "State", "Last name", "Gender", "Case source"]);
 });
 
 // A quoted cell may hold a comma, so count the parsed row, not a naive split.
