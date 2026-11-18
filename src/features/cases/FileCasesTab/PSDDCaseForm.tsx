@@ -246,6 +246,7 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
                 caseReference={state?.data?.case_id ?? state?.data?.id}
+                caseId={state?.data?.id}
                 email={formData.email}
                 holderRole={state?.data?.current_holder?.role}
             />

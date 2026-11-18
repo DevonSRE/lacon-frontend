@@ -41,12 +41,52 @@ export default function DownloadCase({
       }
       const bytes = Uint8Array.from(atob(result.data), char => char.charCodeAt(0));
       const url = URL.createObjectURL(new Blob([bytes], { type: result.contentType }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = result.filename || `${reference}${copy === "acknowledgement" ? "-acknowledgement" : ""}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const filename = result.filename || `${reference}${copy === "acknowledgement" ? "-acknowledgement" : ""}.pdf`;
+
+      const save = () => {
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+
+      // "Print acknowledgement" prints. It used to download in the background,
+      // so the paralegal saw nothing happen and had no page to hand over
+      // (QA 2026-11-16, row 43). The print dialog is opened from an iframe on
+      // this page, which no pop-up blocker stops, and the copy stays one click
+      // away in case printing is blocked or cancelled.
+      if (copy === "acknowledgement") {
+        const frame = document.createElement("iframe");
+        frame.setAttribute("aria-hidden", "true");
+        frame.style.position = "fixed";
+        frame.style.width = "0";
+        frame.style.height = "0";
+        frame.style.border = "0";
+        frame.src = url;
+        frame.onload = () => {
+          try {
+            frame.contentWindow?.focus();
+            frame.contentWindow?.print();
+          } catch {
+            save();
+          }
+        };
+        document.body.appendChild(frame);
+        toast.success("The acknowledgement is ready to print.", {
+          description: "Use your printer's dialog, or save it as a PDF.",
+          action: { label: "Save a copy", onClick: save },
+        });
+        // Long enough for the dialog to take the document, then tidy up.
+        window.setTimeout(() => {
+          frame.remove();
+          URL.revokeObjectURL(url);
+        }, 60_000);
+        return;
+      }
+
+      save();
       URL.revokeObjectURL(url);
     });
   };

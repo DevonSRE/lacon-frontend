@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import Link from "next/link"
+import DownloadCase from "@/features/cases/_components/DownloadCase"
 
 interface CaseIntakeDialogProps {
     open: boolean
@@ -20,6 +21,13 @@ interface CaseIntakeDialogProps {
     reviewer?: string
     // The role now holding the case, when the API routed it (FCT cases go to the HQ heads).
     holderRole?: string
+    /**
+     * The case's own id, when a staff filing created one. With it the pop-up
+     * offers the client's receipt, which only this dialog's reader - the
+     * paralegal who just filed - is entitled to print. The pop-up offered no
+     * way to print it at all (QA 2026-11-16, row 43).
+     */
+    caseId?: string
     /**
      * What was submitted. A periodic case review is not a case intake: the
      * pop-up read "Case Intake Submitted" with no reference, so the lawyer had
@@ -45,6 +53,7 @@ export default function CaseIntakeDialog({
     email,
     reviewer,
     holderRole,
+    caseId,
     variant = "case",
 }: CaseIntakeDialogProps) {
     // Only name a reviewer the API actually gave us. The default used to be "the
@@ -101,9 +110,14 @@ export default function CaseIntakeDialog({
                             </p>
                         )}
                         {!isHome ? (
-                            <Button onClick={() => { handleCloseCaseType?.(false); onOpenChange(false) }} className="w-full h-11 bg-black text-white hover:bg-gray-800">
-                                Close
-                            </Button>
+                            <div className="flex w-full flex-col gap-2">
+                                {!review && caseId && caseReference && (
+                                    <DownloadCase caseId={caseId} reference={caseReference} copy="acknowledgement" />
+                                )}
+                                <Button onClick={() => { handleCloseCaseType?.(false); onOpenChange(false) }} className="w-full h-11 bg-black text-white hover:bg-gray-800">
+                                    Close
+                                </Button>
+                            </div>
                         ) :
                             <Button className="w-full h-11 bg-black text-white hover:bg-gray-800">
                                 <Link href="/">
