@@ -8,6 +8,7 @@ import { canPrintAcknowledgement } from "../src/lib/acknowledgement.ts";
 import { emptyPoolMessage, pickerEmptyMessage } from "../src/lib/recipient-picker.ts";
 import { casesDirectRoles, casesSubMenuRoles } from "../src/lib/navigation.ts";
 import { byLabel, caseCount, matchesOption, narrowOptions } from "../src/lib/filter-options.ts";
+import { MAX_CASE_LOAD, caseLoadLabel, caseLoadProblem } from "../src/lib/case-load.ts";
 
 // QA 2026-11-16, row 19: "Rejecting a request shows only 'successfully'
 // instead of 'Request rejected.'" The API had been saying it all along; the
@@ -201,4 +202,25 @@ test("row 65: a long filter list is searched and ordered on what is shown", () =
   assert.equal(matchesOption({ label: "Armed robbery" }, "theft"), false);
   assert.equal(caseCount(1), "1 case");
   assert.equal(caseCount(4), "4 cases");
+});
+
+// QA 2026-11-16, row 72: a lawyer's limit was fixed when the account was made -
+// a pro bono lawyer's "1 case at a time" - so a lawyer who could take more read
+// as full, with nowhere to say otherwise.
+test("row 72: a lawyer's own case load is a number they can read", () => {
+  // Nought is how a LACON lawyer's account is set up: nobody has capped them.
+  assert.equal(caseLoadLabel(0), "No set limit");
+  assert.equal(caseLoadLabel(-3), "No set limit");
+  assert.equal(caseLoadLabel(1), "1 case at a time");
+  assert.equal(caseLoadLabel(6), "6 cases at a time");
+
+  // What the API refuses, said before the change is sent.
+  assert.equal(caseLoadProblem("6"), "");
+  assert.equal(caseLoadProblem("0"), "");
+  assert.match(caseLoadProblem(""), /Give the number/);
+  assert.match(caseLoadProblem("many"), /whole number/);
+  assert.match(caseLoadProblem("-1"), /whole number/);
+  assert.match(caseLoadProblem("1.5"), /whole number/);
+  assert.match(caseLoadProblem(String(MAX_CASE_LOAD + 1)), /cannot be more than 500/);
+  assert.equal(caseLoadProblem(String(MAX_CASE_LOAD)), "");
 });

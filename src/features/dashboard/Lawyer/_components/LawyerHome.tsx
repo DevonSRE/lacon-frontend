@@ -6,6 +6,7 @@ import { useAppSelector } from "@/hooks/redux";
 import { caseReference, statusLabel } from "@/features/cases/domain";
 import { getLawyerWorkSummary } from "@/features/cases/server/lifecycle";
 import LawyerUpcomingEvents from "./LawyerUpcomingEvents";
+import MyCaseLoad from "./MyCaseLoad";
 
 // Home used to render the Cases page itself — the same table, the same filters —
 // so a lawyer had two identical screens (QA 2026-11-01, item 21). This is a
@@ -41,6 +42,10 @@ export default function LawyerHome() {
         </h1>
         <Link href="/cases" className="text-sm text-red-700 underline">Go to your cases</Link>
       </div>
+
+      {/* A lawyer had nowhere to say they could take more cases: not here, not
+          Cases, not My Letter (QA 2026-11-16, row 72). */}
+      <MyCaseLoad />
 
       {cases.isLoading ? <p role="status" className="text-sm text-gray-500">Loading your cases…</p>
         : cases.data && !cases.data.success ? <p role="alert" className="text-sm text-red-600">{cases.data.message}</p>
