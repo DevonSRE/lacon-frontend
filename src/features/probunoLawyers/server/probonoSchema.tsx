@@ -250,6 +250,9 @@ export const caseDetailsSchema = z.object({
 });
 export const legalAidFormSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
+  // What the filer typed when the pick-list did not cover the offence
+  // (QA 2026-11-16, row 47). Without it here, zod strips it on the way out.
+  offence_detail: z.string().trim().optional(),
   client_location: z
     .string()
     .min(1, { message: "Client location is required" }),
@@ -282,6 +285,7 @@ export const legalAidFormSchemaChecked = legalAidFormSchema.superRefine((data, c
 
 export const pdssCaseSchema = z.object({
   offence: z.string().min(1, { message: "Offence is required" }),
+  offence_detail: z.string().trim().optional(),
   client_location: z
     .string()
     .min(1, { message: "Client location is required" }),
@@ -340,6 +344,7 @@ export type FormDataCivilCase = {
   occupation: string;
   complaint: string;
   offence: string;
+  offence_detail?: string;
   average_income: string;
   number_of_dependants: string;
   registration_number?: string;
@@ -381,6 +386,7 @@ export type FormDataPDSSCase = {
   occupation: string;
   organisation: string;
   offence: string;
+  offence_detail?: string;
   client_location: string;
   days_in_detention: number;
   counsel_paralegal: string;
@@ -530,6 +536,7 @@ export interface FormDataMercyCase {
   gender: string;
   age: number | '';
   offence: string;
+  offence_detail?: string;
   sentence_passed?: string;
   date_of_sentence?: string;
   perogative_of_mercy?: number;

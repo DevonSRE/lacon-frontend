@@ -21,6 +21,8 @@ import { applicationSourceLabel, isInventoryApplication } from "../src/lib/probo
 import { readApplication } from "../src/lib/probono-application.ts";
 import { timeAgo } from "../src/features/notifications/when.ts";
 import { makeDownloadGuard } from "../src/lib/download-guard.ts";
+import { needsOffenceDetail, offenceLabel, offenceProblem } from "../src/lib/offences.ts";
+import { EMPTY_CASE_FILTERS, activeCaseFilterCount, activeCaseFilters, hasAdvancedCaseFilters } from "../src/lib/case-filters.ts";
 
 // QA 2026-11-01, item 18: case_movements is append-only, so rows written before
 // the backend started labelling statuses keep the raw codes.
@@ -736,4 +738,65 @@ test("a refused download saves nothing and reports why", async () => {
   await guard(async () => ({ success: false, message: "The unit has no data." }));
   assert.deepEqual(saved, []);
   assert.deepEqual(errors, ["The unit has no data."]);
+});
+
+// QA 2026-11-16, row 47: offence was free text, so the same offence arrived
+// spelled many ways and the Offence filter listed typos and test text.
+test("the offence form insists on a choice, and on words when it is Other", () => {
+  assert.equal(offenceProblem("ARMED_ROBBERY"), undefined);
+  assert.equal(offenceProblem(""), "Choose the offence");
+  assert.equal(offenceProblem(undefined), "Choose the offence");
+  assert.equal(offenceProblem("   "), "Choose the offence");
+  // Other without words is the one way to smuggle an empty offence through.
+  assert.equal(offenceProblem("OTHER"), "Say what the offence is");
+  assert.equal(offenceProblem("OTHER", "   "), "Say what the offence is");
+  assert.equal(offenceProblem("OTHER", "Breach of a bail condition"), undefined);
+  // Case does not matter: the value comes back from a select.
+  assert.equal(needsOffenceDetail("other"), true);
+  assert.equal(needsOffenceDetail("ARMED_ROBBERY"), false);
+  assert.equal(needsOffenceDetail(undefined), false);
+});
+
+test("the chosen offence reads back as the list words it", () => {
+  const options = [{ code: "ARMED_ROBBERY", label: "Armed robbery" }];
+  assert.equal(offenceLabel("ARMED_ROBBERY", "", options), "Armed robbery");
+  // Other reads as what was typed, never as the word "Other".
+  assert.equal(offenceLabel("OTHER", "Breach of a bail condition", options), "Breach of a bail condition");
+  // A code the options have not loaded yet is shown as it is, not as blank.
+  assert.equal(offenceLabel("THEFT", "", options), "THEFT");
+  assert.equal(offenceLabel("", "", options), "");
+});
+
+// QA 2026-11-16, row 64: ten filters in one grid, all the same size, with no
+// way to tell at a glance that anything was applied.
+test("the Cases list counts what it has been narrowed by", () => {
+  assert.equal(activeCaseFilterCount(EMPTY_CASE_FILTERS), 0);
+  assert.deepEqual(activeCaseFilters(EMPTY_CASE_FILTERS), []);
+
+  // "all" and "" are both "not narrowed", because the API is told either way.
+  assert.equal(activeCaseFilterCount({ ...EMPTY_CASE_FILTERS, status: "all", sex: "" }), 0);
+  // Whitespace is not a search.
+  assert.equal(activeCaseFilterCount({ ...EMPTY_CASE_FILTERS, search: "   " }), 0);
+
+  assert.deepEqual(
+    activeCaseFilters({ ...EMPTY_CASE_FILTERS, search: "Musa", status: "ASSIGNED", offences: ["Theft"] }),
+    ["Search", "Status", "Offence"]
+  );
+  assert.equal(
+    activeCaseFilterCount({ ...EMPTY_CASE_FILTERS, caseSource: "CUSTODIAL_VISIT", sex: "male", filedBy: "online" }),
+    3
+  );
+  // A partial object is fine: the list reads one filter at a time.
+  assert.equal(activeCaseFilterCount({ status: "CLOSED" }), 1);
+  assert.equal(activeCaseFilterCount({}), 0);
+});
+
+test("an applied advanced filter opens the panel rather than hiding", () => {
+  assert.equal(hasAdvancedCaseFilters(EMPTY_CASE_FILTERS), false);
+  // The four in the first row are not reason to open it.
+  assert.equal(hasAdvancedCaseFilters({ ...EMPTY_CASE_FILTERS, search: "Musa", status: "CLOSED", caseType: "CIVIL CASE", state: "Lagos" }), false);
+  // Anything else is.
+  assert.equal(hasAdvancedCaseFilters({ ...EMPTY_CASE_FILTERS, sex: "female" }), true);
+  assert.equal(hasAdvancedCaseFilters({ ...EMPTY_CASE_FILTERS, offences: ["Theft"] }), true);
+  assert.equal(hasAdvancedCaseFilters({ ...EMPTY_CASE_FILTERS, filedBy: "online" }), true);
 });

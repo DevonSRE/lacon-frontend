@@ -1,6 +1,8 @@
 'use client'
 
 import React, { Dispatch, SetStateAction, useActionState, useEffect, useState, startTransition } from 'react'
+import OffenceField from './OffenceField'
+import { needsOffenceDetail, offenceProblem } from '@/lib/offences';
 import { ArrowLeft} from 'lucide-react'
 import SelectField from '@/components/SelectField'
 import InputField from '@/components/form/input/InputField'
@@ -147,6 +149,16 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
                 const sourceErrors = caseSourceProblem(caseSource);
                 if (Object.keys(sourceErrors).length > 0) {
                     setErrors(sourceErrors as Record<string, string>);
+                    return false;
+                }
+            }
+            // Other with no words would otherwise pass: the schema cannot
+            // require a field only when another holds a particular value
+            // (QA 2026-11-16, row 47).
+            if (step === 2) {
+                const offence = offenceProblem(formData.offence, formData.offence_detail);
+                if (offence) {
+                    setErrors({ [needsOffenceDetail(formData.offence) ? "offence_detail" : "offence"]: offence });
                     return false;
                 }
             }
@@ -484,14 +496,12 @@ export default function PDSSCaseForm({ currentStep = 1, state_id, isPublic, setC
 
                         {currentStep === 2 && (
                             <div className='mt-4 space-y-6'>
-                                <TextAreaField
-                                    name="offence"
-                                    label="Offence"
-                                    required
-                                    placeholder="Type the Offence Here"
-                                    value={formData.offence}
-                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('offence', e.target.value)}
-                                    error={errors.offence}
+                                {/* Chosen from LACON's list, not typed (QA 2026-11-16, row 47). */}
+                                <OffenceField
+                                    offence={formData.offence}
+                                    detail={formData.offence_detail ?? ""}
+                                    errors={errors}
+                                    onChange={(field, value) => updateField(field, value)}
                                 />
 
                                 <InputField
