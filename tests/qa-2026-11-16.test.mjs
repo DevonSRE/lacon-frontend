@@ -7,6 +7,7 @@ import { serverToast } from "../src/lib/server-toast.ts";
 import { canPrintAcknowledgement } from "../src/lib/acknowledgement.ts";
 import { emptyPoolMessage, pickerEmptyMessage } from "../src/lib/recipient-picker.ts";
 import { casesDirectRoles, casesSubMenuRoles } from "../src/lib/navigation.ts";
+import { byLabel, caseCount, matchesOption, narrowOptions } from "../src/lib/filter-options.ts";
 
 // QA 2026-11-16, row 19: "Rejecting a request shows only 'successfully'
 // instead of 'Request rejected.'" The API had been saying it all along; the
@@ -168,4 +169,36 @@ test("row 71: Case Reviews belongs to the offices that read them", () => {
   for (const role of casesSubMenuRoles(caseRoles, reviewRoles)) {
     assert.ok(!direct.includes(role), role);
   }
+});
+
+// QA 2026-11-16, row 65: the filter dropdowns opened the browser's own list -
+// another font, no search, no order - and "Worked on by" listed 27 bare names
+// with "no role or office, no search and no order".
+test("row 65: a long filter list is searched and ordered on what is shown", () => {
+  const people = [
+    { label: "Zainab Bello", detail: "LACON Lawyer" },
+    { label: "Adaobi Nwosu", detail: "State Coordinator · Lagos" },
+    { label: "QA Decon", detail: "Decongestion Unit" },
+  ];
+
+  // In name order, so a name can be found.
+  assert.deepEqual([...people].sort(byLabel).map(p => p.label),
+    ["Adaobi Nwosu", "QA Decon", "Zainab Bello"]);
+
+  // Found by name...
+  assert.deepEqual(narrowOptions(people, "zainab").map(p => p.label), ["Zainab Bello"]);
+  // ...and by the office written beside it, which is how two QA accounts are
+  // told apart.
+  assert.deepEqual(narrowOptions(people, "lagos").map(p => p.label), ["Adaobi Nwosu"]);
+  assert.deepEqual(narrowOptions(people, "decongestion").map(p => p.label), ["QA Decon"]);
+  // Case and spacing do not matter; an empty search narrows nothing.
+  assert.equal(narrowOptions(people, "  ").length, 3);
+  assert.deepEqual(narrowOptions(people, "  NWOSU ").map(p => p.label), ["Adaobi Nwosu"]);
+  // And nothing matching returns nothing, which is what lets the control say so.
+  assert.deepEqual(narrowOptions(people, "zzz"), []);
+
+  assert.equal(matchesOption({ label: "Armed robbery" }, "robbery"), true);
+  assert.equal(matchesOption({ label: "Armed robbery" }, "theft"), false);
+  assert.equal(caseCount(1), "1 case");
+  assert.equal(caseCount(4), "4 cases");
 });
