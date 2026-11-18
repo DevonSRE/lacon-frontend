@@ -16,6 +16,8 @@ import { displayStateName } from "@/components/get-state";
 import { officeLabel, roleLabel } from "@/lib/role-labels";
 import { casePermissions, caseReference, routeRoles, HEAD_ROLES, COORDINATOR_ROLES, type CaseRecord, type DirectoryUser, type MovementCommand } from "../domain";
 import { getAssignees, getRouteTargets, moveCase, postCaseDocument, postCaseProgress } from "../server/lifecycle";
+import { MoreHorizontal } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 export type Action = MovementCommand["action"] | "progress" | "document";
 type Recipient = DirectoryUser;
@@ -45,8 +47,17 @@ function emptyPoolMessage(action: Action, role: string) {
 }
 const titles: Record<Action, string> = { route: "Route case", assign: "Assign lawyer", escalate: "Send back up the chain", "lawyer-reject": "Return assignment", accept: "Accept case", reject: "Reject case", "request-revision": "Request revision", status: "Update status", progress: "Add progress update", document: "Upload document", refer: "Refer out of Legal Aid", transfer: "Transfer to another LACON office" };
 
-// `only` narrows the buttons to some actions (the dashboard queues offer review or assignment only).
-export default function CaseActions({ caseRecord, onChanged, only }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[] }) {
+/**
+ * `only` narrows the actions on offer (the dashboard queues offer review or
+ * assignment only).
+ *
+ * `layout` decides how they are offered. On the case page they are buttons,
+ * where there is room for them. In a table they belong in a "More actions"
+ * menu: a stack of full-width buttons made a row with four actions twice the
+ * height of its neighbours, which is what the tables looked like
+ * (QA 2026-11-16, rows 25 and 67).
+ */
+export default function CaseActions({ caseRecord, onChanged, only, layout = "buttons" }: { caseRecord: CaseRecord; onChanged?: () => void; only?: Action[]; layout?: "buttons" | "menu" }) {
   const { data: user } = useAppSelector(state => state.profile);
   const permissions = casePermissions(caseRecord, user);
   const [selected, setSelected] = useState<{ action: Action; status?: string } | null>(null);
@@ -68,10 +79,23 @@ export default function CaseActions({ caseRecord, onChanged, only }: { caseRecor
     { action: "transfer", label: "Transfer", allowed: permissions.endCase },
     { action: "lawyer-reject", label: "Return assignment", allowed: permissions.lawyerReject },
   ];
+  const offered = actions.filter(a => a.allowed && (!only || only.includes(a.action)));
+  const key = (a: { action: Action; status?: string }) => `${a.action}-${a.status ?? ""}`;
   return <>
-    <div className="flex flex-wrap gap-2">
-      {actions.filter(a => a.allowed && (!only || only.includes(a.action))).map(a => <Button key={`${a.action}-${a.status ?? ""}`} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
-    </div>
+    {layout === "menu"
+      ? offered.length > 0 && <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" aria-label="More actions" title="More actions">
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {offered.map(a => <DropdownMenuItem key={key(a)} onSelect={() => setSelected(a)}>{a.label}</DropdownMenuItem>)}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      : <div className="flex flex-wrap gap-2">
+        {offered.map(a => <Button key={key(a)} variant="outline" onClick={() => setSelected(a)}>{a.label}</Button>)}
+      </div>}
     <Dialog open={!!selected} onOpenChange={open => { if (!open) setSelected(null); }}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader><DialogTitle>{selected && titles[selected.action]}</DialogTitle><DialogDescription>{caseReference(caseRecord)}</DialogDescription></DialogHeader>
