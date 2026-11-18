@@ -6,6 +6,8 @@ import { mainColumns } from "./components/table-columns";
 import { useQuery } from "@tanstack/react-query";
 import { GetAdminReport, GetUnitheadReport } from "../report/server/reportAction";
 import { CaseOverview } from "@/types/case";
+import Link from "next/link";
+import { Queue } from "./components/UnitCaseQueues";
 
 interface StatCardProps {
     title: string;
@@ -160,6 +162,29 @@ export default function StateCordinatorDashboard({ role }: { role: string }) {
                         subtitle="Awaiting assignment"
                         titleColor="text-orange-500"
                     />
+                </div>
+
+                {/* The work waiting on this office, with the action on each row
+                    (QA 2026-11-16, row 25: Home had the cards and the chart but
+                    no list to act on, no way to reach Reports and no way to ask
+                    for a lawyer). The same component the DG's Home uses. */}
+                <Queue
+                    title="Cases waiting for you to assign"
+                    description="Cases that reached your office and have no lawyer yet. Assign one, or send the case on."
+                    empty="Nothing is waiting for you to assign."
+                    filters={{ queue: "unassigned" }}
+                    actions={["assign", "route"]} />
+
+                <div className="flex flex-wrap items-center gap-3">
+                    <Link href="/reports" className="rounded border px-4 py-2 text-sm underline">
+                        Go to Reports
+                    </Link>
+                    <Link href="/users/lawyers" className="rounded border px-4 py-2 text-sm underline">
+                        Lawyers in your state
+                    </Link>
+                    <Link href="/users/my-requests" className="rounded border px-4 py-2 text-sm underline">
+                        Ask the Director General for a lawyer
+                    </Link>
                 </div>
 
                 {/* Chart Section */}
