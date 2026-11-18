@@ -12,12 +12,24 @@
  */
 const REQUESTABLE = ["LACON LAWYER", "INTERNAL PARALEGAL", "EXTERNAL PARALEGAL"];
 
-/** The offices that raise requests rather than creating accounts outright. */
+/**
+ * The offices that raise requests rather than creating accounts outright.
+ *
+ * Mirrors `policy.CanRequestUserMgmt`: the five unit heads, plus the zonal,
+ * state and centre offices. The two department heads (Civil and Criminal
+ * Justice) are not unit heads and do not request, though an earlier copy of
+ * this list had them.
+ */
 const FIELD_OFFICES = [
   "ZONAL DIRECTOR", "STATE COORDINATOR", "CENTRE COORDINATOR",
-  "CIVIL JUSTICE DEPT. HEAD", "CRIMINAL JUSTICE DEPT. HEAD", "DECONGESTION UNIT HEAD",
-  "PREROGATIVE OF MERCY UNIT HEAD", "OSCAR UNIT HEAD", "PDSS UNIT HEAD", "DIO UNIT HEAD",
+  "DECONGESTION UNIT HEAD", "PREROGATIVE OF MERCY UNIT HEAD",
+  "OSCAR UNIT HEAD", "PDSS UNIT HEAD", "DIO UNIT HEAD",
 ];
+
+/** Whether this office asks the Director General instead of creating accounts. */
+export function isRequesterOffice(role?: string | null): boolean {
+  return FIELD_OFFICES.includes((role ?? "").trim().toUpperCase());
+}
 
 /**
  * The roles this account may choose from, or null where every role is open to
