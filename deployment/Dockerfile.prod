@@ -1,0 +1,36 @@
+# Production image for the LACON frontend (Next.js, `next start`).
+# NEXT_PUBLIC_* values are inlined at build time, so they are build args;
+# server-only secrets (SECRET_KEY, ALGORITHM, NEXT_BASE_URL, CASE_API_KEY) come
+# from the server's .env at runtime and are never baked into the image.
+
+FROM node:24-alpine AS deps
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10 --activate
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN pnpm install --frozen-lockfile
+
+FROM node:24-alpine AS build
+WORKDIR /app
+RUN corepack enable && corepack prepare pnpm@10 --activate
+ARG NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL \
+    NEXT_TELEMETRY_DISABLED=1
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN pnpm build && pnpm prune --prod
+
+FROM node:24-alpine AS run
+WORKDIR /app
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
+RUN apk add --no-cache curl
+COPY --from=build --chown=node:node /app/package.json ./
+COPY --from=build --chown=node:node /app/node_modules ./node_modules
+COPY --from=build --chown=node:node /app/.next ./.next
+COPY --from=build --chown=node:node /app/public ./public
+COPY --from=build --chown=node:node /app/next.config.ts ./
+USER node
+EXPOSE 3000
+CMD ["node_modules/.bin/next", "start"]

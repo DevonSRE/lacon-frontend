@@ -1,0 +1,14 @@
+# Compose file for the production server. The pipeline copies it to
+# /opt/products/lacon-cms/frontend on every deploy and runs it with
+#   IMAGE=<registry image> docker compose -f docker-compose.prod.yml up -d
+# The server keeps its own .env next to this file.
+name: lacon-prod-frontend
+services:
+  web:
+    image: ${IMAGE:?IMAGE must be set to the registry image to run}
+    container_name: lacon-prod-web
+    ports:
+      - '127.0.0.1:${HOST_WEB_PORT}:3000'
+    env_file:
+      - ./.env
+    restart: unless-stopped

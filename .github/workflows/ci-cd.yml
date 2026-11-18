@@ -1,0 +1,187 @@
+# CI + CD for the LACON frontend.
+#
+#   Staging is Vercel (it deploys main and preview branches itself; nothing here).
+#   PR main->production : guard + test (branch protection blocks anything else)
+#   production branch   : test -> build image -> deploy to the production server
+#
+# NEXT_PUBLIC_* values (and the /api rewrite in next.config.ts) are baked into the
+# bundle at build time, so the image is built for production only.
+#
+# GitHub setup (environment "production"):
+#   variable : NEXT_PUBLIC_BASE_URL (e.g. https://api.lacon.devontech.io)
+#   secrets  : SSH_PROD_HOST, SSH_PROD_USER, SSH_PROD_PORT, SSH_PROD_KEY or SSH_PROD_PASSWORD
+#              optional GHCR_PAT (read:packages) if the server cannot pull with GITHUB_TOKEN
+#   server .env (in APP_DIR): HOST_WEB_PORT, SECRET_KEY, ALGORITHM, NEXT_BASE_URL, CASE_API_KEY
+name: CI/CD
+
+on:
+  push:
+    branches: [production]
+  pull_request:
+    branches: [production]
+
+concurrency:
+  group: ci-cd-${{ github.event_name }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  guard:
+    name: Enforce main → production
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Only the main branch may be merged into production
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [ "$HEAD_REF" != "main" ]; then
+            echo "::error::Only 'main' can be merged into 'production' (this pull request is from '$HEAD_REF')."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  test:
+    name: Test and build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      # Node 24: the node:test files import .ts directly (type stripping).
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: |
+          pnpm test:cases
+          pnpm test:users
+          pnpm test:qa
+
+      # next build also type-checks; a type error fails the run.
+      - name: Build
+        env:
+          NEXT_PUBLIC_BASE_URL: https://api.example.invalid
+        run: pnpm build
+
+  # ---------------------------------------------------------------------------
+  build-and-push:
+    name: Build and push image
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Work out the image name
+        id: meta
+        run: |
+          owner="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "image=ghcr.io/${owner}/lacon-frontend" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deployment/Dockerfile.prod
+          push: true
+          build-args: |
+            NEXT_PUBLIC_BASE_URL=${{ vars.NEXT_PUBLIC_BASE_URL }}
+          tags: |
+            ${{ steps.meta.outputs.image }}:latest
+            ${{ steps.meta.outputs.image }}:sha-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy to production
+    needs: build-and-push
+    if: github.event_name == 'push' && github.ref == 'refs/heads/production'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency:
+      group: deploy-production-frontend
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      packages: read
+    env:
+      APP_DIR: /opt/products/lacon-cms/frontend
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Make sure the app directory exists
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_PROD_HOST }}
+          username: ${{ secrets.SSH_PROD_USER }}
+          port: ${{ secrets.SSH_PROD_PORT }}
+          key: ${{ secrets.SSH_PROD_KEY }}
+          password: ${{ secrets.SSH_PROD_PASSWORD }}
+          script: mkdir -p ${{ env.APP_DIR }}
+
+      # The compose file and deploy script come from this commit on every deploy,
+      # so the server can never run an out-of-date copy.
+      - name: Copy compose file and deploy script
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_PROD_HOST }}
+          username: ${{ secrets.SSH_PROD_USER }}
+          port: ${{ secrets.SSH_PROD_PORT }}
+          key: ${{ secrets.SSH_PROD_KEY }}
+          password: ${{ secrets.SSH_PROD_PASSWORD }}
+          source: docker-compose.prod.yml,deployment/script/deploy.sh
+          target: ${{ env.APP_DIR }}
+
+      # Deploys the exact image this commit just built (pinned by sha, so a
+      # rollback is re-running an older workflow run).
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE: ${{ needs.build-and-push.outputs.image }}:sha-${{ github.sha }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GHCR_PAT || secrets.GITHUB_TOKEN }}
+        with:
+          host: ${{ secrets.SSH_PROD_HOST }}
+          username: ${{ secrets.SSH_PROD_USER }}
+          port: ${{ secrets.SSH_PROD_PORT }}
+          key: ${{ secrets.SSH_PROD_KEY }}
+          password: ${{ secrets.SSH_PROD_PASSWORD }}
+          envs: IMAGE,GHCR_USER,GHCR_TOKEN
+          command_timeout: 10m
+          script: |
+            cd ${{ env.APP_DIR }}
+            bash deployment/script/deploy.sh docker-compose.prod.yml
