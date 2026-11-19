@@ -12,6 +12,8 @@ import useEffectAfterMount from '@/hooks/use-effect-after-mount'
 import useSubmitLock from '@/hooks/use-submit-lock'
 import useDuplicateGuard from '@/hooks/use-duplicate-guard'
 import CaseSourceFields from './CaseSourceFields'
+import OffenceField from './OffenceField'
+import { needsOffenceDetail, offenceProblem } from '@/lib/offences'
 import { caseSourceProblem } from '@/lib/case-source'
 import DuplicateWarningDialog from '@/features/cases/_components/DuplicateWarningDialog'
 import { FormDataCivilCase, legalAidFormSchemaChecked, personalInfoSchema, publicContactSchema, filingStateSchema } from '../../probunoLawyers/server/probonoSchema'
@@ -155,6 +157,15 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
               return false;
           }
       }
+      // Other with no words would otherwise pass: the schema cannot require a
+      // field only when another holds a particular value (row 47).
+      if (step === 2) {
+        const offence = offenceProblem(formData.offence, formData.offence_detail);
+        if (offence) {
+          setErrors({ [needsOffenceDetail(formData.offence) ? "offence_detail" : "offence"]: offence });
+          return false;
+        }
+      }
       setErrors({});
       return true;
     } catch (error: unknown) {
@@ -248,6 +259,7 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
         handleCloseCaseType={handleCloseCaseType}
         isHome={isPublic ? true : false}
         caseReference={state?.data?.case_id ?? state?.data?.id}
+        caseId={state?.data?.id}
         email={formData.email}
         holderRole={state?.data?.current_holder?.role}
       />
@@ -466,14 +478,12 @@ export default function CriminalCaseForm({ currentStep = 1, state_id, isPublic, 
               )}
               {currentStep === 2 && (
                 <div className="mt-4 space-y-6">
-                  <TextAreaField
-                    name="offence"
-                    label="Offence"
-                    required
-                    placeholder="Type the Offence Here"
-                    value={formData.offence}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => updateField('offence', e.target.value)}
-                    error={errors.offence}
+                  {/* Chosen from LACON's list, not typed (QA 2026-11-16, row 47). */}
+                  <OffenceField
+                    offence={formData.offence}
+                    detail={formData.offence_detail ?? ""}
+                    errors={errors}
+                    onChange={(field, value) => updateField(field, value)}
                   />
 
                   <InputField

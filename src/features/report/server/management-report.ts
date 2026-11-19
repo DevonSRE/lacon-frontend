@@ -39,6 +39,8 @@ export type ManagementSection = {
 export type ManagementReport = {
   title: string;
   area: string;
+  /** Which filters the figures were taken under, in words (QA row 66). */
+  narrowed?: string;
   period: string;
   generated_at: string;
   from: string;

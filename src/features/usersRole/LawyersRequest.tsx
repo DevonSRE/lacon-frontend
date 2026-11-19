@@ -41,6 +41,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { set } from "zod";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import { toast } from "sonner";
+import { apiMessage } from "@/lib/api-message";
+import { rejectReasonProblem } from "@/lib/decision-reason";
 
 export default function LawyersRequest() {
   const [currentPage, setCurrentPage] = useState(1);
@@ -80,7 +82,8 @@ export default function LawyersRequest() {
         }
       );
     } else if (state && state.status === 200) {
-      toast.success("successfully");
+      // Say what happened, in the API's words.
+      toast.success(apiMessage(state?.message, "Done"));
       setApproveDailog(false);
       setRejectDailog(false);
       setDetailsDailog(false);
@@ -141,6 +144,8 @@ export default function LawyersRequest() {
     )[0] as HTMLInputElement;
     if (searchInput) searchInput.value = "";
   };
+
+  const reasonNeeded = rejectReasonProblem(reason);
 
   const dispatchAction = (type: "approve" | "reject") => {
     startTransition(() => {
@@ -369,11 +374,16 @@ export default function LawyersRequest() {
                   label=""
                   placeholder="Please specify the reason here..."
                 />
+                {/* The button below is disabled until there is a reason; say so,
+                    or the click reads as a fault (QA 2026-11-16, row 55). */}
+                {reasonNeeded && (
+                  <p className="mt-1 text-sm text-gray-600">{reasonNeeded}</p>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <Button
-                  disabled={isPending || !reason.trim()}
+                  disabled={isPending || Boolean(reasonNeeded)}
                   onClick={() => dispatchAction("reject")}
                   className="w-full h-11 bg-red-500 text-white border-0  "
                 >

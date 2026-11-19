@@ -241,6 +241,7 @@ export default function CivilCaseForm({ currentStep = 1, isPublic, state_id, set
                 handleCloseCaseType={handleCloseCaseType}
                 isHome={isPublic ? true : false}
                 caseReference={state?.data?.case_id ?? state?.data?.id}
+                caseId={state?.data?.id}
                 email={formData.email}
                 holderRole={state?.data?.current_holder?.role}
             />

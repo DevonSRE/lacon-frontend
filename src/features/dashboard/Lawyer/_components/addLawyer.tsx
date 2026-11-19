@@ -29,6 +29,8 @@ import { GetInactiveState } from "@/components/get-inactive-state";
 import { GetZone } from "@/components/get-zone";
 
 import { submitWithoutReset } from "@/lib/submit-without-reset";
+import { isRequesterOffice, requestableRolesFor } from "@/lib/requestable-roles";
+import { serverToast } from "@/lib/server-toast";
 // The department and unit offices a lawyer or paralegal can be linked to. The
 // API refuses anything else, so these must match its role names exactly.
 const DEPARTMENT_OPTIONS = [
@@ -43,17 +45,6 @@ const DEPARTMENT_OPTIONS = [
 // Radix Select has no empty-string value, so "none" needs a sentinel.
 const NO_DEPARTMENT = "__none__";
 
-// The field offices that ask the Director General instead of creating accounts.
-const REQUESTER_ROLES: string[] = [
-  "ZONAL DIRECTOR",
-  "STATE COORDINATOR",
-  "CENTRE COORDINATOR",
-  "DECONGESTION UNIT HEAD",
-  "PREROGATIVE OF MERCY UNIT HEAD",
-  "OSCAR UNIT HEAD",
-  "PDSS UNIT HEAD",
-  "DIO UNIT HEAD",
-];
 
 const defaultFormData: FormDataLawyer = {
   user_type: "",
@@ -85,7 +76,13 @@ export function AddLawyerSheet() {
   const role = user?.role;
   // A field office cannot create an account: the API refuses it and the Director
   // General creates it on approval. The same form raises the request.
-  const asRequest = !!role && REQUESTER_ROLES.includes(role);
+  const asRequest = isRequesterOffice(role);
+  // An office may only ask for some roles. Offering the rest and letting the
+  // server refuse them was the complaint (QA 2026-11-16, row 31); null means
+  // no restriction, which is the Director General creating an account.
+  const offerable = requestableRolesFor(role);
+  const mayOffer = (value: string) =>
+    !offerable || offerable.includes(value.trim().toUpperCase());
   // A State or Centre Coordinator may only ask for accounts in their own state,
   // and the API refuses anything else, so only that state is offered here
   // (QA 2026-11-01, item 3). This is the sheet a field office actually uses.
@@ -97,14 +94,10 @@ export function AddLawyerSheet() {
   };
   useEffectAfterMount(() => {
     if (state && CLIENT_ERROR_STATUS.includes(state?.status)) {
-      toast.error(state?.message, {
-        description:
-          typeof state?.errors === "string"
-            ? state.errors
-            : state?.errors
-              ? Object.values(state.errors).flat().join(", ")
-              : undefined,
-      });
+      // The server's own reason is what the person has to read; a generic
+      // headline with the reason buried under it was the complaint (row 31).
+      const said = serverToast(state?.message, state?.errors);
+      toast.error(said.title, { description: said.description });
     } else if (state?.status === 200 || state?.status === 201) {
       queryClient.invalidateQueries({ queryKey: ["getLaweyersManagement"] });
       // A raised request belongs on the requester's own My requests page too.
@@ -157,18 +150,20 @@ export function AddLawyerSheet() {
                   <SelectContent>
                     <SelectItem value="LACON LAWYER">LACON Lawyer</SelectItem>
 
-                    {role === ROLES.DECONGESTION_UNIT_HEAD && (
-                      <SelectItem value="PRO BONO LAWYER">
-                        Pro bono Lawyer
-                      </SelectItem>
-                    )}
+                    {mayOffer("PRO BONO LAWYER") &&
+                      role === ROLES.DECONGESTION_UNIT_HEAD && (
+                        <SelectItem value="PRO BONO LAWYER">
+                          Pro bono Lawyer
+                        </SelectItem>
+                      )}
 
-                    {role === ROLES.DIO && (
+                    {mayOffer("EXTERNAL PARALEGAL") && role === ROLES.DIO && (
                       <SelectItem value="EXTERNAL PARALEGAL">
                         EXTERNAL PARALEGAL
                       </SelectItem>
                     )}
-                    {(role === ROLES.ZONAL_DIRECTOR ||
+                    {mayOffer("INTERNAL PARALEGAL") &&
+                      (role === ROLES.ZONAL_DIRECTOR ||
                       role === ROLES.STATE_COORDINATOR ||
                       role === ROLES.CENTRE_COORDINATOR ||
                       role === ROLES.CIVIL_JUSTICE_DEPT ||
@@ -178,9 +173,10 @@ export function AddLawyerSheet() {
                         </SelectItem>
                       )}
 
-                    {role != ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD && (
-                      <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
-                    )}
+                    {mayOffer("NYSC Lawyer") &&
+                      role != ROLES.PREROGATIVE_OF_MERCY_UNIT_HEAD && (
+                        <SelectItem value="NYSC Lawyer">NYSC Lawyer</SelectItem>
+                      )}
                   </SelectContent>
                 </Select>
                 {serverErrors.user_type && (

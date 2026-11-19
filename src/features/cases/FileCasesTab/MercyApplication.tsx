@@ -12,6 +12,8 @@ import { Label } from "@/components/ui/label";
 
 import { submitMercyApplicationForm } from "@/features/probunoLawyers/server/action";
 import { FormDataMercyCase } from "@/features/probunoLawyers/server/probonoSchema";
+import CaseSourceFields from "./CaseSourceFields";
+import { caseSourceProblem } from "@/lib/case-source";
 import useEffectAfterMount from "@/hooks/use-effect-after-mount";
 import useSubmitLock from "@/hooks/use-submit-lock";
 import { CLIENT_ERROR_STATUS, SUCCESS_STATUS } from "@/lib/constants";
@@ -41,6 +43,14 @@ export default function MercyApplication({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedState, setSelectedState] = useState<string>("");
   const [fileError, setFileError] = useState<string>("");
+  // Where this case came from and who brought it (T17). The form never asked,
+  // so every case filed on it read "Not recorded", which is meant for cases
+  // filed before the question existed (QA 2026-11-16, row 69).
+  const [caseSource, setCaseSource] = useState({ case_source: "", brought_by: "", facility_name: "", visit_date: "" });
+  const updateCaseSource = (field: string, value: string) => {
+    setCaseSource(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: "" }));
+  };
 
   const [formData, setFormData] = useState<FormDataMercyCase>({
     first_name: "",
@@ -157,6 +167,9 @@ export default function MercyApplication({
     if (!confessionalStatement)
       newErrors.confessional_statement =
         "Confessional statement field is required";
+    // The API asks the same; asking here tells the filer before the case is
+    // sent rather than after (T17).
+    Object.assign(newErrors, caseSourceProblem(caseSource));
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -188,6 +201,8 @@ export default function MercyApplication({
     if (recommendationImage) {
       fd.append("recommendations", recommendationImage);
     }
+
+    Object.entries(caseSource).forEach(([key, value]) => { if (value) fd.append(key, value); });
 
     if (!acquireSubmit()) return;
 
@@ -333,6 +348,9 @@ export default function MercyApplication({
           </p>
         )}
       </div>
+
+      {/* Where the case came from (T17), asked as the other forms ask it. */}
+      <CaseSourceFields values={caseSource} errors={errors} onChange={updateCaseSource} />
 
       <div>
         <Label>
