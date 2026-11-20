@@ -9,23 +9,26 @@ export default function Navbar() {
     useEffect(() => {
        setSeletedStateId("");
     }, [setSeletedStateId]);
+    // Each card says who it is for and what happens after you use it, and each
+    // button names the action rather than reading "Click Me"
+    // (QA 2026-11-19, row 77).
     const cardData = [
         {
             title: 'New Registration',
-            description: 'To Register With the Council for ProBono Cases Click on the Button Below',
-            buttonText: 'Click Me',
+            description: 'For lawyers not yet registered with the Council. Fill in the registration form and your application is reviewed by the Decongestion Unit, which emails you the decision.',
+            buttonText: 'Register',
             link: '/probono/registration',
         },
         {
             title: 'Already Handling Probono Cases',
-            description: 'If You are Already Handling Probono cases and wish to register with the council Click on the Button Below',
-            buttonText: 'Click Me',
+            description: 'For lawyers already handling pro bono cases who want to register them with the Council. List the cases you are holding and the Decongestion Unit reviews them with your application.',
+            buttonText: 'Submit your cases',
             link: '/probono/cases',
         },
         {
             title: 'Update Case',
-            description: 'If You are Already Registered with the council and wish to update your cases, click on the Button below for the Annual Case review Form.',
-            buttonText: 'Click Me',
+            description: 'For lawyers already registered with the Council. We email you a confirmation code, then the Annual Case Review form records how the cases you are handling have moved on.',
+            buttonText: 'Start annual review',
             link: '/probono/update',
         },
     ];
