@@ -33,7 +33,11 @@ function isFull(u: Recipient) {
 // so a head can tell a staff lawyer from a pro bono one before assigning.
 function recipientLabel(u: Recipient, action: Action) {
   const parts = [`${u.first_name} ${u.last_name}`, roleLabel(u.user_type)];
+  // Where they work: a state for most roles, a zone for a Zonal Director, who
+  // holds no single state and so read as having no location at all
+  // (QA 2026-11-19, row 78).
   if (u.state) parts.push(u.state);
+  else if (u.zone_name) parts.push(u.zone_name);
   if (action !== "assign") return parts.join(" · ");
   if (u.department_name) parts.push(u.department_name);
   parts.push(`${u.open_cases ?? 0} open / ${u.max_load && u.max_load > 0 ? `${u.max_load} max` : "no set limit"}`);
@@ -132,7 +136,10 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
     .map((s: { id: string; title: string }) => ({ id: s.id, title: displayStateName(s.title) }))
     .sort((a, b) => a.title.localeCompare(b.title));
   const candidates = targets.data?.success ? targets.data.data : undefined;
-  const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision", "refer", "transfer"].includes(action) || (action === "assign" && !!caseRecord.assignment);
+  // Taking a case off the person holding it needs a reason on the record: on
+  // reassignment, and on a reroute of a case a lawyer is already working, which
+  // the DG may do to any open case (QA 2026-11-19, row 80).
+  const reasonRequired = ["escalate", "lawyer-reject", "reject", "request-revision", "refer", "transfer"].includes(action) || ((action === "assign" || action === "route") && !!caseRecord.assignment);
   // Completing a case carries the final report: the API refuses the move without both fields.
   const completing = action === "status" && status === "COMPLETED";
   const stageOptions = courtStageOptionsFor(caseRecord.case_type);
@@ -212,7 +219,7 @@ function ActionForm({ action, status, caseRecord, onSuccess }: { action: Action;
             onQueryChange={value => { setKeyword(value); setPage(1); setTarget(""); }}
             loading={targets.isLoading}
             disabled={pending}
-            emptyMessage={pickerEmptyMessage(action, role, keyword)}
+            emptyMessage={pickerEmptyMessage(action, role, keyword, user?.role ?? "")}
             options={(candidates?.data ?? []).filter(u => u.id !== user?.id).map(u => ({
               value: u.id,
               label: `${u.first_name} ${u.last_name}`,

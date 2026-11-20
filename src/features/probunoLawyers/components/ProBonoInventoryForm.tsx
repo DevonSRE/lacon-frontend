@@ -5,6 +5,10 @@ import { submitProBonoCaseForm } from '../server/action';
 import useEffectAfterMount from '@/hooks/use-effect-after-mount';
 import { toast } from 'sonner';
 import { CLIENT_ERROR_STATUS } from '@/lib/constants';
+
+// Keys the API uses to carry one whole sentence rather than a single field's
+// error. Their name is not worth showing to the person reading the message.
+const GENERIC_ERROR_KEYS = ["error", "errors", "message", "detail", "non_field_errors"];
 import { ProBonoCase } from '../server/probunoTypes';
 import { SubmitButton } from '@/components/submit-button';
 import InputField from '@/components/form/input/InputField';
@@ -143,11 +147,14 @@ export default function ProBonoInventoryForm() {
                     errorMessage = state.errors;
                 } else if (state.errors && typeof state.errors === "object") {
                     errorMessage = Object.entries(state.errors)
-                        .map(([key, value]) =>
-                            Array.isArray(value)
-                                ? `${key}: ${value.join(", ")}`
-                                : `${key}: ${String(value)}`
-                        )
+                        .map(([key, value]) => {
+                            const text = Array.isArray(value) ? value.join(", ") : String(value);
+                            // A field error is worth naming its field; a plain
+                            // sentence the API sent under "error" is not, and
+                            // naming it put "error:" on screen in front of the
+                            // message (QA 2026-11-19, row 75).
+                            return GENERIC_ERROR_KEYS.includes(key.toLowerCase()) ? text : `${key}: ${text}`;
+                        })
                         .join(" | ");
                 }
             } catch (err) {

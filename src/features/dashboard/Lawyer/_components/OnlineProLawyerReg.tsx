@@ -49,6 +49,12 @@ type ProBonoFormProps = {
 
 export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { } }: ProBonoFormProps) {
   const formRef = useRef<HTMLFormElement>(null);
+  // Held from the moment a submit is accepted until the server answers. The
+  // disabled button cannot do this on its own: isPending is a transition, so it
+  // reaches the button a render later than a quick double-click, whose second
+  // request then failed on the application the first one had just created and
+  // left the lawyer reading only that failure (QA 2026-11-19, row 74).
+  const submittingRef = useRef(false);
   const [selectedState, setSelectedState] = useState<string>("");
   const [state, formAction, isPending] = useActionState(submitProBonoForm, undefined);
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -84,6 +90,10 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
   // Every required field is checked on Submit, with the message under the field.
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    if (submittingRef.current) {
+      event.preventDefault();
+      return;
+    }
     const result = proBonoSchema.safeParse({ ...formData, state_id: selectedState });
     const errors: Record<string, string> = {};
     if (!result.success) {
@@ -100,6 +110,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
       formRef.current?.querySelector<HTMLElement>(`[name="${first}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
+    submittingRef.current = true;
     submitWithoutReset(formAction)(event);
   };
 
@@ -135,6 +146,7 @@ export default function ProBonoForm({ isPublic = false, setDialogOpen = () => { 
 
   useEffectAfterMount(() => {
     if (!state) return;
+    submittingRef.current = false;
 
     if (CLIENT_ERROR_STATUS.includes(state.status)) {
       toast.error(serverErrorText(state.errors) || state.message || "Your application could not be submitted.");
