@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import vm from "node:vm";
 import { invitationScope, paralegalDepartment, uniqueRoleOptions } from "../src/lib/user-invitation-options.ts";
+import { rolesWithheldFrom } from "../src/lib/requestable-roles.ts";
 
 const require = createRequire(import.meta.url);
 const ts = require("typescript");
@@ -107,4 +108,28 @@ test("an internal paralegal can belong to a centre or a unit (QA 2026-10-26 item
   assert.equal(state.success, true);
   assert.equal(state.data.department_name, undefined);
   assert.equal(paralegalDepartment("LACON LAWYER", "PDSS Unit"), "");
+});
+
+// More than one Platform Administrator may hold the office at a time: the
+// platform is run by a team. The role needs no state, zone or centre, and only
+// another administrator may appoint one — the Director General, who creates
+// every other role, may not (policy.CanCreateUserDirect, and the same rule in
+// authoriseUserUpdate and Destroy).
+test("a platform administrator needs no location and is created by an administrator only", () => {
+  const scope = invitationScope("PLATFORM ADMIN");
+  assert.deepEqual(scope, { designation: false, state: false, zone: false, center: false });
+
+  const result = exports.createUserSchema.safeParse({ ...person, user_type: "PLATFORM ADMIN" });
+  assert.equal(result.success, true);
+  assert.equal(result.data.state_id, undefined);
+  assert.equal(result.data.zone_id, undefined);
+  assert.equal(result.data.center_id, undefined);
+
+  // The administrators are withheld from everyone else, the DG included.
+  for (const office of ["DIRECTOR GENERAL", "STATE COORDINATOR", "DIO UNIT HEAD", undefined, null, ""]) {
+    assert.deepEqual(rolesWithheldFrom(office), ["PLATFORM ADMIN", "SUPER ADMIN"], String(office));
+  }
+  for (const admin of ["PLATFORM ADMIN", "SUPER ADMIN", " platform admin "]) {
+    assert.deepEqual(rolesWithheldFrom(admin), [], admin);
+  }
 });

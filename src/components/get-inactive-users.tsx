@@ -20,6 +20,7 @@ export const GetInActiveUser = ({
   onValueChange,
   onLoadingChange,
   only,
+  except,
 }: {
   value: string;
   placeholder: string;
@@ -32,6 +33,10 @@ export const GetInActiveUser = ({
   // office was offered every role and the server then refused most of them
   // (QA 2026-11-01 run 4, 13 Nov, row 31).
   only?: string[] | null;
+  // The roles this reader may not pick, whatever the API lists. Only an
+  // administrator appoints an administrator, so the Director General — who may
+  // create every other role — must not be offered those two.
+  except?: string[];
 }) => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["InActiveUsers"],
@@ -72,7 +77,9 @@ export const GetInActiveUser = ({
   };
   // Only the roles this reader may actually ask for, where that is narrower.
   const allowed = only ? new Set(only.map(r => r.toUpperCase())) : null;
-  const permitted = (role: string) => !allowed || allowed.has(role.toUpperCase());
+  const withheld = new Set((except ?? []).map(r => r.toUpperCase()));
+  const permitted = (role: string) =>
+    (!allowed || allowed.has(role.toUpperCase())) && !withheld.has(role.toUpperCase());
   const users = uniqueRoleOptions(data?.data).filter(permitted);
   const filledSeats: RoleSeat[] = seatData?.success
     ? (seatData.data as RoleSeat[]).filter(seat => seat.holder && !users.includes(seat.role) && permitted(seat.role))
