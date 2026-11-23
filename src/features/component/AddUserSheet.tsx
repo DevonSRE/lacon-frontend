@@ -3,7 +3,7 @@
 "use client";
 
 import { startTransition, useActionState, useEffect, useState } from "react";
-import { requestableRolesFor } from "@/lib/requestable-roles";
+import { requestableRolesFor, rolesWithheldFrom } from "@/lib/requestable-roles";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
@@ -132,6 +132,10 @@ export function AddUserSheet() {
               // roles; offering the rest only to have the server refuse them
               // was the complaint (row 31).
               only={requestableRolesFor(actor?.role)}
+              // Only an administrator appoints an administrator: the Director
+              // General creates every other role, so offering these two would
+              // only earn a refusal from the server.
+              except={rolesWithheldFrom(actor?.role)}
               value={formData.user_type}
               onValueChange={(val: string) => {
                 setFormData(prev => ({ ...prev, user_type: val, designation: "", state_id: "", zone_id: "", center_id: "" }));

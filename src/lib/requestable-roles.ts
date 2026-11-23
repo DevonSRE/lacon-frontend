@@ -26,9 +26,33 @@ const FIELD_OFFICES = [
   "OSCAR UNIT HEAD", "PDSS UNIT HEAD", "DIO UNIT HEAD",
 ];
 
+/**
+ * The administrator offices only another administrator may create.
+ *
+ * Mirrors `policy.CanCreateUserDirect`: an admin creates any account, while the
+ * Director General is allowed every role *except* these two — the same rule
+ * that stops the DG managing or deleting a platform administrator. More than
+ * one Platform Administrator may hold the office at a time, so it stays on the
+ * list once it is filled; it just is not the DG's appointment to make.
+ */
+const ADMIN_ROLES = ["PLATFORM ADMIN", "SUPER ADMIN"];
+
 /** Whether this office asks the Director General instead of creating accounts. */
 export function isRequesterOffice(role?: string | null): boolean {
   return FIELD_OFFICES.includes((role ?? "").trim().toUpperCase());
+}
+
+/**
+ * The roles this account must not be offered at all, whatever the API lists.
+ *
+ * Without this the Director General was shown Platform Admin and the server
+ * then refused it — the complaint behind row 31, in the one place
+ * `requestableRolesFor` does not cover, because the DG may create everything
+ * else.
+ */
+export function rolesWithheldFrom(role?: string | null): string[] {
+  const mine = (role ?? "").trim().toUpperCase();
+  return ADMIN_ROLES.includes(mine) ? [] : [...ADMIN_ROLES];
 }
 
 /**
