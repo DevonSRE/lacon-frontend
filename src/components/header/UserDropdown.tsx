@@ -5,7 +5,6 @@ import { Icons } from "@/icons/icons";
 import { cn } from "@/lib/utils";
 import { deleteSession } from "@/server/auth";
 import { LoaderCircle, LogOut } from "lucide-react";
-import Image from "next/image";
 import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useAppSelector } from "@/hooks/redux";
@@ -56,14 +55,14 @@ export default function UserDropdown() {
 
   return (
     <div className="relative">
-      <button onClick={toggleDropdown} className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle">
-        <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <Image
-            width={44}
-            height={44}
-            src="/images/user/owner.jpg"
-            alt="User"
-          />
+      <button onClick={toggleDropdown} className="flex items-center gap-2 text-gray-700 dark:text-gray-400 dropdown-toggle">
+        {/* The header used to show a stock photograph from the dashboard
+            template — the same face for everyone, and nobody's own. The
+            account's own first and last name identifies the holder, and needs
+            no picture to upload. "Account" only covers the moment before the
+            profile has loaded, so the control is never a bare chevron. */}
+        <span className="max-w-[12rem] truncate text-sm font-medium">
+          {name || "Account"}
         </span>
         <svg className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
           width="18"
